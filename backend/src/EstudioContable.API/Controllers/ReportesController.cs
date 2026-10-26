@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using EstudioContable.Application.Common;
 using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain.Entities;
 using System.Linq;
 
 namespace EstudioContable.API.Controllers
@@ -96,15 +98,16 @@ namespace EstudioContable.API.Controllers
                         .Include(l => l.Cuenta)
                         .Include(l => l.Asiento)
                         .AsNoTracking()
-                        .AsQueryable();
+                        .Where(l => l.Asiento.Estado == EstadoAsiento.Confirmado);
 
                     if (desde.HasValue) queryLineas = queryLineas.Where(x => x.Asiento.Fecha >= DateOnly.FromDateTime(desde.Value));
                     if (hasta.HasValue) queryLineas = queryLineas.Where(x => x.Asiento.Fecha <= DateOnly.FromDateTime(hasta.Value));
 
                     var lineas = await queryLineas.ToListAsync(cancellationToken);
-                    var mayor = lineas.GroupBy(l => l.Cuenta.Nombre)
+                    var mayor = lineas.GroupBy(l => new { l.CuentaId, l.Cuenta.Codigo, l.Cuenta.Nombre })
+                        .OrderBy(g => g.Key.Codigo)
                         .Select(g => new {
-                            cuenta = g.Key,
+                            cuenta = g.Key.Nombre,
                             saldo = g.Sum(l => l.Debe) - g.Sum(l => l.Haber),
                             movimientos = g.Select(l => new {
                                 fecha = l.Asiento.Fecha,
@@ -119,49 +122,30 @@ namespace EstudioContable.API.Controllers
 
                 case "balance":
                 {
-                    var queryLineas = _context.LineasAsiento
-                        .Include(l => l.Cuenta)
-                        .Include(l => l.Asiento)
-                        .AsNoTracking()
-                        .AsQueryable();
+                    // Sumas y saldos por cuenta: los calcula contabilidad.fn_sumas_y_saldos.
+                    var cuentas = await _context
+                        .SumasYSaldos(PlanDeCuentas.ClienteIdPorDefecto,
+                            desde.HasValue ? DateOnly.FromDateTime(desde.Value) : null,
+                            hasta.HasValue ? DateOnly.FromDateTime(hasta.Value) : null)
+                        .Where(c => c.SaldoNatural != 0)
+                        .ToListAsync(cancellationToken);
 
-                    if (desde.HasValue) queryLineas = queryLineas.Where(x => x.Asiento.Fecha >= DateOnly.FromDateTime(desde.Value));
-                    if (hasta.HasValue) queryLineas = queryLineas.Where(x => x.Asiento.Fecha <= DateOnly.FromDateTime(hasta.Value));
-
-                    var lineas = await queryLineas.ToListAsync(cancellationToken);
-                    var balance = lineas
-                        .Select(l => new {
-                            NatReal = (l.Cuenta.Nombre.Contains("Caja") || l.Cuenta.Nombre.Contains("Banco")) 
-                                ? EstudioContable.Domain.Entities.NaturalezaCuenta.Activo 
-                                : l.Cuenta.Naturaleza,
-                            l.Cuenta.Nombre,
-                            l.Debe,
-                            l.Haber
-                        })
-                        .GroupBy(x => new { x.NatReal, x.Nombre })
-                        .Select(g => {
-                            var debe = g.Sum(l => l.Debe);
-                            var haber = g.Sum(l => l.Haber);
-                            var saldoBruto = debe - haber; // Positivo si Debe > Haber
-
-                            var esResultadoNegativo = g.Key.NatReal == EstudioContable.Domain.Entities.NaturalezaCuenta.Resultado && saldoBruto > 0;
-                            var esResultadoPositivo = g.Key.NatReal == EstudioContable.Domain.Entities.NaturalezaCuenta.Resultado && saldoBruto < 0;
-
-                            // Formula: Activo y Resultado Negativo -> Debe - Haber. Pasivo, PN, Resultado Positivo -> Haber - Debe
-                            var saldo = (g.Key.NatReal == EstudioContable.Domain.Entities.NaturalezaCuenta.Activo || esResultadoNegativo)
-                                ? saldoBruto
-                                : -saldoBruto;
-
-                            string natStr = g.Key.NatReal.ToString();
-                            if (esResultadoNegativo) natStr = "Resultado Negativo";
-                            if (esResultadoPositivo) natStr = "Resultado Positivo";
-
-                            return new {
-                                naturaleza = natStr,
-                                cuenta = g.Key.Nombre,
-                                saldo = saldo
+                    var balance = cuentas
+                        .Select(c =>
+                        {
+                            // Para el PDF las cuentas de resultado se separan en ganancia
+                            // (saldo acreedor) y pérdida (saldo deudor), siempre en positivo.
+                            var naturaleza = c.Naturaleza switch
+                            {
+                                NaturalezaCuenta.Resultado when c.SaldoNatural > 0 => "Resultado Positivo",
+                                NaturalezaCuenta.Resultado => "Resultado Negativo",
+                                _ => c.Naturaleza.ToString()
                             };
-                        }).Where(c => c.saldo != 0).OrderBy(c => c.naturaleza).ThenBy(c => c.cuenta).ToList();
+                            var saldo = c.Naturaleza == NaturalezaCuenta.Resultado ? System.Math.Abs(c.SaldoNatural) : c.SaldoNatural;
+                            return new { naturaleza, cuenta = c.Nombre, saldo };
+                        })
+                        .OrderBy(c => c.naturaleza).ThenBy(c => c.cuenta)
+                        .ToList();
 
                     return Ok(balance);
                 }

@@ -8,7 +8,13 @@ namespace EstudioContable.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<LineaAsiento> builder)
         {
-            builder.ToTable("lineas_asiento", "contabilidad");
+            // Las mismas reglas que valida LineaAsiento en su constructor, repetidas
+            // en la base para que ningún INSERT directo pueda saltearlas.
+            builder.ToTable("lineas_asiento", "contabilidad", t =>
+            {
+                t.HasCheckConstraint("CK_lineas_asiento_importes_no_negativos", "debe >= 0 AND haber >= 0");
+                t.HasCheckConstraint("CK_lineas_asiento_debe_o_haber", "(debe > 0) <> (haber > 0)");
+            });
             builder.HasKey(l => l.Id);
 
             builder.Property(l => l.AsientoId).HasColumnName("asiento_id").IsRequired();

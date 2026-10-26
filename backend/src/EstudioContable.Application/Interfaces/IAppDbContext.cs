@@ -1,5 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+using EstudioContable.Application.Common.Lecturas;
 using EstudioContable.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +27,13 @@ namespace EstudioContable.Application.Interfaces
         DbSet<FacturaDetalle> FacturaDetalles { get; }
         DbSet<ClienteComercial> ClientesComerciales { get; }
         DbSet<Proveedor> Proveedores { get; }
+        DbSet<RegistroAuditoria> Auditoria { get; }
+
+        /// <summary>Vista contabilidad.v_libro_mayor: saldos por cuenta de los asientos confirmados.</summary>
+        IQueryable<SaldoCuentaMayor> LibroMayor { get; }
+
+        /// <summary>Función contabilidad.fn_sumas_y_saldos: balance de sumas y saldos entre fechas.</summary>
+        IQueryable<FilaSumasYSaldos> SumasYSaldos(long clienteId, System.DateOnly? desde, System.DateOnly? hasta);
         
         Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade Database { get; }
 

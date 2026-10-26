@@ -18,6 +18,9 @@ namespace EstudioContable.Domain.Entities
 
         public Membresia(long socioId, long planId, DateTime fechaInicio, DateTime fechaVencimiento, bool estaPagada = false)
         {
+            if (fechaVencimiento < fechaInicio)
+                throw new ArgumentException("El vencimiento de la membresía no puede ser anterior a su inicio.");
+
             SocioId = socioId;
             PlanId = planId;
             FechaInicio = fechaInicio;

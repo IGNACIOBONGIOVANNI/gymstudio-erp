@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Interfaces;
@@ -32,14 +32,16 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 var plan = await _context.Planes.FirstOrDefaultAsync(p => p.Id == request.PlanId, cancellationToken);
                 if (plan == null) throw new Exception($"Plan {request.PlanId} no encontrado.");
 
-                socio.RenovarPlan(plan.Id, plan.DuracionMeses);
+                // El período se calcula una sola vez: antes se tomaba la hora actual dos
+                // veces y el vencimiento podía quedar microsegundos antes del inicio.
+                var periodo = socio.RenovarPlan(plan.Id, plan.DuracionMeses);
 
                 // 1. Crear Membresía
                 var membresia = new Membresia(
                     socioId: socio.Id,
                     planId: plan.Id,
-                    fechaInicio: DateTime.UtcNow,
-                    fechaVencimiento: socio.FechaVencimiento.Value,
+                    fechaInicio: periodo.Inicio,
+                    fechaVencimiento: periodo.Vencimiento,
                     estaPagada: true
                 );
                 _context.Membresias.Add(membresia);
@@ -47,7 +49,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
                 // 2. Facturar Cuota a través del Servicio (Esto delega Diario y Caja a Contabilidad)
                 var condicionPagoString = (request.MetodoPago?.ToLower() == "banco") ? "TransferenciaBanco" : "ContadoCaja";
-                
+
                 var factura = new Factura
                 {
                     Fecha = DateTime.UtcNow,

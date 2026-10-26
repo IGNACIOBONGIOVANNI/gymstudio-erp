@@ -56,7 +56,7 @@ controlan en el backend; el frontend sólo oculta menús.
 | Consultar libros, facturar, socios, planes, stock          | ✔ | ✔ | ✔ |
 | Anular o editar facturas                                   | ✔ | ✔ | ✘ |
 | Crear, confirmar o anular asientos manuales; crear cuentas | ✔ | ✔ | ✘ |
-| Administrar usuarios                                       | ✔ | ✘ | ✘ |
+| Administrar usuarios y consultar la auditoría              | ✔ | ✘ | ✘ |
 
 El administrador principal no puede eliminarse, desactivarse ni perder el rol.
 
@@ -74,6 +74,13 @@ Las facturas y los asientos confirmados **no se borran**:
   de la nueva.
 - En el Libro Diario, "anular" un asiento borrador lo elimina; uno confirmado
   genera su contraasiento (o anula la factura a la que pertenece).
+
+## Base de datos
+
+Triggers (partida doble, inmutabilidad de asientos, auditoría), restricciones
+`CHECK`, vista del Libro Mayor y función de sumas y saldos: ver
+[docs/BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md). El esquema completo está en
+[01_esquema_base_datos.sql](01_esquema_base_datos.sql).
 
 ## Configuración fuera de desarrollo
 

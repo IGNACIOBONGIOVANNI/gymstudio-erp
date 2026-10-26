@@ -18,9 +18,14 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Conexión a Base de Datos
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Conexión a Base de Datos. El interceptor informa a PostgreSQL qué usuario está
+// logueado, para que el trigger de auditoría lo registre.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<EstudioContable.Application.Interfaces.IUsuarioActual, UsuarioActualHttp>();
+builder.Services.AddScoped<AuditoriaConnectionInterceptor>();
+builder.Services.AddDbContext<AppDbContext>((services, options) =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .AddInterceptors(services.GetRequiredService<AuditoriaConnectionInterceptor>()));
 
 builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);

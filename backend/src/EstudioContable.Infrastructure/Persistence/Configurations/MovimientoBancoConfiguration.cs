@@ -8,7 +8,8 @@ namespace EstudioContable.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<MovimientoBanco> builder)
         {
-            builder.ToTable("movimientos_banco", "banco");
+            builder.ToTable("movimientos_banco", "banco", t =>
+                t.HasCheckConstraint("CK_movimientos_banco_importe_positivo", "\"Importe\" > 0"));
 
             builder.HasKey(x => x.Id);
 

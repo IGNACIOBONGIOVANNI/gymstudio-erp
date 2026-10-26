@@ -10,6 +10,7 @@ import ModuloClientes from './features/clientes/ModuloClientes'
 import ModuloProveedores from './features/proveedores/ModuloProveedores'
 import ModuloUsuarios from './features/usuarios/ModuloUsuarios'
 import ModuloConfiguracion from './features/configuracion/ModuloConfiguracion'
+import ModuloAuditoria from './features/auditoria/ModuloAuditoria'
 import { LibroVenta } from './features/ventas/components/LibroVenta'
 import { LibroCompra } from './features/compras/components/LibroCompra'
 import { LibroCaja } from './features/caja/components/LibroCaja'
@@ -33,7 +34,7 @@ import { cuentasDePrueba } from './asientos/cuentas'
 function AppContent() {
   const { user, logout } = useAuth();
   
-  const [modulo, setModulo] = useState<'contable' | 'gimnasio' | 'stock' | 'clientes' | 'proveedores' | 'usuarios' | 'configuracion'>('contable');
+  const [modulo, setModulo] = useState<'contable' | 'gimnasio' | 'stock' | 'clientes' | 'proveedores' | 'usuarios' | 'configuracion' | 'auditoria'>('contable');
   const [tabContable, setTabContable] = useState<'nuevo' | 'listado' | 'mayor' | 'ventas' | 'compras' | 'caja' | 'banco' | 'facturacion' | 'balance'>('listado');
   const [tabGimnasio, setTabGimnasio] = useState<'planes' | 'socios' | 'recepcion'>('recepcion');
   const [tabStock, setTabStock] = useState<'libro' | 'productos'>('libro');
@@ -43,7 +44,7 @@ function AppContent() {
   const esJefe = user?.rol === 'Administrador';
 
   useEffect(() => {
-    if (!esJefe && (modulo === 'usuarios' || modulo === 'configuracion')) {
+    if (!esJefe && (modulo === 'usuarios' || modulo === 'configuracion' || modulo === 'auditoria')) {
       setModulo('contable');
     }
   }, [esJefe, modulo]);
@@ -132,6 +133,16 @@ function AppContent() {
                     }`}
                   >
                     Configuración
+                  </button>
+                  <button
+                    onClick={() => setModulo('auditoria')}
+                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      modulo === 'auditoria'
+                        ? 'bg-slate-800 text-white'
+                        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                    }`}
+                  >
+                    Auditoría
                   </button>
                 </>
               )}
@@ -392,6 +403,10 @@ function AppContent() {
 
             {modulo === 'configuracion' && (
               <ModuloConfiguracion />
+            )}
+
+            {modulo === 'auditoria' && (
+              <ModuloAuditoria />
             )}
           </div>
         </div>

@@ -35,6 +35,13 @@ namespace EstudioContable.API.Middlewares
                 _logger.LogWarning(ex, "Unbalanced journal entry");
                 await HandleExceptionAsync(context, ex, HttpStatusCode.UnprocessableEntity);
             }
+            catch (Exception ex) when (ObtenerErrorDeRegla(ex) is Npgsql.PostgresException pg)
+            {
+                // Un trigger o un CHECK de PostgreSQL rechazó la operación: es una regla
+                // de negocio, no un error del servidor. Se informa el mensaje de la base.
+                _logger.LogWarning(ex, "Database rule violation {SqlState}", pg.SqlState);
+                await HandleExceptionAsync(context, new InvalidOperationException(pg.MessageText), HttpStatusCode.BadRequest);
+            }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning(ex, "Unauthorized");
@@ -55,6 +62,20 @@ namespace EstudioContable.API.Middlewares
                 _logger.LogError(ex, "Unhandled exception");
                 await HandleExceptionAsync(context, ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        /// <summary>
+        /// Devuelve la PostgresException si el error es una violación de regla de la base:
+        /// RAISE EXCEPTION de un trigger (P0001) o restricciones de integridad (clase 23).
+        /// </summary>
+        private static Npgsql.PostgresException? ObtenerErrorDeRegla(Exception ex)
+        {
+            for (var actual = ex; actual != null; actual = actual.InnerException)
+            {
+                if (actual is Npgsql.PostgresException pg && (pg.SqlState == "P0001" || pg.SqlState.StartsWith("23")))
+                    return pg;
+            }
+            return null;
         }
 
         private static Task HandleExceptionAsync(HttpContext context, Exception exception, HttpStatusCode statusCode)

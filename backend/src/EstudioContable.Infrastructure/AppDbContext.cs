@@ -8,6 +8,7 @@ using EstudioContable.Domain.Exceptions;
 using EstadoAsiento = EstudioContable.Domain.Enums.EstadoAsiento;
 using Microsoft.EntityFrameworkCore;
 
+using EstudioContable.Application.Common.Lecturas;
 using EstudioContable.Application.Interfaces;
 
 namespace EstudioContable.Infrastructure.Persistence
@@ -32,6 +33,14 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<FacturaDetalle> FacturaDetalles => Set<FacturaDetalle>();
         public DbSet<ClienteComercial> ClientesComerciales => Set<ClienteComercial>();
         public DbSet<Proveedor> Proveedores => Set<Proveedor>();
+        public DbSet<RegistroAuditoria> Auditoria => Set<RegistroAuditoria>();
+
+        public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
+
+        public IQueryable<FilaSumasYSaldos> SumasYSaldos(long clienteId, System.DateOnly? desde, System.DateOnly? hasta)
+            => Set<FilaSumasYSaldos>()
+                .FromSqlInterpolated($"SELECT * FROM contabilidad.fn_sumas_y_saldos({clienteId}, {desde}, {hasta})")
+                .AsNoTracking();
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -58,7 +67,63 @@ namespace EstudioContable.Infrastructure.Persistence
                 .HasForeignKey(s => s.PlanActualId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<Producto>().ToTable("Productos", "inventario");
+            modelBuilder.Entity<Producto>().ToTable("Productos", "inventario", t =>
+                t.HasCheckConstraint("CK_Productos_StockNoNegativo", "\"StockActual\" >= 0"));
+
+            // Integridad de importes también a nivel base de datos (además del dominio).
+            // Integridad referencial que faltaba: la factura apunta a su asiento y el
+            // ítem a su producto. Restrict: no se puede borrar algo referenciado.
+            modelBuilder.Entity<Factura>()
+                .HasOne<AsientoContable>()
+                .WithMany()
+                .HasForeignKey(f => f.AsientoContableId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FacturaItem>()
+                .HasOne<Producto>()
+                .WithMany()
+                .HasForeignKey(i => i.ProductoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Factura>().ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_Facturas_ImportesNoNegativos", "\"Subtotal\" >= 0 AND \"Iva\" >= 0");
+                t.HasCheckConstraint("CK_Facturas_TotalEsSubtotalMasIva", "\"Total\" = \"Subtotal\" + \"Iva\"");
+            });
+
+            modelBuilder.Entity<Plan>().ToTable(t =>
+                t.HasCheckConstraint("CK_Planes_Valores", "\"DuracionMeses\" > 0 AND \"PrecioMensual\" >= 0"));
+
+            modelBuilder.Entity<Membresia>().ToTable(t =>
+                t.HasCheckConstraint("CK_Membresias_Vigencia", "\"FechaVencimiento\" >= \"FechaInicio\""));
+
+            // Lecturas que resuelve la base de datos: una vista y una función.
+            // Son entidades sin clave y quedan fuera de las migraciones de tablas: la vista
+            // y la función se crean con SQL en la migración ObjetosDeBaseDeDatos.
+            modelBuilder.Entity<SaldoCuentaMayor>(e =>
+            {
+                e.HasNoKey().ToView("v_libro_mayor", "contabilidad");
+                e.Property(x => x.ClienteId).HasColumnName("cliente_id");
+                e.Property(x => x.CuentaId).HasColumnName("cuenta_id");
+                e.Property(x => x.Codigo).HasColumnName("codigo");
+                e.Property(x => x.Nombre).HasColumnName("nombre");
+                e.Property(x => x.Naturaleza).HasColumnName("naturaleza");
+                e.Property(x => x.TotalDebe).HasColumnName("total_debe");
+                e.Property(x => x.TotalHaber).HasColumnName("total_haber");
+                e.Property(x => x.Saldo).HasColumnName("saldo");
+            });
+
+            modelBuilder.Entity<FilaSumasYSaldos>(e =>
+            {
+                e.HasNoKey().ToView(null);
+                e.Property(x => x.CuentaId).HasColumnName("cuenta_id");
+                e.Property(x => x.Codigo).HasColumnName("codigo");
+                e.Property(x => x.Nombre).HasColumnName("nombre");
+                e.Property(x => x.Naturaleza).HasColumnName("naturaleza");
+                e.Property(x => x.TotalDebe).HasColumnName("total_debe");
+                e.Property(x => x.TotalHaber).HasColumnName("total_haber");
+                e.Property(x => x.SaldoNatural).HasColumnName("saldo_natural");
+            });
             modelBuilder.Entity<MovimientoStock>().ToTable("MovimientosStock", "inventario");
 
             modelBuilder.Entity<FacturaDetalle>().ToTable("FacturaDetalles", "contabilidad");
@@ -92,10 +157,10 @@ namespace EstudioContable.Infrastructure.Persistence
                 new { Id = 102L, ClienteId = 1L, Codigo = "1.1.1.02", Nombre = "Banco", Naturaleza = NaturalezaCuenta.Activo, Activa = true },
                 new { Id = 103L, ClienteId = 1L, Codigo = "1.1.2.01", Nombre = "Deudores por Ventas", Naturaleza = NaturalezaCuenta.Activo, Activa = true },
                 new { Id = 104L, ClienteId = 1L, Codigo = "4.1.1.01", Nombre = "Ventas", Naturaleza = NaturalezaCuenta.Resultado, Activa = true },
-                new { Id = 105L, ClienteId = 1L, Codigo = "1.1.2.02", Nombre = "1.1.2.01 - IVA Crédito Fiscal", Naturaleza = NaturalezaCuenta.Activo, Activa = true },
-                new { Id = 201L, ClienteId = 1L, Codigo = "2.1.1.01", Nombre = "2.1.1.01 - IVA Débito Fiscal", Naturaleza = NaturalezaCuenta.Pasivo, Activa = true },
+                new { Id = 105L, ClienteId = 1L, Codigo = "1.1.2.02", Nombre = "IVA Crédito Fiscal", Naturaleza = NaturalezaCuenta.Activo, Activa = true },
+                new { Id = 201L, ClienteId = 1L, Codigo = "2.1.1.01", Nombre = "IVA Débito Fiscal", Naturaleza = NaturalezaCuenta.Pasivo, Activa = true },
                 new { Id = 202L, ClienteId = 1L, Codigo = "2.1.1.02", Nombre = "Proveedores", Naturaleza = NaturalezaCuenta.Pasivo, Activa = true },
-                new { Id = 501L, ClienteId = 1L, Codigo = "5.1.1.01", Nombre = "5.1.1.01 - Compras", Naturaleza = NaturalezaCuenta.Resultado, Activa = true }
+                new { Id = 501L, ClienteId = 1L, Codigo = "5.1.1.01", Nombre = "Compras", Naturaleza = NaturalezaCuenta.Resultado, Activa = true }
             );
 
             modelBuilder.Entity<Producto>().HasData(

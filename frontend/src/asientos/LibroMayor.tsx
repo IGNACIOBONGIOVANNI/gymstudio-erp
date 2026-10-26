@@ -1,9 +1,7 @@
 import { useState, useMemo } from "react";
 import { Loader2, Search } from "lucide-react";
 import { formatearFechaLocal } from "../utils/formatters";
-import { useObtenerFacturas } from "../hooks/useObtenerFacturas";
-import { useLibroCaja } from "../features/caja/hooks/useLibroCaja";
-import { useLibroBanco } from "../features/banco/hooks/useLibroBanco";
+import { useAsientos } from "./hooks/useAsientos";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -98,9 +96,7 @@ function CuentaT({
 }
 
 export function LibroMayor() {
-  const { data: facturas = [], isLoading: loadingF, isError: errF } = useObtenerFacturas();
-  const { data: resumenCaja, isLoading: loadingC, isError: errC } = useLibroCaja("1");
-  const { data: resumenBanco, isLoading: loadingB, isError: errB } = useLibroBanco("1");
+  const { data: asientos = [], isLoading, isError } = useAsientos("1");
 
   type CuentaKey = "caja" | "banco" | "ventas" | "compras" | "debitoFiscal" | "creditoFiscal";
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState<CuentaKey>("caja");
@@ -117,53 +113,33 @@ export function LibroMayor() {
       banco: { debe: [], haber: [] },
     };
 
-    if (Array.isArray(facturas)) {
-      const fFiltradas = fechaFiltro ? facturas.filter(f => f.fecha && f.fecha.startsWith(fechaFiltro)) : facturas;
-      fFiltradas.forEach((f) => {
-        const tipoOp = String(f.tipoOperacion || "").trim().toLowerCase();
-        const subtotal = Number(f.subtotal) || 0;
-        const iva = Number(f.iva) || 0;
+    // El Mayor se arma con las líneas de los asientos confirmados del Libro Diario
+    // (incluidos los contraasientos), así coincide siempre con el Diario y el Balance.
+    // Ids del plan de cuentas (ver PlanDeCuentas.cs en el backend).
+    const cuentaPorId: Record<number, CuentaKey> = {
+      101: "caja",
+      102: "banco",
+      104: "ventas",
+      501: "compras",
+      201: "debitoFiscal",
+      105: "creditoFiscal",
+    };
+    const ESTADO_CONFIRMADO = 1;
 
-        if (tipoOp === "compra") {
-          if (subtotal > 0) cuentas.compras.debe.push({ fecha: f.fecha, monto: subtotal });
-          if (iva > 0) cuentas.creditoFiscal.debe.push({ fecha: f.fecha, monto: iva });
-        }
-
-        if (tipoOp === "venta") {
-          if (subtotal > 0) cuentas.ventas.haber.push({ fecha: f.fecha, monto: subtotal });
-          if (iva > 0) cuentas.debitoFiscal.haber.push({ fecha: f.fecha, monto: iva });
-        }
+    asientos
+      .filter((a) => a.estado === ESTADO_CONFIRMADO)
+      .filter((a) => !fechaFiltro || String(a.fecha).startsWith(fechaFiltro))
+      .forEach((a) => {
+        a.lineas.forEach((l) => {
+          const key = cuentaPorId[l.cuentaId];
+          if (!key) return;
+          if (Number(l.debe) > 0) cuentas[key].debe.push({ fecha: a.fecha, monto: Number(l.debe) });
+          if (Number(l.haber) > 0) cuentas[key].haber.push({ fecha: a.fecha, monto: Number(l.haber) });
+        });
       });
-    }
-
-    const movsCaja = Array.isArray(resumenCaja) ? resumenCaja : (resumenCaja?.listaMovimientos || []);
-    if (movsCaja.length > 0) {
-      const cFiltrada = fechaFiltro ? movsCaja.filter((m: any) => m?.fecha && String(m.fecha).startsWith(fechaFiltro)) : movsCaja;
-      cFiltrada.forEach((m: any) => {
-        if (m && m.ingreso != null && Number(m.ingreso) > 0) {
-          cuentas.caja.debe.push({ fecha: m.fecha, monto: Number(m.ingreso) });
-        }
-        if (m && m.egreso != null && Number(m.egreso) > 0) {
-          cuentas.caja.haber.push({ fecha: m.fecha, monto: Number(m.egreso) });
-        }
-      });
-    }
-
-    const movsBanco = Array.isArray(resumenBanco) ? resumenBanco : (resumenBanco?.listaMovimientos || []);
-    if (movsBanco.length > 0) {
-      const bFiltrada = fechaFiltro ? movsBanco.filter((m: any) => m?.fecha && String(m.fecha).startsWith(fechaFiltro)) : movsBanco;
-      bFiltrada.forEach((m: any) => {
-        if (m && m.ingreso != null && Number(m.ingreso) > 0) {
-          cuentas.banco.debe.push({ fecha: m.fecha, monto: Number(m.ingreso) });
-        }
-        if (m && m.egreso != null && Number(m.egreso) > 0) {
-          cuentas.banco.haber.push({ fecha: m.fecha, monto: Number(m.egreso) });
-        }
-      });
-    }
 
     return cuentas;
-  }, [facturas, resumenCaja, resumenBanco, fechaFiltro]);
+  }, [asientos, fechaFiltro]);
 
   const opcionesCuentas: { id: CuentaKey; title: string; short: string }[] = [
     { id: "caja", title: "Mayor de Caja", short: "Caja" },
@@ -174,7 +150,7 @@ export function LibroMayor() {
     { id: "creditoFiscal", title: "Mayor Crédito Fiscal", short: "Crédito F." },
   ];
 
-  if (loadingF || loadingC || loadingB) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-slate-500">
         <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
@@ -183,7 +159,7 @@ export function LibroMayor() {
     );
   }
 
-  if (errF || errC || errB) {
+  if (isError) {
     return (
       <div className="rounded-md bg-red-50 p-4">
         <p className="text-sm font-medium text-red-800">

@@ -47,17 +47,24 @@ namespace EstudioContable.Domain.Entities
             Telefono = telefono;
         }
 
-        public void RenovarPlan(long planId, int duracionMeses)
+        /// <summary>
+        /// Extiende la vigencia del socio y devuelve el período cubierto. Si el socio
+        /// todavía está al día, el nuevo período empieza cuando termina el actual.
+        /// </summary>
+        public (DateTime Inicio, DateTime Vencimiento) RenovarPlan(long planId, int duracionMeses)
         {
             PlanActualId = planId;
-            
-            DateTime fechaBase = (FechaVencimiento.HasValue && FechaVencimiento.Value > DateTime.UtcNow) 
-                                 ? FechaVencimiento.Value 
-                                 : DateTime.UtcNow;
+
+            var ahora = DateTime.UtcNow;
+            var inicio = (FechaVencimiento.HasValue && FechaVencimiento.Value > ahora)
+                         ? FechaVencimiento.Value
+                         : ahora;
 
             int mesesAsumar = duracionMeses > 0 ? duracionMeses : 1;
-            FechaVencimiento = fechaBase.AddMonths(mesesAsumar);
+            FechaVencimiento = inicio.AddMonths(mesesAsumar);
             Estado = "Activo";
+
+            return (inicio, FechaVencimiento.Value);
         }
     }
 }

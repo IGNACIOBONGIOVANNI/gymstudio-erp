@@ -23,6 +23,84 @@ namespace EstudioContable.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("EstudioContable.Application.Common.Lecturas.FilaSumasYSaldos", b =>
+                {
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("codigo");
+
+                    b.Property<long>("CuentaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("cuenta_id");
+
+                    b.Property<int>("Naturaleza")
+                        .HasColumnType("integer")
+                        .HasColumnName("naturaleza");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre");
+
+                    b.Property<decimal>("SaldoNatural")
+                        .HasColumnType("numeric")
+                        .HasColumnName("saldo_natural");
+
+                    b.Property<decimal>("TotalDebe")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_debe");
+
+                    b.Property<decimal>("TotalHaber")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_haber");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("EstudioContable.Application.Common.Lecturas.SaldoCuentaMayor", b =>
+                {
+                    b.Property<long>("ClienteId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("cliente_id");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("codigo");
+
+                    b.Property<long>("CuentaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("cuenta_id");
+
+                    b.Property<int>("Naturaleza")
+                        .HasColumnType("integer")
+                        .HasColumnName("naturaleza");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre");
+
+                    b.Property<decimal>("Saldo")
+                        .HasColumnType("numeric")
+                        .HasColumnName("saldo");
+
+                    b.Property<decimal>("TotalDebe")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_debe");
+
+                    b.Property<decimal>("TotalHaber")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_haber");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("v_libro_mayor", "contabilidad");
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.AsientoContable", b =>
                 {
                     b.Property<long>("Id")
@@ -253,7 +331,7 @@ namespace EstudioContable.Infrastructure.Migrations
                             ClienteId = 1L,
                             Codigo = "1.1.2.02",
                             Naturaleza = 0,
-                            Nombre = "1.1.2.01 - IVA Crédito Fiscal"
+                            Nombre = "IVA Crédito Fiscal"
                         },
                         new
                         {
@@ -262,7 +340,7 @@ namespace EstudioContable.Infrastructure.Migrations
                             ClienteId = 1L,
                             Codigo = "2.1.1.01",
                             Naturaleza = 1,
-                            Nombre = "2.1.1.01 - IVA Débito Fiscal"
+                            Nombre = "IVA Débito Fiscal"
                         },
                         new
                         {
@@ -280,7 +358,7 @@ namespace EstudioContable.Infrastructure.Migrations
                             ClienteId = 1L,
                             Codigo = "5.1.1.01",
                             Naturaleza = 3,
-                            Nombre = "5.1.1.01 - Compras"
+                            Nombre = "Compras"
                         });
                 });
 
@@ -346,13 +424,20 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AsientoContableId");
+
                     b.HasIndex("ClienteComercialId");
 
                     b.HasIndex("ProveedorId");
 
                     b.HasIndex("SocioId");
 
-                    b.ToTable("Facturas", "contabilidad");
+                    b.ToTable("Facturas", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_Facturas_ImportesNoNegativos", "\"Subtotal\" >= 0 AND \"Iva\" >= 0");
+
+                            t.HasCheckConstraint("CK_Facturas_TotalEsSubtotalMasIva", "\"Total\" = \"Subtotal\" + \"Iva\"");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.FacturaCompra", b =>
@@ -491,6 +576,8 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("FacturaId");
 
+                    b.HasIndex("ProductoId");
+
                     b.ToTable("FacturaItems", "contabilidad");
                 });
 
@@ -596,7 +683,12 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("CuentaId");
 
-                    b.ToTable("lineas_asiento", "contabilidad");
+                    b.ToTable("lineas_asiento", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_lineas_asiento_debe_o_haber", "(debe > 0) <> (haber > 0)");
+
+                            t.HasCheckConstraint("CK_lineas_asiento_importes_no_negativos", "debe >= 0 AND haber >= 0");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Membresia", b =>
@@ -628,7 +720,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("SocioId");
 
-                    b.ToTable("Membresias", "contabilidad");
+                    b.ToTable("Membresias", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_Membresias_Vigencia", "\"FechaVencimiento\" >= \"FechaInicio\"");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoBanco", b =>
@@ -665,7 +760,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("FacturaId");
 
-                    b.ToTable("movimientos_banco", "banco");
+                    b.ToTable("movimientos_banco", "banco", t =>
+                        {
+                            t.HasCheckConstraint("CK_movimientos_banco_importe_positivo", "\"Importe\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoCaja", b =>
@@ -702,7 +800,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("FacturaId");
 
-                    b.ToTable("movimientos_caja", "caja");
+                    b.ToTable("movimientos_caja", "caja", t =>
+                        {
+                            t.HasCheckConstraint("CK_movimientos_caja_importe_positivo", "\"Importe\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoStock", b =>
@@ -762,7 +863,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Planes", "contabilidad");
+                    b.ToTable("Planes", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_Planes_Valores", "\"DuracionMeses\" > 0 AND \"PrecioMensual\" >= 0");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Producto", b =>
@@ -806,7 +910,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Productos", "inventario");
+                    b.ToTable("Productos", "inventario", t =>
+                        {
+                            t.HasCheckConstraint("CK_Productos_StockNoNegativo", "\"StockActual\" >= 0");
+                        });
 
                     b.HasData(
                         new
@@ -869,6 +976,66 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Proveedores", "contabilidad");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.RegistroAuditoria", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.PrimitiveCollection<string[]>("CamposModificados")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("campos_modificados");
+
+                    b.Property<string>("DatosAnteriores")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("datos_anteriores");
+
+                    b.Property<string>("DatosNuevos")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("datos_nuevos");
+
+                    b.Property<DateTimeOffset>("Fecha")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Operacion")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("operacion");
+
+                    b.Property<string>("RegistroId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("registro_id");
+
+                    b.Property<string>("Tabla")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("tabla");
+
+                    b.Property<string>("Usuario")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("usuario");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha");
+
+                    b.HasIndex("Tabla", "RegistroId");
+
+                    b.ToTable("auditoria", "contabilidad");
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Socio", b =>
@@ -982,6 +1149,11 @@ namespace EstudioContable.Infrastructure.Migrations
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Factura", b =>
                 {
+                    b.HasOne("EstudioContable.Domain.Entities.AsientoContable", null)
+                        .WithMany()
+                        .HasForeignKey("AsientoContableId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EstudioContable.Domain.Entities.ClienteComercial", "ClienteObj")
                         .WithMany()
                         .HasForeignKey("ClienteComercialId");
@@ -1038,6 +1210,11 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasForeignKey("FacturaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("EstudioContable.Domain.Entities.Producto", null)
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Factura");
                 });
