@@ -20,6 +20,11 @@ namespace EstudioContable.Domain.Entities
         public decimal Total { get; set; }
         public long? AsientoContableId { get; set; }
 
+        // Las facturas no se borran: se anulan, y sus efectos contables,
+        // de tesorería y de stock se revierten con movimientos inversos.
+        public bool Anulada { get; set; }
+        public DateTime? FechaAnulacion { get; set; }
+
         public string? Cae { get; set; }
         public DateTime? FechaVencimientoCae { get; set; }
 

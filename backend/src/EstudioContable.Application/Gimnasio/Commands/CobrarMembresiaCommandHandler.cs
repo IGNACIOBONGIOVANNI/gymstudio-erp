@@ -13,12 +13,12 @@ namespace EstudioContable.Application.Gimnasio.Commands
     public class CobrarMembresiaCommandHandler : IRequestHandler<CobrarMembresiaCommand, bool>
     {
         private readonly IAppDbContext _context;
-        private readonly IMediator _mediator;
+        private readonly IFacturacionService _facturacionService;
 
-        public CobrarMembresiaCommandHandler(IAppDbContext context, IMediator mediator)
+        public CobrarMembresiaCommandHandler(IAppDbContext context, IFacturacionService facturacionService)
         {
             _context = context;
-            _mediator = mediator;
+            _facturacionService = facturacionService;
         }
 
         public async Task<bool> Handle(CobrarMembresiaCommand request, CancellationToken cancellationToken)
@@ -37,7 +37,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                     throw new Exception($"Membresía con ID {request.MembresiaId} no encontrada.");
 
                 if (membresia.EstaPagada)
-                    throw new Exception("La membresa ya se encuentra pagada.");
+                    throw new Exception("La membresía ya se encuentra pagada.");
 
                 // 1. Logica de Gimnasio
                 membresia.MarcarComoPagada();
@@ -46,7 +46,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 var descripcionItem = $"Cuota Membresía - {membresia.Plan.Nombre}";
                 var condicionPagoString = (request.MetodoPago?.ToLower() == "banco") ? "TransferenciaBanco" : "ContadoCaja";
 
-                // 2. Lgica Contable (Creación de la Factura genrica tal como lo hace el Mculo Contable)
+                // 2. Lógica contable: factura genérica, igual que el módulo de facturación
                 var factura = new Factura
                 {
                     Fecha = DateTime.UtcNow,
@@ -70,52 +70,9 @@ namespace EstudioContable.Application.Gimnasio.Commands
                     }
                 };
                 
-                _context.Facturas.Add(factura);
-
-                // 3. Generación de Asiento de Partida Doble vinculado a la factura
-                var maxNumero = await _context.AsientosContables
-                    .MaxAsync(a => (long?)a.NumeroAsiento, cancellationToken) ?? 0;
-                
-                var asiento = new AsientoContable(
-                    clienteId: membresia.SocioId,
-                    numeroAsiento: maxNumero + 1,
-                    fecha: DateOnly.FromDateTime(DateTime.UtcNow),
-                    descripcion: $"Factura de Venta B - {descripcionItem}",
-                    usuarioCreadorId: 1 
-                );
-
-                var cuentaCaja = await _context.CuentasContables.FirstOrDefaultAsync(c => c.Nombre.Contains("Caja"), cancellationToken);
-                var cuentaBanco = await _context.CuentasContables.FirstOrDefaultAsync(c => c.Nombre.Contains("Banco"), cancellationToken);
-                var cuentaVentas = await _context.CuentasContables.FirstOrDefaultAsync(c => c.Nombre.Contains("Cuota") || c.Nombre.Contains("Ingreso") || c.Nombre.Contains("Venta"), cancellationToken);
-
-                long cuentaDebeId = (request.MetodoPago?.ToLower() == "banco") ? (cuentaBanco?.Id ?? 2) : (cuentaCaja?.Id ?? 1);
-                long cuentaHaberId = cuentaVentas?.Id ?? 4; 
-
-                asiento.AgregarLinea(cuentaId: cuentaDebeId, debe: membresia.Plan.PrecioMensual, haber: 0, descripcion: descripcionItem);
-                asiento.AgregarLinea(cuentaId: cuentaHaberId, debe: 0, haber: membresia.Plan.PrecioMensual, descripcion: descripcionItem);
-
-                asiento.Confirmar(1);
-                _context.AsientosContables.Add(asiento);
-
-                // Guardamos para generar los IDs de Factura y Asiento
-                await _context.SaveChangesAsync(cancellationToken);
-
-                // 4. Vinculamos la Factura con el Asiento
-                factura.AsientoContableId = asiento.Id;
-
-                // 5. Generamos el Movimiento de Caja/Banco para el Libro Caja (tal como lo hace FacturasController)
-                if (request.MetodoPago?.ToLower() == "banco")
-                {
-                    var mov = new MovimientoBanco("1", DateTime.UtcNow, $"Factura de Venta N° {factura.Id} - {factura.Cliente}", TipoMovimientoBanco.Ingreso, factura.Total, factura.Id);
-                    _context.MovimientosBanco.Add(mov);
-                }
-                else
-                {
-                    var mov = new MovimientoCaja("1", DateTime.UtcNow, $"Factura de Venta N° {factura.Id} - {factura.Cliente}", TipoMovimientoCaja.Ingreso, factura.Total, factura.Id);
-                    _context.MovimientosCaja.Add(mov);
-                }
-
-                await _context.SaveChangesAsync(cancellationToken);
+                // 3. Asiento, movimiento de caja/banco y vínculos: los genera el servicio
+                // de facturación (participa de esta misma transacción).
+                await _facturacionService.CrearFacturaAsync(factura, cancellationToken);
 
                 // Hacemos el Commit de la transacción
                 await transaction.CommitAsync(cancellationToken);

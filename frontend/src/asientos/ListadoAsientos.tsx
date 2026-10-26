@@ -131,13 +131,13 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
       cell: (info) => (
         <button
           onClick={() => {
-            if (window.confirm("¿Estás seguro de que deseas eliminar este asiento?")) {
+            if (window.confirm("¿Anular este asiento?\n\nSi es un borrador, se elimina. Si está confirmado, se genera su contraasiento (y si pertenece a una factura, se anula la factura completa).")) {
               eliminarMutation.mutate(info.row.original.id.toString());
             }
           }}
           disabled={eliminarMutation.isPending}
           className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
-          title="Eliminar asiento"
+          title="Anular asiento"
         >
           <Trash2 className="h-4 w-4" />
         </button>

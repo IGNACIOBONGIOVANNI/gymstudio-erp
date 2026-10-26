@@ -19,6 +19,14 @@ namespace EstudioContable.Infrastructure.Persistence.Configurations
             builder.Property(a => a.FechaCreacion).HasColumnName("fecha_creacion");
             builder.Property(a => a.FechaConfirmacion).HasColumnName("fecha_confirmacion");
             builder.Property(a => a.UsuarioConfirmacionId).HasColumnName("usuario_confirmacion_id");
+            builder.Property(a => a.AsientoRevertidoId).HasColumnName("asiento_revertido_id");
+
+            // Un asiento sólo puede revertirse una vez: a lo sumo un contraasiento por asiento.
+            builder.HasIndex(a => a.AsientoRevertidoId).IsUnique();
+            builder.HasOne<AsientoContable>()
+                .WithMany()
+                .HasForeignKey(a => a.AsientoRevertidoId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Enum persistido como texto (más legible en la DB que un int);
             // evita romper datos existentes si se reordena el enum a futuro.

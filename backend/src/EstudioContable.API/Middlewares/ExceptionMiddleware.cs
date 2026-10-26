@@ -25,6 +25,16 @@ namespace EstudioContable.API.Middlewares
             {
                 await _next(context);
             }
+            catch (EstudioContable.Application.Common.Exceptions.NotFoundException ex)
+            {
+                _logger.LogWarning(ex, "Resource not found");
+                await HandleExceptionAsync(context, ex, HttpStatusCode.NotFound);
+            }
+            catch (EstudioContable.Domain.Exceptions.AsientoDesbalanceadoException ex)
+            {
+                _logger.LogWarning(ex, "Unbalanced journal entry");
+                await HandleExceptionAsync(context, ex, HttpStatusCode.UnprocessableEntity);
+            }
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning(ex, "Domain validation error");
@@ -50,7 +60,13 @@ namespace EstudioContable.API.Middlewares
             var problemDetails = new ProblemDetails
             {
                 Status = (int)statusCode,
-                Title = statusCode == HttpStatusCode.BadRequest ? "Error de Validación" : "Error Interno del Servidor",
+                Title = statusCode switch
+                {
+                    HttpStatusCode.BadRequest => "Error de Validación",
+                    HttpStatusCode.NotFound => "Recurso no encontrado",
+                    HttpStatusCode.UnprocessableEntity => "Asiento desbalanceado",
+                    _ => "Error Interno del Servidor"
+                },
                 Detail = exception.Message
             };
 

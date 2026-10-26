@@ -1,15 +1,24 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EstudioContable.Application.Common;
+using EstudioContable.Application.Common.Exceptions;
 using EstudioContable.Application.Interfaces;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using EstadoAsiento = EstudioContable.Domain.Entities.EstadoAsiento;
 
 namespace EstudioContable.Application.Services
 {
     public class FacturacionService : IFacturacionService
     {
+        private const string Venta = "Venta";
+        private const string Compra = "Compra";
+        private const string ContadoCaja = "ContadoCaja";
+        private const string TransferenciaBanco = "TransferenciaBanco";
+
         private readonly IAppDbContext _context;
 
         public FacturacionService(IAppDbContext context)
@@ -19,55 +28,277 @@ namespace EstudioContable.Application.Services
 
         public async Task<Factura> CrearFacturaAsync(Factura factura, CancellationToken cancellationToken)
         {
-            // 1. Guardar la factura principal
-            _context.Facturas.Add(factura);
+            ValidarYNormalizarImportes(factura);
 
-            // 2. Generar el Asiento Contable (Libro Diario y Mayor)
-            var maxNumero = await _context.AsientosContables
-                .MaxAsync(a => (long?)a.NumeroAsiento, cancellationToken) ?? 0;
-                
+            await EnTransaccionAsync(async () =>
+            {
+                _context.Facturas.Add(factura);
+                await _context.SaveChangesAsync(cancellationToken); // genera factura.Id
+
+                await AplicarEfectosAsync(factura, cancellationToken);
+            }, cancellationToken);
+
+            return factura;
+        }
+
+        public async Task AnularFacturaAsync(long facturaId, CancellationToken cancellationToken)
+        {
+            var factura = await CargarFacturaAsync(facturaId, cancellationToken);
+            if (factura.Anulada)
+                throw new InvalidOperationException($"La factura N° {factura.Id} ya está anulada.");
+
+            await EnTransaccionAsync(async () =>
+            {
+                await RevertirEfectosAsync(factura, $"Anulación factura N° {factura.Id}", cancellationToken);
+
+                factura.Anulada = true;
+                factura.FechaAnulacion = DateTime.UtcNow;
+                await _context.SaveChangesAsync(cancellationToken);
+            }, cancellationToken);
+        }
+
+        public async Task ReemplazarFacturaAsync(long facturaId, Factura datosNuevos, CancellationToken cancellationToken)
+        {
+            var factura = await CargarFacturaAsync(facturaId, cancellationToken);
+            if (factura.Anulada)
+                throw new InvalidOperationException($"La factura N° {factura.Id} está anulada y no puede modificarse.");
+
+            ValidarYNormalizarImportes(datosNuevos);
+
+            await EnTransaccionAsync(async () =>
+            {
+                await RevertirEfectosAsync(factura, $"Modificación factura N° {factura.Id}", cancellationToken);
+
+                factura.Fecha = datosNuevos.Fecha;
+                factura.TipoOperacion = datosNuevos.TipoOperacion;
+                factura.CondicionPago = datosNuevos.CondicionPago;
+                factura.TipoComprobante = datosNuevos.TipoComprobante;
+                factura.Cliente = datosNuevos.Cliente;
+                factura.Subtotal = datosNuevos.Subtotal;
+                factura.Iva = datosNuevos.Iva;
+                factura.Total = datosNuevos.Total;
+
+                _context.FacturaItems.RemoveRange(factura.Items);
+                factura.Items.Clear();
+                foreach (var item in datosNuevos.Items)
+                    factura.Items.Add(item);
+
+                await _context.SaveChangesAsync(cancellationToken);
+                await AplicarEfectosAsync(factura, cancellationToken);
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Genera asiento, movimiento de tesorería y movimiento de stock para el
+        /// estado actual de la factura. La factura ya debe tener Id.
+        /// </summary>
+        private async Task AplicarEfectosAsync(Factura factura, CancellationToken cancellationToken)
+        {
+            var esVenta = factura.TipoOperacion == Venta;
+            var detalle = $"Factura de {factura.TipoOperacion} N° {factura.Id} - {factura.Cliente}";
+
+            // 1. Asiento de partida doble
             var asiento = new AsientoContable(
-                clienteId: 1,
-                numeroAsiento: maxNumero + 1,
-                fecha: DateOnly.FromDateTime(factura.Fecha),
-                descripcion: $"Factura de {factura.TipoOperacion} {factura.TipoComprobante} - {factura.Cliente}",
-                usuarioCreadorId: 1 
-            );
+                PlanDeCuentas.ClienteIdPorDefecto,
+                await SiguienteNumeroAsientoAsync(cancellationToken),
+                DateOnly.FromDateTime(factura.Fecha),
+                detalle,
+                PlanDeCuentas.UsuarioSistemaId);
 
-            var cuentaCaja = await _context.CuentasContables.FirstOrDefaultAsync(c => c.Nombre.Contains("Caja"), cancellationToken);
-            var cuentaBanco = await _context.CuentasContables.FirstOrDefaultAsync(c => c.Nombre.Contains("Banco"), cancellationToken);
-            var cuentaVentas = await _context.CuentasContables.FirstOrDefaultAsync(c => c.Nombre.Contains("Ingreso") || c.Nombre.Contains("Venta") || c.Nombre.Contains("Cuota"), cancellationToken);
+            var cuentaContrapartida = factura.CondicionPago switch
+            {
+                ContadoCaja => PlanDeCuentas.Caja,
+                TransferenciaBanco => PlanDeCuentas.Banco,
+                _ => esVenta ? PlanDeCuentas.DeudoresPorVentas : PlanDeCuentas.Proveedores
+            };
 
-            long cuentaDebeId = factura.CondicionPago == "ContadoCaja" ? (cuentaCaja?.Id ?? 1) : (cuentaBanco?.Id ?? 2);
-            long cuentaHaberId = cuentaVentas?.Id ?? 4; 
+            if (esVenta)
+            {
+                asiento.AgregarLinea(cuentaContrapartida, factura.Total, 0, "Total Factura");
+                asiento.AgregarLinea(PlanDeCuentas.Ventas, 0, factura.Subtotal, "Ventas");
+                if (factura.Iva > 0)
+                    asiento.AgregarLinea(PlanDeCuentas.IvaDebitoFiscal, 0, factura.Iva, "IVA Débito Fiscal");
+            }
+            else
+            {
+                asiento.AgregarLinea(PlanDeCuentas.Compras, factura.Subtotal, 0, "Compras");
+                if (factura.Iva > 0)
+                    asiento.AgregarLinea(PlanDeCuentas.IvaCreditoFiscal, factura.Iva, 0, "IVA Crédito Fiscal");
+                asiento.AgregarLinea(cuentaContrapartida, 0, factura.Total, "Total Factura");
+            }
 
-            asiento.AgregarLinea(cuentaId: cuentaDebeId, debe: factura.Total, haber: 0, descripcion: "Cobro de Factura");
-            asiento.AgregarLinea(cuentaId: cuentaHaberId, debe: 0, haber: factura.Total, descripcion: "Ventas / Servicios");
-
-            asiento.Confirmar(1);
+            asiento.Confirmar(PlanDeCuentas.UsuarioSistemaId);
             _context.AsientosContables.Add(asiento);
-
-            // Guardar para asignar IDs
             await _context.SaveChangesAsync(cancellationToken);
             factura.AsientoContableId = asiento.Id;
 
-            // 3. Generar el Movimiento de Tesorería (Libro Caja)
-            if (factura.CondicionPago == "TransferenciaBanco")
-            {
-                var tipoMov = factura.TipoOperacion == "Venta" ? TipoMovimientoBanco.Ingreso : TipoMovimientoBanco.Egreso;
-                var mov = new MovimientoBanco("1", factura.Fecha, $"Factura de {factura.TipoOperacion} N° {factura.Id} - {factura.Cliente}", tipoMov, factura.Total, factura.Id);
-                _context.MovimientosBanco.Add(mov);
-            }
-            else if (factura.CondicionPago == "ContadoCaja")
-            {
-                var tipoMov = factura.TipoOperacion == "Venta" ? TipoMovimientoCaja.Ingreso : TipoMovimientoCaja.Egreso;
-                var mov = new MovimientoCaja("1", factura.Fecha, $"Factura de {factura.TipoOperacion} N° {factura.Id} - {factura.Cliente}", tipoMov, factura.Total, factura.Id);
-                _context.MovimientosCaja.Add(mov);
-            }
+            // 2. Tesorería: una venta cobrada es ingreso, una compra pagada es egreso
+            RegistrarMovimientoTesoreria(factura, esIngreso: esVenta, detalle, factura.Fecha);
+
+            // 3. Stock: la venta descuenta, la compra suma
+            await RegistrarMovimientosStockAsync(factura, esSalida: esVenta, detalle, factura.Fecha, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);
+        }
 
-            return factura;
+        /// <summary>
+        /// Deshace los efectos del estado actual de la factura generando movimientos
+        /// inversos (nunca borrando): contraasiento, movimiento de tesorería opuesto
+        /// y devolución de stock.
+        /// </summary>
+        private async Task RevertirEfectosAsync(Factura factura, string motivo, CancellationToken cancellationToken)
+        {
+            var esVenta = factura.TipoOperacion == Venta;
+
+            // 1. Contraasiento del asiento vigente
+            if (factura.AsientoContableId is long asientoId)
+            {
+                var original = await _context.AsientosContables
+                    .Include(a => a.Lineas)
+                    .FirstOrDefaultAsync(a => a.Id == asientoId, cancellationToken);
+
+                var yaRevertido = await _context.AsientosContables
+                    .AnyAsync(a => a.AsientoRevertidoId == asientoId, cancellationToken);
+
+                if (original != null && original.Estado == EstadoAsiento.Confirmado && !yaRevertido)
+                {
+                    var reverso = original.CrearContraasiento(
+                        await SiguienteNumeroAsientoAsync(cancellationToken),
+                        DateOnly.FromDateTime(DateTime.UtcNow),
+                        PlanDeCuentas.UsuarioSistemaId);
+
+                    reverso.Confirmar(PlanDeCuentas.UsuarioSistemaId);
+                    _context.AsientosContables.Add(reverso);
+                }
+                // AsientoContableId se conserva: la factura anulada sigue apuntando
+                // a su asiento original, y el contraasiento apunta a ese mismo asiento.
+            }
+
+            // 2. Tesorería y 3. stock, en sentido opuesto al original y con fecha
+            // de hoy (la devolución de fondos/mercadería ocurre al anular).
+            var hoy = DateTime.UtcNow;
+            RegistrarMovimientoTesoreria(factura, esIngreso: !esVenta, motivo, hoy);
+            await RegistrarMovimientosStockAsync(factura, esSalida: !esVenta, motivo, hoy, cancellationToken);
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        private void RegistrarMovimientoTesoreria(Factura factura, bool esIngreso, string detalle, DateTime fecha)
+        {
+            var clienteId = PlanDeCuentas.ClienteIdPorDefecto.ToString();
+
+            if (factura.CondicionPago == ContadoCaja)
+            {
+                var tipo = esIngreso ? TipoMovimientoCaja.Ingreso : TipoMovimientoCaja.Egreso;
+                _context.MovimientosCaja.Add(new MovimientoCaja(clienteId, fecha, detalle, tipo, factura.Total, factura.Id));
+            }
+            else if (factura.CondicionPago == TransferenciaBanco)
+            {
+                var tipo = esIngreso ? TipoMovimientoBanco.Ingreso : TipoMovimientoBanco.Egreso;
+                _context.MovimientosBanco.Add(new MovimientoBanco(clienteId, fecha, detalle, tipo, factura.Total, factura.Id));
+            }
+            // Cuenta corriente: no hay movimiento de fondos.
+        }
+
+        private async Task RegistrarMovimientosStockAsync(Factura factura, bool esSalida, string detalle, DateTime fecha, CancellationToken cancellationToken)
+        {
+            foreach (var item in factura.Items.Where(i => i.ProductoId is > 0))
+            {
+                var producto = await _context.Productos.FindAsync(new object[] { item.ProductoId!.Value }, cancellationToken);
+                if (producto == null)
+                    throw new NotFoundException(nameof(Producto), item.ProductoId!.Value);
+
+                producto.ActualizarStock(esSalida ? -item.Cantidad : item.Cantidad);
+
+                _context.MovimientosStock.Add(new MovimientoStock(
+                    producto.Id,
+                    new DateTimeOffset(DateTime.SpecifyKind(fecha, DateTimeKind.Utc)),
+                    detalle,
+                    ingreso: esSalida ? 0 : item.Cantidad,
+                    salida: esSalida ? item.Cantidad : 0,
+                    saldo: producto.StockActual));
+            }
+        }
+
+        /// <summary>
+        /// El backend no confía en los importes que manda el cliente: recalcula el
+        /// subtotal de cada ítem y exige que Subtotal = Σ ítems y Total = Subtotal + IVA.
+        /// </summary>
+        private static void ValidarYNormalizarImportes(Factura factura)
+        {
+            if (factura.TipoOperacion != Venta && factura.TipoOperacion != Compra)
+                throw new ArgumentException($"Tipo de operación inválido: '{factura.TipoOperacion}'. Debe ser '{Venta}' o '{Compra}'.");
+
+            if (factura.Items.Count == 0)
+                throw new ArgumentException("La factura debe tener al menos un ítem.");
+
+            foreach (var item in factura.Items)
+            {
+                if (item.Cantidad <= 0)
+                    throw new ArgumentException($"La cantidad del ítem '{item.Descripcion}' debe ser mayor a cero.");
+                if (item.PrecioUnitario < 0)
+                    throw new ArgumentException($"El precio del ítem '{item.Descripcion}' no puede ser negativo.");
+
+                item.Subtotal = Math.Round(item.Cantidad * item.PrecioUnitario, 2);
+            }
+
+            var subtotalItems = factura.Items.Sum(i => i.Subtotal);
+            if (Math.Abs(subtotalItems - factura.Subtotal) > 0.01m)
+                throw new ArgumentException($"El subtotal ({factura.Subtotal:N2}) no coincide con la suma de los ítems ({subtotalItems:N2}).");
+
+            if (factura.Iva < 0)
+                throw new ArgumentException("El IVA no puede ser negativo.");
+
+            if (Math.Abs(factura.Subtotal + factura.Iva - factura.Total) > 0.01m)
+                throw new ArgumentException($"El total ({factura.Total:N2}) no coincide con subtotal + IVA ({factura.Subtotal + factura.Iva:N2}).");
+
+            factura.Subtotal = subtotalItems;
+            factura.Iva = Math.Round(factura.Iva, 2);
+            factura.Total = factura.Subtotal + factura.Iva;
+
+            if (factura.Total <= 0)
+                throw new ArgumentException("El total de la factura debe ser mayor a cero.");
+        }
+
+        private async Task<Factura> CargarFacturaAsync(long facturaId, CancellationToken cancellationToken)
+        {
+            return await _context.Facturas
+                .Include(f => f.Items)
+                .FirstOrDefaultAsync(f => f.Id == facturaId, cancellationToken)
+                ?? throw new NotFoundException(nameof(Factura), facturaId);
+        }
+
+        private async Task<long> SiguienteNumeroAsientoAsync(CancellationToken cancellationToken)
+        {
+            // Los asientos agregados en este contexto y aún no guardados también cuentan.
+            var maxGuardado = await _context.AsientosContables
+                .Where(a => a.ClienteId == PlanDeCuentas.ClienteIdPorDefecto)
+                .MaxAsync(a => (long?)a.NumeroAsiento, cancellationToken) ?? 0;
+
+            var maxPendiente = _context.AsientosContables.Local
+                .Where(a => a.ClienteId == PlanDeCuentas.ClienteIdPorDefecto)
+                .Select(a => a.NumeroAsiento)
+                .DefaultIfEmpty(0)
+                .Max();
+
+            return Math.Max(maxGuardado, maxPendiente) + 1;
+        }
+
+        /// <summary>
+        /// Ejecuta la acción en una transacción, salvo que el llamador ya haya abierto
+        /// una (ej. el cobro de membresías), en cuyo caso participa de esa.
+        /// </summary>
+        private async Task EnTransaccionAsync(Func<Task> accion, CancellationToken cancellationToken)
+        {
+            if (_context.Database.CurrentTransaction != null)
+            {
+                await accion();
+                return;
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            await accion();
+            await transaction.CommitAsync(cancellationToken);
         }
     }
 }

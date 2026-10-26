@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using EstudioContable.Application.Interfaces;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -13,22 +15,19 @@ namespace EstudioContable.API.Controllers
     public class FacturasController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IFacturacionService _facturacionService;
 
-        public FacturasController(AppDbContext context)
+        public FacturasController(AppDbContext context, IFacturacionService facturacionService)
         {
             _context = context;
+            _facturacionService = facturacionService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearFactura([FromBody] CrearFacturaDto dto)
+        public async Task<IActionResult> CrearFactura([FromBody] CrearFacturaDto dto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
 
             var factura = new Factura
             {
@@ -44,6 +43,7 @@ namespace EstudioContable.API.Controllers
                 Total = dto.Total,
                 Items = dto.Items.Select(i => new FacturaItem
                 {
+                    ProductoId = i.ProductoId > 0 ? i.ProductoId : null,
                     Descripcion = i.Descripcion,
                     Cantidad = i.Cantidad,
                     PrecioUnitario = i.PrecioUnitario,
@@ -51,149 +51,26 @@ namespace EstudioContable.API.Controllers
                 }).ToList()
             };
 
-            _context.Facturas.Add(factura);
-            await _context.SaveChangesAsync();
+            // Asiento, caja/banco y stock los genera el servicio dentro de una transacción.
+            await _facturacionService.CrearFacturaAsync(factura, cancellationToken);
 
-            if (dto.CondicionPago == "TransferenciaBanco")
-            {
-                var tipoMov = dto.TipoOperacion == "Venta" ? EstudioContable.Domain.Enums.TipoMovimientoBanco.Ingreso : EstudioContable.Domain.Enums.TipoMovimientoBanco.Egreso;
-                var mov = new MovimientoBanco("1", dto.Fecha, $"Factura de {dto.TipoOperacion} N° {factura.Id} - {dto.Cliente}", tipoMov, dto.Total, factura.Id);
-                _context.MovimientosBanco.Add(mov);
-                await _context.SaveChangesAsync();
-            }
-            else if (dto.CondicionPago == "ContadoCaja")
-            {
-                var tipoMov = dto.TipoOperacion == "Venta" ? EstudioContable.Domain.Enums.TipoMovimientoCaja.Ingreso : EstudioContable.Domain.Enums.TipoMovimientoCaja.Egreso;
-                var mov = new MovimientoCaja("1", dto.Fecha, $"Factura de {dto.TipoOperacion} N° {factura.Id} - {dto.Cliente}", tipoMov, dto.Total, factura.Id);
-                _context.MovimientosCaja.Add(mov);
-                await _context.SaveChangesAsync();
-            }
+            var resultado = await ConsultarFacturas()
+                .FirstAsync(f => f.Id == factura.Id, cancellationToken);
 
-            // Actualizar Stock
-            foreach (var itemDto in dto.Items)
-            {
-                if (itemDto.ProductoId > 0)
-                {
-                    var producto = await _context.Productos.FindAsync(itemDto.ProductoId);
-                    if (producto != null)
-                    {
-                        int cantidadFactor = dto.TipoOperacion == "Venta" ? -itemDto.Cantidad : itemDto.Cantidad;
-                        producto.ActualizarStock(cantidadFactor);
-                        
-                        var movStock = new MovimientoStock(
-                            producto.Id,
-                            new DateTimeOffset(dto.Fecha.ToUniversalTime()),
-                            $"Factura de {dto.TipoOperacion} N° {factura.Id} - {dto.Cliente}",
-                            dto.TipoOperacion == "Compra" ? itemDto.Cantidad : 0,
-                            dto.TipoOperacion == "Venta" ? itemDto.Cantidad : 0,
-                            producto.StockActual
-                        );
-                        _context.MovimientosStock.Add(movStock);
-                    }
-                }
-            }
-            await _context.SaveChangesAsync();
-
-            // Generar Asiento Contable
-            var maxNumero = await _context.AsientosContables.MaxAsync(a => (long?)a.NumeroAsiento) ?? 0;
-            var numeroAsiento = maxNumero + 1;
-            var asiento = new AsientoContable(
-                1L, // ClienteId por defecto
-                numeroAsiento,
-                DateOnly.FromDateTime(dto.Fecha),
-                $"Factura de {dto.TipoOperacion} N° {factura.Id} - {dto.Cliente}",
-                1L // UsuarioCreadorId por defecto
-            );
-
-            if (dto.TipoOperacion == "Venta")
-            {
-                long cuentaIdDebe = dto.CondicionPago switch
-                {
-                    "ContadoCaja" => 101L,
-                    "TransferenciaBanco" => 102L,
-                    _ => 103L
-                };
-                asiento.AgregarLinea(cuentaIdDebe, Math.Round(dto.Total, 2), 0, "Total Factura");
-                asiento.AgregarLinea(104L, 0, Math.Round(dto.Subtotal, 2), "Ventas");
-                if (dto.Iva > 0)
-                {
-                    asiento.AgregarLinea(201L, 0, Math.Round(dto.Iva, 2), "IVA Débito Fiscal");
-                }
-            }
-            else // Compra
-            {
-                long cuentaIdHaber = dto.CondicionPago switch
-                {
-                    "ContadoCaja" => 101L,
-                    "TransferenciaBanco" => 102L,
-                    _ => 202L
-                };
-                asiento.AgregarLinea(501L, Math.Round(dto.Subtotal, 2), 0, "Compras");
-                if (dto.Iva > 0)
-                {
-                    asiento.AgregarLinea(105L, Math.Round(dto.Iva, 2), 0, "IVA Crédito Fiscal");
-                }
-                asiento.AgregarLinea(cuentaIdHaber, 0, Math.Round(dto.Total, 2), "Total Factura");
-            }
-
-            asiento.Confirmar(1L);
-            _context.AsientosContables.Add(asiento);
-            await _context.SaveChangesAsync();
-
-            factura.AsientoContableId = asiento.Id;
-            await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            var facturaCompleta = await _context.Facturas
-                .Include(f => f.ClienteObj)
-                .Include(f => f.ProveedorObj)
-                  .Include(f => f.SocioObj)
-                .Include(f => f.Items)
-                .FirstOrDefaultAsync(f => f.Id == factura.Id);
-
-            var resultDto = new FacturaDto
-            {
-                Id = facturaCompleta.Id,
-                Fecha = facturaCompleta.Fecha,
-                TipoOperacion = facturaCompleta.TipoOperacion,
-                CondicionPago = facturaCompleta.CondicionPago,
-                TipoComprobante = facturaCompleta.TipoComprobante,
-                Cliente = facturaCompleta.Cliente,
-                Subtotal = facturaCompleta.Subtotal,
-                Iva = facturaCompleta.Iva,
-                Total = facturaCompleta.Total,
-                Cae = facturaCompleta.Cae,
-                FechaVencimientoCae = facturaCompleta.FechaVencimientoCae,
-                ClienteObj = facturaCompleta.ClienteObj,
-                  SocioObj = facturaCompleta.SocioObj,
-                Proveedor = facturaCompleta.ProveedorObj,
-                Items = facturaCompleta.Items.Select(i => new FacturaItemDto
-                {
-                    Id = i.Id,
-                    Descripcion = i.Descripcion,
-                    Cantidad = i.Cantidad,
-                    PrecioUnitario = i.PrecioUnitario,
-                    Subtotal = i.Subtotal
-                }).ToList()
-            };
-
-            return Created($"/api/facturas/{factura.Id}", resultDto);
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            return Created($"/api/facturas/{factura.Id}", resultado);
         }
+
         [HttpGet]
-        public async Task<IActionResult> ObtenerFacturas()
+        public async Task<IActionResult> ObtenerFacturas(CancellationToken cancellationToken)
         {
-            var facturas = await _context.Facturas
-                .Include(f => f.Items)
-                .Include(f => f.ClienteObj)
-                .Include(f => f.ProveedorObj)
-                  .Include(f => f.SocioObj)
+            var facturas = await ConsultarFacturas().ToListAsync(cancellationToken);
+            return Ok(facturas);
+        }
+
+        private IQueryable<FacturaDto> ConsultarFacturas()
+        {
+            return _context.Facturas
+                .AsNoTracking()
                 .Select(f => new FacturaDto
                 {
                     Id = f.Id,
@@ -207,129 +84,70 @@ namespace EstudioContable.API.Controllers
                     Total = f.Total,
                     Cae = f.Cae,
                     FechaVencimientoCae = f.FechaVencimientoCae,
+                    Anulada = f.Anulada,
+                    FechaAnulacion = f.FechaAnulacion,
                     ClienteObj = f.ClienteObj,
-                      SocioObj = f.SocioObj,
+                    SocioObj = f.SocioObj,
                     Proveedor = f.ProveedorObj,
                     Items = f.Items.Select(i => new FacturaItemDto
                     {
                         Id = i.Id,
+                        ProductoId = i.ProductoId,
                         Descripcion = i.Descripcion,
                         Cantidad = i.Cantidad,
                         PrecioUnitario = i.PrecioUnitario,
                         Subtotal = i.Subtotal
                     }).ToList()
-                }).ToListAsync();
-
-            return Ok(facturas);
+                });
         }
-        
+
+        /// <summary>
+        /// Modifica una factura. No reescribe la historia: revierte los efectos de la
+        /// versión anterior (contraasiento, tesorería y stock inversos) y aplica los nuevos.
+        /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarFactura(long id, [FromBody] ActualizarFacturaDto dto)
+        public async Task<IActionResult> ActualizarFactura(long id, [FromBody] ActualizarFacturaDto dto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var factura = await _context.Facturas
-                .Include(f => f.Items)
-                .FirstOrDefaultAsync(f => f.Id == id);
-
-            if (factura == null)
+            var datosNuevos = new Factura
             {
-                return NotFound();
-            }
-
-            // 1. Revertir movimientos anteriores
-            // Buscamos cualquier movimiento asociado a esta factura usando el ID
-            var oldMovBanco = await _context.MovimientosBanco
-                .FirstOrDefaultAsync(m => m.Detalle.Contains($"N° {id}"));
-            if (oldMovBanco != null) _context.MovimientosBanco.Remove(oldMovBanco);
-
-            var oldMovCaja = await _context.MovimientosCaja
-                .FirstOrDefaultAsync(m => m.Detalle.Contains($"N° {id}"));
-            if (oldMovCaja != null) _context.MovimientosCaja.Remove(oldMovCaja);
-
-            // 2. Actualizar campos de la factura
-            factura.Fecha = dto.Fecha;
-            factura.TipoOperacion = dto.TipoOperacion;
-            factura.CondicionPago = dto.CondicionPago;
-            factura.TipoComprobante = dto.TipoComprobante;
-            factura.Cliente = dto.Cliente;
-            factura.Subtotal = dto.Subtotal;
-            factura.Iva = dto.Iva;
-            factura.Total = dto.Total;
-
-            // 3. Actualizar items (reemplazo completo para simplificar)
-            _context.FacturaItems.RemoveRange(factura.Items);
-            factura.Items.Clear();
-            
-            foreach (var item in dto.Items)
-            {
-                factura.Items.Add(new FacturaItem
+                Fecha = dto.Fecha,
+                TipoOperacion = dto.TipoOperacion,
+                CondicionPago = dto.CondicionPago,
+                TipoComprobante = dto.TipoComprobante,
+                Cliente = dto.Cliente,
+                Subtotal = dto.Subtotal,
+                Iva = dto.Iva,
+                Total = dto.Total,
+                Items = dto.Items.Select(i => new FacturaItem
                 {
-                    Descripcion = item.Descripcion,
-                    Cantidad = item.Cantidad,
-                    PrecioUnitario = item.PrecioUnitario,
-                    Subtotal = item.Subtotal
-                });
-            }
+                    ProductoId = i.ProductoId > 0 ? i.ProductoId : null,
+                    Descripcion = i.Descripcion,
+                    Cantidad = i.Cantidad,
+                    PrecioUnitario = i.PrecioUnitario,
+                    Subtotal = i.Subtotal
+                }).ToList()
+            };
 
-            // 4. Generar nuevos movimientos según la nueva condición de pago
-            if (dto.CondicionPago == "TransferenciaBanco")
-            {
-                var tipoMov = dto.TipoOperacion == "Venta" ? EstudioContable.Domain.Enums.TipoMovimientoBanco.Ingreso : EstudioContable.Domain.Enums.TipoMovimientoBanco.Egreso;
-                var mov = new MovimientoBanco("1", dto.Fecha, $"Factura de {dto.TipoOperacion} N° {factura.Id} - {dto.Cliente}", tipoMov, dto.Total, factura.Id);
-                _context.MovimientosBanco.Add(mov);
-            }
-            else if (dto.CondicionPago == "ContadoCaja")
-            {
-                var tipoMov = dto.TipoOperacion == "Venta" ? EstudioContable.Domain.Enums.TipoMovimientoCaja.Ingreso : EstudioContable.Domain.Enums.TipoMovimientoCaja.Egreso;
-                var mov = new MovimientoCaja("1", dto.Fecha, $"Factura de {dto.TipoOperacion} N° {factura.Id} - {dto.Cliente}", tipoMov, dto.Total, factura.Id);
-                _context.MovimientosCaja.Add(mov);
-            }
-
-            // 5. Guardar todo
-            await _context.SaveChangesAsync();
-
+            await _facturacionService.ReemplazarFacturaAsync(id, datosNuevos, cancellationToken);
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> EliminarFactura(long id)
+        /// <summary>
+        /// Anula una factura: queda registrada como anulada y sus efectos se revierten
+        /// con movimientos inversos. Nunca se borra (trazabilidad contable y fiscal).
+        /// </summary>
+        [HttpPost("{id}/anular")]
+        public async Task<IActionResult> AnularFactura(long id, CancellationToken cancellationToken)
         {
-            // 1. Buscamos la factura en la base de datos por su ID
-            var factura = await _context.Facturas.FindAsync(id);
-            
-            // 2. Si no existe, devolvemos 404
-            if (factura == null)
-            {
-                return NotFound();
-            }
-
-            var asiento = await _context.AsientosContables
-                .FirstOrDefaultAsync(a => a.Id == factura.AsientoContableId || 
-                                         a.Descripcion.Contains($"Factura de Venta N° {factura.Id}") ||
-                                         a.Descripcion.Contains($"Factura de Compra N° {factura.Id}"));
-            
-            if (asiento != null)
-            {
-                _context.AsientosContables.Remove(asiento);
-            }
-
-            var movCaja = await _context.MovimientosCaja.Where(m => m.FacturaId == factura.Id).ToListAsync();
-            if (movCaja.Any()) _context.MovimientosCaja.RemoveRange(movCaja);
-
-            var movBanco = await _context.MovimientosBanco.Where(m => m.FacturaId == factura.Id).ToListAsync();
-            if (movBanco.Any()) _context.MovimientosBanco.RemoveRange(movBanco);
-
-            _context.Facturas.Remove(factura);
-            await _context.SaveChangesAsync();
-
-            // 4. Devolvemos 204 No Content (lo que espera nuestro frontend)
+            await _facturacionService.AnularFacturaAsync(id, cancellationToken);
             return NoContent();
         }
     }
 
-    
+
     public class ActualizarFacturaDto
     {
         public DateTime Fecha { get; set; }
@@ -345,6 +163,7 @@ namespace EstudioContable.API.Controllers
 
     public class ActualizarFacturaItemDto
     {
+        public long ProductoId { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
@@ -388,6 +207,8 @@ namespace EstudioContable.API.Controllers
         public decimal Total { get; set; }
         public string? Cae { get; set; }
         public DateTime? FechaVencimientoCae { get; set; }
+        public bool Anulada { get; set; }
+        public DateTime? FechaAnulacion { get; set; }
         public ClienteComercial? ClienteObj { get; set; }
         public Proveedor? Proveedor { get; set; }
         public EstudioContable.Domain.Entities.Socio? SocioObj { get; set; }
@@ -397,17 +218,10 @@ namespace EstudioContable.API.Controllers
     public class FacturaItemDto
     {
         public long Id { get; set; }
+        public long? ProductoId { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
         public decimal Subtotal { get; set; }
     }
 }
-
-
-
-
-
-
-
-

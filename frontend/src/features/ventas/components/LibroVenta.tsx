@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Loader2, Pencil, Trash2, Search } from "lucide-react";
+import { Loader2, Pencil, Ban, Search } from "lucide-react";
 import {
   createColumnHelper,
   flexRender,
@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-table";
 import { useObtenerFacturas } from "../../../hooks/useObtenerFacturas";
 import type { FacturaDto } from "../../../api/facturacionApi";
-import { useEliminarFactura } from "../hooks/useEliminarFactura";
+import { useAnularFactura } from "../hooks/useAnularFactura";
 import { ModalEditarFactura } from "./ModalEditarFactura";
 import { formatearFechaLocal } from "../../../utils/formatters";
 
@@ -24,8 +24,8 @@ interface LibroVentaProps {
 }
 
 export function LibroVenta({ }: LibroVentaProps) {
-  const { mutate: eliminarFactura } = useEliminarFactura();
-  const [facturaToDelete, setFacturaToDelete] = useState<number | null>(null);
+  const { mutate: anularFactura } = useAnularFactura();
+  const [facturaAAnular, setFacturaAAnular] = useState<number | null>(null);
   const [facturaAEditar, setFacturaAEditar] = useState<any | null>(null);
   const [fechaFiltro, setFechaFiltro] = useState<string>("");
 
@@ -118,7 +118,13 @@ export function LibroVenta({ }: LibroVentaProps) {
     columnHelper.display({
       id: "acciones",
       header: () => <div className="text-center">Acciones</div>,
-      cell: (info) => (
+      cell: (info) => info.row.original.anulada ? (
+        <div className="flex justify-center">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-50 text-red-700 border-red-200">
+            Anulada
+          </span>
+        </div>
+      ) : (
         <div className="flex justify-center items-center gap-2">
           <button
             onClick={(e) => {
@@ -136,17 +142,17 @@ export function LibroVenta({ }: LibroVentaProps) {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setFacturaToDelete(info.row.original.id);
+              setFacturaAAnular(info.row.original.id);
             }}
             className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-            title="Eliminar factura"
+            title="Anular factura"
           >
-            <Trash2 className="h-4 w-4" />
+            <Ban className="h-4 w-4" />
           </button>
         </div>
       ),
     }),
-  ], [eliminarFactura]);
+  ], [anularFactura]);
 
   const { data: facturas, isLoading, isError, error } = useObtenerFacturas();
   
@@ -159,7 +165,8 @@ export function LibroVenta({ }: LibroVentaProps) {
   }, [facturas, fechaFiltro]);
 
   const totales = useMemo(() => {
-    return facturasFiltradas.reduce((acc, factura) => ({
+    // Las facturas anuladas se muestran pero no suman.
+    return facturasFiltradas.filter(f => !f.anulada).reduce((acc, factura) => ({
       neto: acc.neto + factura.subtotal,
       iva: acc.iva + factura.iva,
       total: acc.total + factura.total
@@ -250,7 +257,9 @@ export function LibroVenta({ }: LibroVentaProps) {
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150"
+                    className={`border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150 ${
+                      row.original.anulada ? "text-slate-400 line-through decoration-slate-300 bg-slate-50/50" : ""
+                    }`}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="p-4 align-middle text-slate-700">
@@ -294,33 +303,33 @@ export function LibroVenta({ }: LibroVentaProps) {
         </div>
       </div>
       
-      {facturaToDelete !== null && (
+      {facturaAAnular !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
           <div className="w-[95%] max-w-md mx-auto rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-center mb-4 h-12 w-12 rounded-full bg-red-100 mx-auto">
-              <Trash2 className="h-6 w-6 text-red-600" />
+              <Ban className="h-6 w-6 text-red-600" />
             </div>
             <h3 className="text-center text-lg font-semibold text-slate-900">
-              Eliminar comprobante
+              Anular comprobante
             </h3>
             <p className="mt-2 text-center text-sm text-slate-500">
-              ¿Estás seguro de que querés eliminar esta factura? Esta acción no se puede deshacer y los totales se recalcularán automáticamente.
+              ¿Querés anular esta factura? Queda registrada como anulada y se generan un contraasiento y los movimientos inversos de caja/banco y stock. Esta acción no se puede deshacer.
             </p>
             <div className="mt-6 flex justify-center space-x-3">
               <button
-                onClick={() => setFacturaToDelete(null)}
+                onClick={() => setFacturaAAnular(null)}
                 className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={() => {
-                  eliminarFactura(facturaToDelete);
-                  setFacturaToDelete(null);
+                  anularFactura(facturaAAnular);
+                  setFacturaAAnular(null);
                 }}
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors shadow-sm"
               >
-                Sí, eliminar
+                Sí, anular
               </button>
             </div>
           </div>

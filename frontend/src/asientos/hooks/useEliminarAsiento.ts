@@ -7,13 +7,17 @@ export function useEliminarAsiento() {
   return useMutation<void, ApiError, string>({
     mutationFn: (id: string) => eliminarAsiento(id),
     onSuccess: () => {
-      // Invalidar agresivamente todas las queries afectadas
+      // Anular un asiento de factura revierte también caja/banco y stock.
       queryClient.invalidateQueries({ queryKey: ["asientos"] });
-      queryClient.invalidateQueries({ queryKey: ["caja"] });
-      queryClient.invalidateQueries({ queryKey: ["banco"] });
+      queryClient.invalidateQueries({ queryKey: ["mayor"] });
+      queryClient.invalidateQueries({ queryKey: ["facturas"] });
+      queryClient.invalidateQueries({ queryKey: ["libro-caja"] });
+      queryClient.invalidateQueries({ queryKey: ["libro-banco"] });
+      queryClient.invalidateQueries({ queryKey: ["productos"] });
+      queryClient.invalidateQueries({ queryKey: ["movimientosStock"] });
     },
     onError: (error) => {
-      alert("Error al eliminar: " + (error.message || "Ocurrió un error inesperado al eliminar el asiento."));
+      alert("Error al anular: " + (error.message || "Ocurrió un error inesperado al anular el asiento."));
     },
   });
 }

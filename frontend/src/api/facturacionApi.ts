@@ -19,6 +19,15 @@ export interface CrearFacturaItemDto {
   subtotal: number;
 }
 
+export interface FacturaItemDto {
+  id?: number;
+  productoId?: number | null;
+  descripcion: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+}
+
 export interface FacturaDto {
   id: number;
   fecha: string;
@@ -31,6 +40,9 @@ export interface FacturaDto {
   numeroFactura?: string;
   cuit?: string;
   condicionPago?: string;
+  anulada?: boolean;
+  fechaAnulacion?: string | null;
+  items?: FacturaItemDto[];
 }
 
 export class ApiError extends Error {
@@ -96,17 +108,14 @@ export async function editarFactura(id: number, payload: CrearFacturaDto): Promi
   return manejarRespuesta<void>(res);
 }
 
-/** Elimina una factura del sistema */
-export async function eliminarFactura(id: number): Promise<void> {
-  const res = await fetch(`/api/facturas/${id}`, {
-    method: "DELETE",
+/**
+ * Anula una factura. No se borra: el backend la marca como anulada y genera
+ * contraasiento, movimiento inverso de caja/banco y devolución de stock.
+ */
+export async function anularFactura(id: number): Promise<void> {
+  const res = await fetch(`/api/facturas/${id}/anular`, {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
   });
-
-  // Si da 404 (ya estaba borrada), lo consideramos un éxito para limpiar la UI
-  if (res.status === 404) {
-    return;
-  }
-
   return manejarRespuesta<void>(res);
 }

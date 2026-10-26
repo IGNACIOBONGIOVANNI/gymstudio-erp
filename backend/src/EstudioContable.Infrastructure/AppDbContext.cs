@@ -49,6 +49,14 @@ namespace EstudioContable.Infrastructure.Persistence
                 .HasForeignKey(i => i.FacturaId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Sin esto EF no asocia PlanActualObj con PlanActualId (no sigue la convención
+            // de nombres) y crea una FK oculta "PlanActualObjId" que nunca se completa.
+            modelBuilder.Entity<Socio>()
+                .HasOne(s => s.PlanActualObj)
+                .WithMany()
+                .HasForeignKey(s => s.PlanActualId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<Producto>().ToTable("Productos", "inventario");
             modelBuilder.Entity<MovimientoStock>().ToTable("MovimientosStock", "inventario");
 

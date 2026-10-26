@@ -27,6 +27,10 @@ namespace EstudioContable.Domain.Entities
         // Null mientras el asiento esté en Borrador o Anulado sin haber sido confirmado.
         public long? UsuarioConfirmacionId { get; private set; }
 
+        // Si este asiento es un contraasiento, apunta al asiento que revierte.
+        // Null para los asientos normales.
+        public long? AsientoRevertidoId { get; private set; }
+
         private readonly List<LineaAsiento> _lineas = new();
         public IReadOnlyCollection<LineaAsiento> Lineas => _lineas.AsReadOnly();
 
@@ -94,6 +98,40 @@ namespace EstudioContable.Domain.Entities
             Estado = EstadoAsiento.Confirmado;
             FechaConfirmacion = DateTimeOffset.UtcNow;
             UsuarioConfirmacionId = usuarioConfirmacionId;
+        }
+
+        /// <summary>
+        /// Genera el contraasiento de este asiento: mismas cuentas e importes con
+        /// Debe y Haber invertidos, de modo que la suma de ambos deja saldo cero.
+        /// Es la forma de "deshacer" un asiento confirmado sin borrarlo, manteniendo
+        /// la trazabilidad en el Libro Diario. El contraasiento se devuelve en
+        /// Borrador; quien lo crea es responsable de confirmarlo y persistirlo.
+        /// Requiere que las líneas de este asiento estén cargadas.
+        /// </summary>
+        public AsientoContable CrearContraasiento(long numeroAsiento, DateOnly fecha, long usuarioCreadorId)
+        {
+            if (Estado != EstadoAsiento.Confirmado)
+                throw new InvalidOperationException("Sólo se puede revertir un asiento Confirmado.");
+
+            if (AsientoRevertidoId.HasValue)
+                throw new InvalidOperationException("Un contraasiento no puede revertirse.");
+
+            if (_lineas.Count == 0)
+                throw new InvalidOperationException("El asiento no tiene líneas cargadas para revertir.");
+
+            var descripcion = $"Reverso del asiento N° {NumeroAsiento} - {Descripcion}";
+            if (descripcion.Length > 500)
+                descripcion = descripcion[..500];
+
+            var reverso = new AsientoContable(ClienteId, numeroAsiento, fecha, descripcion, usuarioCreadorId)
+            {
+                AsientoRevertidoId = Id
+            };
+
+            foreach (var linea in _lineas.OrderBy(l => l.Orden))
+                reverso.AgregarLinea(linea.CuentaId, linea.Haber, linea.Debe, linea.Descripcion);
+
+            return reverso;
         }
 
         /// <summary>

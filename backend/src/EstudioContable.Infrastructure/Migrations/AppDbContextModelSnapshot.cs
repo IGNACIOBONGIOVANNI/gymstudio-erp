@@ -31,6 +31,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("AsientoRevertidoId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("asiento_revertido_id");
+
                     b.Property<long>("ClienteId")
                         .HasColumnType("bigint")
                         .HasColumnName("cliente_id");
@@ -72,6 +76,9 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasColumnName("usuario_creador_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AsientoRevertidoId")
+                        .IsUnique();
 
                     b.HasIndex("ClienteId", "Fecha");
 
@@ -285,6 +292,9 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<bool>("Anulada")
+                        .HasColumnType("boolean");
+
                     b.Property<long?>("AsientoContableId")
                         .HasColumnType("bigint");
 
@@ -303,6 +313,9 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaAnulacion")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("FechaVencimientoCae")
@@ -467,6 +480,9 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.Property<decimal>("PrecioUnitario")
                         .HasColumnType("numeric");
+
+                    b.Property<long?>("ProductoId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("numeric");
@@ -891,16 +907,13 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<long?>("PlanActualId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("PlanActualObjId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Telefono")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PlanActualObjId");
+                    b.HasIndex("PlanActualId");
 
                     b.ToTable("Socios", "contabilidad");
                 });
@@ -945,6 +958,14 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.HasIndex("ClienteId");
 
                     b.ToTable("Usuario", "contabilidad");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.AsientoContable", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.AsientoContable", null)
+                        .WithMany()
+                        .HasForeignKey("AsientoRevertidoId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Factura", b =>
@@ -1078,7 +1099,8 @@ namespace EstudioContable.Infrastructure.Migrations
                 {
                     b.HasOne("EstudioContable.Domain.Entities.Plan", "PlanActualObj")
                         .WithMany()
-                        .HasForeignKey("PlanActualObjId");
+                        .HasForeignKey("PlanActualId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("PlanActualObj");
                 });

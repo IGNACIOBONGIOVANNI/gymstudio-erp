@@ -1,62 +1,82 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using EstudioContable.Application.Common;
+using EstudioContable.Application.Common.Exceptions;
 using EstudioContable.Application.Common.Interfaces;
+using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain.Entities;
 using EstudioContable.Domain.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace EstudioContable.Application.Asientos.Commands.EliminarAsiento
 {
+    /// <summary>
+    /// "Eliminar" un asiento respeta la trazabilidad contable:
+    /// - Borrador: se borra físicamente (todavía no tiene efecto contable).
+    /// - Confirmado de una factura: se anula la factura completa (contraasiento,
+    ///   tesorería y stock), para que los libros no queden desfasados.
+    /// - Confirmado manual: se genera su contraasiento.
+    /// Un asiento confirmado nunca se borra.
+    /// </summary>
     public class EliminarAsientoCommandHandler : IRequestHandler<EliminarAsientoCommand>
     {
         private readonly IAsientoRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly EstudioContable.Application.Interfaces.IAppDbContext _context;
+        private readonly IAppDbContext _context;
+        private readonly IFacturacionService _facturacionService;
 
-        public EliminarAsientoCommandHandler(IAsientoRepository repository, IUnitOfWork unitOfWork, EstudioContable.Application.Interfaces.IAppDbContext context)
+        public EliminarAsientoCommandHandler(
+            IAsientoRepository repository,
+            IUnitOfWork unitOfWork,
+            IAppDbContext context,
+            IFacturacionService facturacionService)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
             _context = context;
+            _facturacionService = facturacionService;
         }
 
         public async Task Handle(EliminarAsientoCommand request, CancellationToken cancellationToken)
         {
-            var asiento = await _repository.ObtenerPorIdConLineasAsync(request.Id, cancellationToken);
-            if (asiento == null) return;
+            var asiento = await _repository.ObtenerPorIdConLineasAsync(request.Id, cancellationToken)
+                ?? throw new NotFoundException(nameof(AsientoContable), request.Id);
 
-            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            try
+            if (asiento.Estado == EstadoAsiento.Borrador)
             {
-                var factura = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
-                    _context.Facturas,
-                    f => f.AsientoContableId == request.Id || 
-                         asiento.Descripcion.Contains("Factura de Venta N° " + f.Id) ||
-                         asiento.Descripcion.Contains("Factura de Compra N° " + f.Id), 
-                    cancellationToken);
-
-                if (factura != null)
-                {
-                    var movCaja = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-                        System.Linq.Queryable.Where(_context.MovimientosCaja, m => m.FacturaId == factura.Id), cancellationToken);
-                    if (movCaja.Count > 0) _context.MovimientosCaja.RemoveRange(movCaja);
-
-                    var movBanco = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-                        System.Linq.Queryable.Where(_context.MovimientosBanco, m => m.FacturaId == factura.Id), cancellationToken);
-                    if (movBanco.Count > 0) _context.MovimientosBanco.RemoveRange(movBanco);
-
-                    _context.Facturas.Remove(factura);
-                }
-
                 _repository.Eliminar(asiento);
-                await _context.SaveChangesAsync(cancellationToken);
-                
-                await transaction.CommitAsync(cancellationToken);
+                await _unitOfWork.GuardarCambiosAsync(cancellationToken);
+                return;
             }
-            catch
+
+            if (asiento.Estado != EstadoAsiento.Confirmado)
+                throw new InvalidOperationException($"El asiento N° {asiento.NumeroAsiento} ya está anulado.");
+
+            if (asiento.AsientoRevertidoId.HasValue)
+                throw new InvalidOperationException($"El asiento N° {asiento.NumeroAsiento} es un contraasiento y no puede revertirse.");
+
+            var yaRevertido = await _context.AsientosContables
+                .AnyAsync(a => a.AsientoRevertidoId == asiento.Id, cancellationToken);
+            if (yaRevertido)
+                throw new InvalidOperationException($"El asiento N° {asiento.NumeroAsiento} ya fue revertido.");
+
+            var factura = await _context.Facturas
+                .FirstOrDefaultAsync(f => f.AsientoContableId == asiento.Id && !f.Anulada, cancellationToken);
+
+            if (factura != null)
             {
-                await transaction.RollbackAsync(cancellationToken);
-                throw;
+                await _facturacionService.AnularFacturaAsync(factura.Id, cancellationToken);
+                return;
             }
+
+            var numero = await _repository.ObtenerMaximoNumeroAsientoAsync(asiento.ClienteId, cancellationToken) + 1;
+            var reverso = asiento.CrearContraasiento(numero, DateOnly.FromDateTime(DateTime.UtcNow), PlanDeCuentas.UsuarioSistemaId);
+            reverso.Confirmar(PlanDeCuentas.UsuarioSistemaId);
+
+            _repository.Agregar(reverso);
+            await _unitOfWork.GuardarCambiosAsync(cancellationToken);
         }
     }
 }

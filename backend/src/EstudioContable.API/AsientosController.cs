@@ -94,7 +94,7 @@ namespace EstudioContable.API.Controllers
 
             // Cualquier excepción (NotFound, AsientoDesbalanceado, etc.) se propaga
             // sin try/catch aquí: la captura y el mapeo a HTTP los resuelve
-            // ExceptionHandlingMiddleware de forma centralizada.
+            // ExceptionMiddleware de forma centralizada.
             return Ok(resultado);
         }
 

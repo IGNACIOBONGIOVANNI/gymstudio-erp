@@ -31,7 +31,6 @@ namespace EstudioContable.Application.Compras.Commands
             if (movimientosCaja.Any())
             {
                 _context.MovimientosCaja.RemoveRange(movimientosCaja);
-                // 🔥 MAGIA: Si querés, acá podés invalidar o ajustar algo más, pero con el RemoveRange está perfecto.
             }
 
             var movimientosBanco = await _context.MovimientosBanco
@@ -44,8 +43,7 @@ namespace EstudioContable.Application.Compras.Commands
             }
 
             var asiento = await _context.AsientosContables
-                .FirstOrDefaultAsync(a => a.Id == factura.AsientoContableId || 
-                                         a.Descripcion.Contains($"Factura de Compra N° {factura.Id}"), cancellationToken);
+                .FirstOrDefaultAsync(a => a.Id == factura.AsientoContableId, cancellationToken);
             
             if (asiento != null)
             {

@@ -4,6 +4,7 @@ import { useEditarFactura } from "../hooks/useEditarFactura";
 
 interface FacturaItem {
   id?: string;
+  productoId?: number | null;
   descripcion: string;
   cantidad: number;
   precioUnitario: number;
@@ -53,6 +54,7 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
       iva: Number(iva),
       total: Number(total),
       items: items.map(item => ({
+        productoId: item.productoId ?? 0,
         descripcion: item.descripcion,
         cantidad: Number(item.cantidad),
         precioUnitario: Number(item.precioUnitario),
