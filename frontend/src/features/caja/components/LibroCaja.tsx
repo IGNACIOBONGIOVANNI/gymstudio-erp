@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Loader2, Plus, Trash2, Pencil, Search } from "lucide-react";
+import { Loader2, Plus, Trash2, Pencil, Search, ArrowRightLeft } from "lucide-react";
+import { TransferenciaModal } from "../../tesoreria/TransferenciaModal";
 import { useLibroCaja } from "../hooks/useLibroCaja";
 import { formatearFechaLocal } from "../../../utils/formatters";
 import { MovimientoCajaForm } from "./MovimientoCajaForm";
@@ -17,6 +18,7 @@ interface LibroCajaProps {
 export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
   const { data: resumen, isLoading, isError, error } = useLibroCaja(clienteId);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isTransferenciaOpen, setIsTransferenciaOpen] = useState(false);
   const [fechaFiltro, setFechaFiltro] = useState("");
 
   // Estados para eliminar y editar
@@ -101,6 +103,14 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
             )}
           </div>
         </div>
+        <div className="flex flex-wrap gap-2 shrink-0">
+        <button
+          onClick={() => setIsTransferenciaOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 min-h-[40px] text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 shrink-0"
+        >
+          <ArrowRightLeft className="h-4 w-4" />
+          Transferir a Banco
+        </button>
         <button
           onClick={() => setIsFormOpen(true)}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 active:scale-95 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 shrink-0"
@@ -108,6 +118,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
           <Plus className="h-4 w-4" />
           Nuevo Movimiento
         </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -151,13 +162,22 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                             </span>
                           ) : (
                             <>
-                          <button
+                          {mov.esTransferencia ? (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-indigo-50 text-indigo-700 border-indigo-200 whitespace-nowrap"
+                              title="Transferencia entre Caja y Banco: no se edita; si hay un error, eliminala y cargala de nuevo"
+                            >
+                              Transferencia
+                            </span>
+                          ) : (
+                            <button
                             onClick={() => handleEditClick(mov)}
                             className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                             title="Editar movimiento"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
+                          )}
                           <button
                             onClick={() => setMovimientoToDelete(mov.id || mov.Id)}
                             className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
@@ -238,13 +258,22 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                             </span>
                           ) : (
                             <>
-                          <button
+                          {mov.esTransferencia ? (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-indigo-50 text-indigo-700 border-indigo-200 whitespace-nowrap"
+                              title="Transferencia entre Caja y Banco: no se edita; si hay un error, eliminala y cargala de nuevo"
+                            >
+                              Transferencia
+                            </span>
+                          ) : (
+                            <button
                             onClick={() => handleEditClick(mov)}
                             className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                             title="Editar movimiento"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
+                          )}
                           <button
                             onClick={() => setMovimientoToDelete(mov.id || mov.Id)}
                             className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
@@ -287,6 +316,10 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {isTransferenciaOpen && (
+        <TransferenciaModal origen="Caja" onClose={() => setIsTransferenciaOpen(false)} />
       )}
 
       {/* Modal Formulario (Nuevo/Editar) */}

@@ -96,6 +96,18 @@ Las facturas y los asientos confirmados **no se borran**:
 - En el Libro Diario, "anular" un asiento borrador lo elimina; uno confirmado
   genera su contraasiento (o anula la factura a la que pertenece).
 
+## Caja y Banco
+
+- Cada movimiento cargado en el Libro Caja o Banco genera su asiento contra la
+  cuenta elegida (Otros Ingresos, Gastos Generales, Deudores por Ventas o
+  Proveedores). Editar o eliminar registra un contraasiento.
+- **Transferir a Banco / Transferir a Caja**: egreso en un libro, ingreso en el
+  otro y un único asiento. No se edita; si hay un error se elimina (se borran los
+  dos movimientos) y se carga de nuevo.
+- Caja y Banco no se usan en asientos manuales: son cuentas de control cuyo saldo
+  sale sólo de sus libros y de las facturas, así el Libro Caja siempre coincide con
+  el Mayor.
+
 ## Base de datos
 
 Triggers (partida doble, inmutabilidad de asientos, auditoría), restricciones

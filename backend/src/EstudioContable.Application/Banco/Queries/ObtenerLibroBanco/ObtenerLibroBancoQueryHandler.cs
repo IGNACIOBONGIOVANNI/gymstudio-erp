@@ -27,13 +27,20 @@ namespace EstudioContable.Application.Banco.Queries.ObtenerLibroBanco
                 .ThenBy(x => x.Id)
                 .ToListAsync(cancellationToken);
 
+            // Asientos compartidos con el otro libro = transferencias entre Caja y Banco.
+            var asientosDeTransferencias = (await _context.MovimientosCaja
+                .Where(m => m.AsientoContableId != null)
+                .Select(m => m.AsientoContableId!.Value)
+                .ToListAsync(cancellationToken)).ToHashSet();
+
             var movimientosDto = movimientosDb.Select(x => new MovimientoBancoDto(
                 x.Id,
                 x.Fecha,
                 x.Detalle,
                 x.TipoMovimiento == TipoMovimientoBanco.Ingreso ? x.Importe : null,
                 x.TipoMovimiento == TipoMovimientoBanco.Egreso ? x.Importe : null,
-                x.FacturaId
+                x.FacturaId,
+                x.AsientoContableId.HasValue && asientosDeTransferencias.Contains(x.AsientoContableId.Value)
             )).ToList();
 
             var saldoAnterior = 0m;

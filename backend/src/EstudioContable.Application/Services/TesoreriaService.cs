@@ -16,8 +16,12 @@ namespace EstudioContable.Application.Services
     /// <summary>Datos de un movimiento cargado a mano en el Libro Caja o Banco.</summary>
     public record DatosMovimientoTesoreria(DateTime Fecha, string Detalle, bool EsIngreso, decimal Importe, long? CuentaContrapartidaId);
 
+    /// <summary>Paso de fondos de un libro al otro (ej. depósito de efectivo en el banco).</summary>
+    public record DatosTransferencia(LibroTesoreria Origen, DateTime Fecha, decimal Importe, string? Detalle);
+
     public interface ITesoreriaService
     {
+        Task TransferirAsync(DatosTransferencia datos, CancellationToken cancellationToken);
         Task<long> CrearAsync(LibroTesoreria libro, DatosMovimientoTesoreria datos, CancellationToken cancellationToken);
         Task EditarAsync(LibroTesoreria libro, long id, DatosMovimientoTesoreria datos, CancellationToken cancellationToken);
         Task EliminarAsync(LibroTesoreria libro, long id, CancellationToken cancellationToken);
@@ -64,9 +68,56 @@ namespace EstudioContable.Application.Services
             return movimiento.Id;
         }
 
+        /// <summary>
+        /// Registra la transferencia: egreso en el libro de origen, ingreso en el de destino
+        /// y un único asiento (Debe destino / Haber origen) al que apuntan los dos movimientos.
+        /// </summary>
+        public async Task TransferirAsync(DatosTransferencia datos, CancellationToken cancellationToken)
+        {
+            if (!Enum.IsDefined(datos.Origen))
+                throw new ArgumentException("El origen de la transferencia debe ser Caja o Banco.");
+            if (datos.Importe <= 0)
+                throw new ArgumentException("El importe de la transferencia debe ser mayor a cero.");
+
+            var destino = datos.Origen == LibroTesoreria.Caja ? LibroTesoreria.Banco : LibroTesoreria.Caja;
+            var detalle = $"Transferencia de {datos.Origen} a {destino}";
+            if (!string.IsNullOrWhiteSpace(datos.Detalle))
+                detalle += $" - {datos.Detalle.Trim()}";
+
+            var clienteId = PlanDeCuentas.ClienteIdPorDefecto.ToString();
+            IMovimientoTesoreria salida = CrearMovimiento(datos.Origen, clienteId, datos.Fecha, detalle, esIngreso: false, datos.Importe);
+            IMovimientoTesoreria entrada = CrearMovimiento(destino, clienteId, datos.Fecha, detalle, esIngreso: true, datos.Importe);
+
+            await OperacionesContables.EnTransaccionAsync(_context, async () =>
+            {
+                Agregar(salida);
+                Agregar(entrada);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                var asiento = new AsientoContable(
+                    PlanDeCuentas.ClienteIdPorDefecto,
+                    await OperacionesContables.SiguienteNumeroAsientoAsync(_context, cancellationToken),
+                    DateOnly.FromDateTime(datos.Fecha),
+                    detalle.Length > 500 ? detalle[..500] : detalle,
+                    PlanDeCuentas.UsuarioSistemaId);
+                asiento.AgregarLinea(CuentaDelLibro(destino), datos.Importe, 0, detalle);
+                asiento.AgregarLinea(CuentaDelLibro(datos.Origen), 0, datos.Importe, detalle);
+                asiento.Confirmar(PlanDeCuentas.UsuarioSistemaId);
+                _context.AsientosContables.Add(asiento);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                salida.AsignarAsiento(asiento.Id);
+                entrada.AsignarAsiento(asiento.Id);
+                await _context.SaveChangesAsync(cancellationToken);
+            }, cancellationToken);
+        }
+
         public async Task EditarAsync(LibroTesoreria libro, long id, DatosMovimientoTesoreria datos, CancellationToken cancellationToken)
         {
             var movimiento = await BuscarManualAsync(libro, id, cancellationToken);
+            if (await ContraparteDeTransferenciaAsync(libro, movimiento, cancellationToken) != null)
+                throw new InvalidOperationException(
+                    "Las transferencias entre Caja y Banco no se editan: eliminala y cargala de nuevo (así los dos libros quedan siempre iguales).");
             var anterior = await ContrapartidaActualAsync(libro, movimiento, cancellationToken);
             var contrapartida = ResolverContrapartida(datos, anterior);
 
@@ -85,14 +136,17 @@ namespace EstudioContable.Application.Services
         public async Task EliminarAsync(LibroTesoreria libro, long id, CancellationToken cancellationToken)
         {
             var movimiento = await BuscarManualAsync(libro, id, cancellationToken);
+            // Si es una transferencia, se elimina también el movimiento del otro libro.
+            var contraparte = await ContraparteDeTransferenciaAsync(libro, movimiento, cancellationToken);
 
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 if (movimiento.AsientoContableId is long asientoId)
                     await OperacionesContables.RevertirAsientoAsync(_context, asientoId, cancellationToken);
 
-                if (movimiento is MovimientoCaja caja) _context.MovimientosCaja.Remove(caja);
-                else _context.MovimientosBanco.Remove((MovimientoBanco)movimiento);
+                Quitar(movimiento);
+                if (contraparte != null)
+                    Quitar(contraparte);
 
                 await _context.SaveChangesAsync(cancellationToken);
             }, cancellationToken);
@@ -158,6 +212,37 @@ namespace EstudioContable.Application.Services
                 .Where(l => l.AsientoId == asientoId && l.CuentaId != cuentaFondos)
                 .Select(l => (long?)l.CuentaId)
                 .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// El movimiento del otro libro que comparte el mismo asiento (sólo existe en las
+        /// transferencias entre Caja y Banco).
+        /// </summary>
+        private async Task<IMovimientoTesoreria?> ContraparteDeTransferenciaAsync(LibroTesoreria libro, IMovimientoTesoreria movimiento, CancellationToken cancellationToken)
+        {
+            if (movimiento.AsientoContableId is not long asientoId)
+                return null;
+
+            return libro == LibroTesoreria.Caja
+                ? await _context.MovimientosBanco.FirstOrDefaultAsync(m => m.AsientoContableId == asientoId, cancellationToken)
+                : await _context.MovimientosCaja.FirstOrDefaultAsync(m => m.AsientoContableId == asientoId, cancellationToken);
+        }
+
+        private static IMovimientoTesoreria CrearMovimiento(LibroTesoreria libro, string clienteId, DateTime fecha, string detalle, bool esIngreso, decimal importe)
+            => libro == LibroTesoreria.Caja
+                ? new MovimientoCaja(clienteId, fecha, detalle, esIngreso ? TipoMovimientoCaja.Ingreso : TipoMovimientoCaja.Egreso, importe)
+                : new MovimientoBanco(clienteId, fecha, detalle, esIngreso ? TipoMovimientoBanco.Ingreso : TipoMovimientoBanco.Egreso, importe);
+
+        private void Agregar(IMovimientoTesoreria movimiento)
+        {
+            if (movimiento is MovimientoCaja caja) _context.MovimientosCaja.Add(caja);
+            else _context.MovimientosBanco.Add((MovimientoBanco)movimiento);
+        }
+
+        private void Quitar(IMovimientoTesoreria movimiento)
+        {
+            if (movimiento is MovimientoCaja caja) _context.MovimientosCaja.Remove(caja);
+            else _context.MovimientosBanco.Remove((MovimientoBanco)movimiento);
         }
 
         private static long ResolverContrapartida(DatosMovimientoTesoreria datos, long? anterior)

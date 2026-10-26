@@ -360,7 +360,8 @@ function AppContent() {
                 {tabContable === 'nuevo' && (
                   <AsientoForm 
                     clienteId="1" 
-                    cuentas={cuentas} 
+                    // Caja y Banco se mueven desde sus libros (son cuentas de control).
+                    cuentas={cuentas.filter(c => c.id !== "101" && c.id !== "102")} 
                     onConfirmado={() => setTabContable('listado')}
                   />
                 )}

@@ -1,3 +1,5 @@
+using EstudioContable.Application.Common;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Common.Interfaces;
@@ -24,6 +26,13 @@ namespace EstudioContable.Application.Asientos.Commands.CrearAsiento
         {
             if (!await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(_context.Clientes, c => c.Id == request.ClienteId, cancellationToken))
                 throw new EstudioContable.Application.Common.Exceptions.NotFoundException("Cliente", request.ClienteId);
+
+            // Caja y Banco son cuentas de control: su saldo sale sólo del Libro Caja y del
+            // Libro Banco (y de las facturas). Un asiento manual con ellas descuadraría el
+            // libro contra el Mayor.
+            if (request.Lineas != null && request.Lineas.Any(l => l.CuentaId == PlanDeCuentas.Caja || l.CuentaId == PlanDeCuentas.Banco))
+                throw new System.InvalidOperationException(
+                    "Caja y Banco no se usan en asientos manuales: cargá el movimiento en el Libro Caja o Banco (o una transferencia entre ellos), que generan su asiento.");
 
             long numeroAsiento = await _repository.ObtenerMaximoNumeroAsientoAsync(request.ClienteId, cancellationToken) + 1;
 

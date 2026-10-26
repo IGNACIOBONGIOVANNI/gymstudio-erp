@@ -104,6 +104,10 @@ export function AsientoForm({ clienteId, cuentas, onConfirmado }: AsientoFormPro
         <p className="text-sm text-slate-500">
           Cargá las líneas del Debe y del Haber. El asiento debe quedar balanceado antes de confirmarse.
         </p>
+        <p className="text-xs text-slate-400">
+          Caja y Banco no aparecen acá: sus movimientos se cargan en el Libro Caja y el Libro Banco
+          (incluidas las transferencias entre ellos), que generan el asiento automáticamente.
+        </p>
       </header>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

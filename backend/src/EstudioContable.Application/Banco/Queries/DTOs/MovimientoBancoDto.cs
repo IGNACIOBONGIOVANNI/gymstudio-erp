@@ -6,6 +6,7 @@ namespace EstudioContable.Application.Banco.Queries.DTOs
         string Detalle,
         decimal? Ingreso,
         decimal? Egreso,
-        long? FacturaId
+        long? FacturaId,
+        bool EsTransferencia
     );
 }
