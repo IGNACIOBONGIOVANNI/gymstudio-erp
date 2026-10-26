@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useCrearFactura } from "../hooks/useCrearFactura";
 import { useProductos } from "../../../hooks/useProductos";
@@ -35,7 +36,7 @@ export function Facturacion() {
   // ESTADOS NUEVOS
   const [condicionPago, setCondicionPago] = useState("ContadoCaja");
   const [porcentajeIva, setPorcentajeIva] = useState<number>(21);
-  const [items, setItems] = useState<FacturaItem[]>([ITEM_VACIO(), ITEM_VACIO()]);
+  const [items, setItems] = useState<FacturaItem[]>([ITEM_VACIO()]);
   
   const crearFacturaMutation = useCrearFactura();
   const enviando = crearFacturaMutation.isPending;
@@ -118,7 +119,7 @@ export function Facturacion() {
     setProveedorId("");
     setCondicionPago("ContadoCaja"); 
     setPorcentajeIva(21);
-    setItems([ITEM_VACIO(), ITEM_VACIO()]);
+    setItems([ITEM_VACIO()]);
   };
 
   // Cálculos
@@ -128,19 +129,37 @@ export function Facturacion() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Las filas que quedaron en blanco no se facturan.
+    const itemsCargados = items.filter(i => i.descripcion.trim() !== "" || Number(i.precioUnitario) > 0);
+    if (itemsCargados.length === 0)
+      return void toast.error("Agregá al menos un ítem a la factura");
+    const itemInvalido = itemsCargados.find(i =>
+      i.descripcion.trim() === "" || !Number.isInteger(Number(i.cantidad)) || Number(i.cantidad) < 1 || !(Number(i.precioUnitario) >= 0));
+    if (itemInvalido)
+      return void toast.error("Revisá los ítems: cada uno necesita descripción, una cantidad entera de 1 o más y un precio válido");
+
+    const tercero = tipoOperacion === 'Venta'
+      ? clientes.find(c => c.id === clienteId)
+      : proveedores.find(p => p.id === proveedorId);
+    if (!tercero)
+      return void toast.error(tipoOperacion === 'Venta' ? "Seleccioná el cliente" : "Seleccioná el proveedor");
+
+    const subtotalItems = itemsCargados.reduce((acc, i) => acc + Number(i.cantidad) * Number(i.precioUnitario), 0);
+    const ivaItems = (tipoComprobante === "A" || tipoComprobante === "B") ? subtotalItems * (porcentajeIva / 100) : 0;
+
     const payload = {
       fecha: new Date(fecha).toISOString(), 
       tipoOperacion,
       tipoComprobante,
-      cliente: "",
+      cliente: tercero.razonSocial,
       clienteId: tipoOperacion === 'Venta' ? (clienteId === "" ? null : Number(clienteId)) : null,
       proveedorId: tipoOperacion === 'Compra' ? (proveedorId === "" ? null : Number(proveedorId)) : null,
       condicionPago,
-      subtotal: Number(subtotalGeneral),
-      iva: Number(iva),
-      total: Number(total),
-      items: items.map(item => ({
+      subtotal: Number(subtotalItems),
+      iva: Number(ivaItems),
+      total: Number(subtotalItems + ivaItems),
+      items: itemsCargados.map(item => ({
         productoId: item.productoId,
         descripcion: item.descripcion,
         cantidad: Number(item.cantidad),

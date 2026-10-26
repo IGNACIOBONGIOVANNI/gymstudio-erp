@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { Plus, Trash2, Loader2, X } from "lucide-react";
 import { useEditarFactura } from "../hooks/useEditarFactura"; 
 
@@ -44,16 +45,24 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const itemsCargados = items.filter(i => i.descripcion.trim() !== "" || Number(i.precioUnitario) > 0);
+    if (itemsCargados.length === 0) return void toast.error("La factura debe tener al menos un ítem");
+    if (itemsCargados.some(i => i.descripcion.trim() === "" || !Number.isInteger(Number(i.cantidad)) || Number(i.cantidad) < 1 || !(Number(i.precioUnitario) >= 0)))
+      return void toast.error("Revisá los ítems: cada uno necesita descripción, una cantidad entera de 1 o más y un precio válido");
+    const subtotalItems = itemsCargados.reduce((acc, i) => acc + Number(i.cantidad) * Number(i.precioUnitario), 0);
+    const ivaItems = (tipoComprobante === "A" || tipoComprobante === "B") ? subtotalItems * 0.21 : 0;
+
     const payload = {
       fecha: new Date(fecha).toISOString(),
       tipoOperacion,
       tipoComprobante,
       cliente,
       condicionPago,
-      subtotal: Number(subtotalGeneral),
-      iva: Number(iva),
-      total: Number(total),
-      items: items.map(item => ({
+      subtotal: Number(subtotalItems),
+      iva: Number(ivaItems),
+      total: Number(subtotalItems + ivaItems),
+      items: itemsCargados.map(item => ({
         productoId: item.productoId ?? 0,
         descripcion: item.descripcion,
         cantidad: Number(item.cantidad),

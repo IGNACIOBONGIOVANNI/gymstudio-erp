@@ -65,8 +65,21 @@ export function GestionProductos() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre || !precioUnitario || !precioVenta) {
+    if (!nombre.trim() || precioUnitario === "" || precioVenta === "") {
       toast.error("Completá los campos obligatorios");
+      return;
+    }
+    if (!(Number(precioUnitario) >= 0) || !(Number(precioVenta) >= 0)) {
+      toast.error("Los precios deben ser números de 0 o más");
+      return;
+    }
+    if (!editingProducto && stockInicial !== "" && !(Number.isInteger(Number(stockInicial)) && Number(stockInicial) >= 0)) {
+      toast.error("El stock inicial debe ser un número entero de 0 o más");
+      return;
+    }
+    const nutricionales = [calorias, proteinas, carbohidratos, grasas];
+    if (nutricionales.some(v => v !== "" && !(Number(v) >= 0))) {
+      toast.error("Los valores nutricionales no pueden ser negativos");
       return;
     }
 
@@ -193,16 +206,16 @@ export function GestionProductos() {
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Precio Unitario (Costo) *</label>
-                    <input type="number" step="0.01" required value={precioUnitario} onChange={e => setPrecioUnitario(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="number" step="0.01" min="0" required value={precioUnitario} onChange={e => setPrecioUnitario(e.target.value)} className="w-full rounded border p-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Precio Venta *</label>
-                    <input type="number" step="0.01" required value={precioVenta} onChange={e => setPrecioVenta(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="number" step="0.01" min="0" required value={precioVenta} onChange={e => setPrecioVenta(e.target.value)} className="w-full rounded border p-2 text-sm" />
                   </div>
                   {!editingProducto && (
                     <div>
                       <label className="mb-1 block text-xs font-medium text-slate-700">Stock Inicial</label>
-                      <input type="number" value={stockInicial} onChange={e => setStockInicial(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                      <input type="number" min="0" step="1" value={stockInicial} onChange={e => setStockInicial(e.target.value)} className="w-full rounded border p-2 text-sm" />
                     </div>
                   )}
                 </div>

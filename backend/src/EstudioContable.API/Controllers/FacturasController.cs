@@ -37,9 +37,9 @@ namespace EstudioContable.API.Controllers
                 TipoOperacion = dto.TipoOperacion,
                 CondicionPago = dto.CondicionPago,
                 TipoComprobante = dto.TipoComprobante,
-                Cliente = dto.Cliente,
-                ClienteComercialId = dto.ClienteId,
-                ProveedorId = dto.ProveedorId,
+                Cliente = await NombreDelTerceroAsync(dto.Cliente, dto.TipoOperacion, dto.ClienteId, dto.ProveedorId, cancellationToken),
+                ClienteComercialId = dto.TipoOperacion == "Venta" ? dto.ClienteId : null,
+                ProveedorId = dto.TipoOperacion == "Compra" ? dto.ProveedorId : null,
                 Subtotal = dto.Subtotal,
                 Iva = dto.Iva,
                 Total = dto.Total,
@@ -67,6 +67,26 @@ namespace EstudioContable.API.Controllers
         {
             var facturas = await ConsultarFacturas().ToListAsync(cancellationToken);
             return Ok(facturas);
+        }
+
+        /// <summary>
+        /// Nombre que se imprime en la factura: el que viene en el formulario o, si está
+        /// vacío, la razón social del cliente (venta) o proveedor (compra) elegido.
+        /// </summary>
+        private async Task<string> NombreDelTerceroAsync(string? nombre, string tipoOperacion, long? clienteId, long? proveedorId, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(nombre))
+                return nombre.Trim();
+
+            if (tipoOperacion == "Venta" && clienteId is long cId)
+                return await _context.ClientesComerciales.Where(c => c.Id == cId).Select(c => c.RazonSocial).FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new EstudioContable.Application.Common.Exceptions.NotFoundException("Cliente", cId);
+
+            if (tipoOperacion == "Compra" && proveedorId is long pId)
+                return await _context.Proveedores.Where(p => p.Id == pId).Select(p => p.RazonSocial).FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new EstudioContable.Application.Common.Exceptions.NotFoundException("Proveedor", pId);
+
+            return string.Empty; // el servicio de facturación informa que falta el cliente/proveedor
         }
 
         private IQueryable<FacturaDto> ConsultarFacturas()
@@ -114,13 +134,23 @@ namespace EstudioContable.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // Si no viene el nombre (facturas cargadas sin él), se conserva el del
+            // cliente o proveedor que ya tiene asociado la factura.
+            var actual = await _context.Facturas.AsNoTracking()
+                .Where(f => f.Id == id)
+                .Select(f => new { f.ClienteComercialId, f.ProveedorId })
+                .FirstOrDefaultAsync(cancellationToken);
+            var nombre = actual == null
+                ? dto.Cliente
+                : await NombreDelTerceroAsync(dto.Cliente, dto.TipoOperacion, actual.ClienteComercialId, actual.ProveedorId, cancellationToken);
+
             var datosNuevos = new Factura
             {
                 Fecha = dto.Fecha,
                 TipoOperacion = dto.TipoOperacion,
                 CondicionPago = dto.CondicionPago,
                 TipoComprobante = dto.TipoComprobante,
-                Cliente = dto.Cliente,
+                Cliente = nombre,
                 Subtotal = dto.Subtotal,
                 Iva = dto.Iva,
                 Total = dto.Total,

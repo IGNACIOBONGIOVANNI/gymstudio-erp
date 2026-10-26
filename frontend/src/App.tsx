@@ -28,11 +28,12 @@ import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
 
 const queryClient = new QueryClient()
 
-import { cuentasDePrueba } from './asientos/cuentas'
+import { useCuentas } from './asientos/hooks/useCuentas'
 
 
 function AppContent() {
   const { user, logout } = useAuth();
+  const { data: cuentas = [] } = useCuentas(Boolean(user));
   
   const [modulo, setModulo] = useState<'contable' | 'gimnasio' | 'stock' | 'clientes' | 'proveedores' | 'usuarios' | 'configuracion' | 'auditoria'>('contable');
   const [tabContable, setTabContable] = useState<'nuevo' | 'listado' | 'mayor' | 'ventas' | 'compras' | 'caja' | 'banco' | 'facturacion' | 'balance'>('listado');
@@ -359,7 +360,7 @@ function AppContent() {
                 {tabContable === 'nuevo' && (
                   <AsientoForm 
                     clienteId="1" 
-                    cuentas={cuentasDePrueba} 
+                    cuentas={cuentas} 
                     onConfirmado={() => setTabContable('listado')}
                   />
                 )}
