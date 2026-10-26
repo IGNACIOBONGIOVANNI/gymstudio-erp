@@ -180,7 +180,7 @@ de versiones anteriores que las violaban:
 ## Cómo probar las reglas
 
 ```bash
-psql -U postgres -d EstudioContableDB -f docs/pruebas_base_de_datos.sql
+docker compose exec -T db psql -U postgres -d estudio_contable < docs/pruebas_base_de_datos.sql
 ```
 
 Intenta violar cada regla (asiento desbalanceado, modificar uno confirmado, factura

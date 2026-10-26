@@ -29,3 +29,6 @@ Thumbs.db
 
 # Configuración local de Claude Code
 .claude/settings.local.json
+
+# Paquete para copiar a otra PC (se genera con git archive)
+*.zip

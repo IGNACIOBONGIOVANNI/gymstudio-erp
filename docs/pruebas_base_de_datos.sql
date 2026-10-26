@@ -3,7 +3,7 @@
 -- auditoría, vista y función). Se ejecutan directo contra la base, sin
 -- pasar por la API, para mostrar que la base se defiende sola.
 --
---   psql -U postgres -d EstudioContableDB -f docs/pruebas_base_de_datos.sql
+--   docker compose exec -T db psql -U postgres -d estudio_contable < docs/pruebas_base_de_datos.sql
 --
 -- Cada prueba corre dentro de un bloque que captura el error esperado y
 -- luego se deshace: el script NO deja datos nuevos en la base.
@@ -82,10 +82,17 @@ END $$;
 
 -- 6. CHECK: una línea no puede tener importe en Debe y en Haber a la vez
 DO $$
+DECLARE v_id bigint;
 BEGIN
     BEGIN
+        -- Asiento borrador propio, para que la prueba funcione también con la base vacía
+        INSERT INTO contabilidad.asientos_contables
+            (cliente_id, numero_asiento, fecha, descripcion, estado, usuario_creador_id, fecha_creacion)
+        VALUES (1, 900003, current_date, 'Prueba línea inválida', 'Borrador', 1, now())
+        RETURNING "Id" INTO v_id;
+
         INSERT INTO contabilidad.lineas_asiento (asiento_id, cuenta_id, debe, haber, orden)
-        SELECT "Id", 101, 10, 10, 0 FROM contabilidad.asientos_contables LIMIT 1;
+        VALUES (v_id, 101, 10, 10, 0);
         RAISE NOTICE 'FALLA 6: se aceptó una línea con Debe y Haber';
     EXCEPTION WHEN check_violation THEN
         RAISE NOTICE 'OK 6: línea con Debe y Haber rechazada -> %', SQLERRM;

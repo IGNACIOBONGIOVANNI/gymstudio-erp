@@ -9,14 +9,35 @@ Mayor, Balance), facturación, caja, banco, stock, socios, planes y membresías.
 
 ## Cómo levantarlo
 
-### Con Docker
+### Con Docker (recomendado, es como se instala en otra PC)
+
+Requisitos: Docker Desktop abierto y conexión a internet **la primera vez**
+(descarga imágenes y dependencias; tarda entre 5 y 10 minutos).
+
+1. Copiar el proyecto a la PC: descomprimir `GymStudio-ERP.zip` (o `git clone`).
+   No copiar la carpeta de desarrollo tal cual: trae `bin/`, `obj/` y
+   `node_modules/` de Windows, que no sirven dentro de los contenedores.
+2. En la carpeta del proyecto:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Esperar a que el backend muestre `Now listening on: http://0.0.0.0:5122` y abrir
+   http://localhost:5173. Ingresar con alguno de los usuarios iniciales (ver abajo).
+
+- API + Swagger: http://localhost:5122/swagger
+- PostgreSQL (para pgAdmin o psql): `localhost:5433`, usuario `postgres`, contraseña `password`
+
+Para empezar de nuevo con la base vacía (**borra todos los datos cargados**):
 
 ```bash
-docker compose up
+docker compose down -v
 ```
 
-- Frontend: http://localhost:5173
-- API + Swagger: http://localhost:5122/swagger
+Si al levantar aparece *port is already allocated*, hay otro programa usando el
+5173, el 5122 o el 5433 (por ejemplo un `npm run dev` o un backend abierto): cerrarlo
+y volver a ejecutar `docker compose up`.
 
 ### Local (sin Docker para backend y frontend)
 
