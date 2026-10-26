@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { ModalCliente } from './ModalCliente';
 import toast from 'react-hot-toast';
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../api/errores';
 
 export default function ModuloClientes() {
   const [clientes, setClientes] = useState<any[]>([]);
@@ -29,11 +30,11 @@ export default function ModuloClientes() {
         setClientes(clientes.filter(c => c.id !== id));
         toast.success('Cliente eliminado exitosamente');
       } else {
-        toast.error('Error al eliminar el cliente');
+        toast.error(await mensajeDeError(res, 'Error al eliminar el cliente'));
       }
     } catch (error) {
       console.error(error);
-      toast.error('Error de red al eliminar');
+      toast.error(ERROR_DE_CONEXION);
     }
   };
 
@@ -51,7 +52,7 @@ export default function ModuloClientes() {
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <h2 className="text-xl font-semibold text-slate-900">Directorio de Clientes</h2>
-        <button 
+        <button
           onClick={handleNuevo}
           className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
         >
@@ -106,13 +107,13 @@ export default function ModuloClientes() {
       </div>
 
       {showModal && (
-        <ModalCliente 
+        <ModalCliente
           clienteEditando={clienteEditando}
-          onClose={() => setShowModal(false)} 
+          onClose={() => setShowModal(false)}
           onSuccess={() => {
             setShowModal(false);
             fetchClientes();
-          }} 
+          }}
         />
       )}
     </div>

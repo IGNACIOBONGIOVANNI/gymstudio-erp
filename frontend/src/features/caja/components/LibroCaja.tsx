@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Loader2, Plus, Trash2, Pencil, Search } from "lucide-react";
 import { useLibroCaja } from "../hooks/useLibroCaja";
+import { formatearFechaLocal } from "../../../utils/formatters";
 import { MovimientoCajaForm } from "./MovimientoCajaForm";
 import { useEliminarMovimientoCaja } from "../hooks/useEliminarMovimientoCaja";
 
@@ -17,7 +18,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
   const { data: resumen, isLoading, isError, error } = useLibroCaja(clienteId);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [fechaFiltro, setFechaFiltro] = useState("");
-  
+
   // Estados para eliminar y editar
   const { mutate: eliminarMovimiento } = useEliminarMovimientoCaja();
   const [movimientoToDelete, setMovimientoToDelete] = useState<number | null>(null);
@@ -49,7 +50,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
   }
 
   const listaBase = Array.isArray(resumen) ? resumen : (resumen?.listaMovimientos || []);
-  const listaFiltrada = fechaFiltro 
+  const listaFiltrada = fechaFiltro
     ? listaBase.filter((m: any) => m?.fecha && String(m.fecha).startsWith(fechaFiltro))
     : listaBase;
 
@@ -83,7 +84,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
             Filtrar por fecha:
           </label>
           <div className="flex items-center gap-2">
-            <input 
+            <input
               id="fechaFiltroCaja"
               type="date"
               value={fechaFiltro}
@@ -91,7 +92,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
               className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {fechaFiltro && (
-              <button 
+              <button
                 onClick={() => setFechaFiltro("")}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
               >
@@ -110,7 +111,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Columna Izquierda: Ingresos */}
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
@@ -121,6 +122,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50/50">
                   <tr className="border-b border-slate-200">
+                    <th className="h-10 px-4 text-left font-medium text-slate-500">Fecha</th>
                     <th className="h-10 px-4 text-left font-medium text-slate-500">Detalle</th>
                     <th className="h-10 px-4 text-right font-medium text-slate-500">Importe</th>
                     <th className="h-10 px-4 w-20"></th>
@@ -129,16 +131,26 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                 <tbody>
                   {ingresos.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="p-4 text-center text-slate-500">Sin ingresos</td>
+                      <td colSpan={4} className="p-4 text-center text-slate-500">Sin ingresos</td>
                     </tr>
                   ) : (
                     ingresos.map((mov: any, idx: number) => (
                       <tr key={`ing-${idx}`} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150">
+                        <td className="p-3 px-4 text-slate-500 whitespace-nowrap tabular-nums">{formatearFechaLocal(mov.fecha)}</td>
                         <td className="p-3 px-4 text-slate-700">{mov.detalle}</td>
                         <td className="p-3 px-4 text-right font-semibold text-slate-800 tabular-nums">
                           {currencyFormatter.format(mov.ingreso)}
                         </td>
                         <td className="p-3 px-4 flex justify-end space-x-1">
+                          {mov.facturaId ? (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
+                              title="Generado por una factura: se corrige editando o anulando la factura"
+                            >
+                              Factura N° {mov.facturaId}
+                            </span>
+                          ) : (
+                            <>
                           <button
                             onClick={() => handleEditClick(mov)}
                             className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
@@ -153,6 +165,8 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -195,6 +209,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50/50">
                   <tr className="border-b border-slate-200">
+                    <th className="h-10 px-4 text-left font-medium text-slate-500">Fecha</th>
                     <th className="h-10 px-4 text-left font-medium text-slate-500">Detalle</th>
                     <th className="h-10 px-4 text-right font-medium text-slate-500">Importe</th>
                     <th className="h-10 px-4 w-20"></th>
@@ -203,16 +218,26 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                 <tbody>
                   {egresos.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="p-4 text-center text-slate-500">Sin egresos</td>
+                      <td colSpan={4} className="p-4 text-center text-slate-500">Sin egresos</td>
                     </tr>
                   ) : (
                     egresos.map((mov: any, idx: number) => (
                       <tr key={`egr-${idx}`} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150">
+                        <td className="p-3 px-4 text-slate-500 whitespace-nowrap tabular-nums">{formatearFechaLocal(mov.fecha)}</td>
                         <td className="p-3 px-4 text-slate-700">{mov.detalle}</td>
                         <td className="p-3 px-4 text-right font-semibold text-slate-800 tabular-nums">
                           {currencyFormatter.format(mov.egreso)}
                         </td>
                         <td className="p-3 px-4 flex justify-end space-x-1">
+                          {mov.facturaId ? (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
+                              title="Generado por una factura: se corrige editando o anulando la factura"
+                            >
+                              Factura N° {mov.facturaId}
+                            </span>
+                          ) : (
+                            <>
                           <button
                             onClick={() => handleEditClick(mov)}
                             className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
@@ -227,6 +252,8 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
+                            </>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -264,10 +291,10 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
 
       {/* Modal Formulario (Nuevo/Editar) */}
       {isFormOpen && (
-        <MovimientoCajaForm 
-          clienteId={clienteId} 
-          movimientoAEditar={movimientoAEditar} 
-          onClose={handleCloseForm} 
+        <MovimientoCajaForm
+          clienteId={clienteId}
+          movimientoAEditar={movimientoAEditar}
+          onClose={handleCloseForm}
         />
       )}
     </div>

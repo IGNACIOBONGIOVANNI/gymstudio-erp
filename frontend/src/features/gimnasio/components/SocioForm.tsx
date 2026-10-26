@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
+import toast from 'react-hot-toast';
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 
 export interface SocioEditable {
   id: string | number;
@@ -33,7 +35,7 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
   const handleGuardarSocio = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsPending(true);
-    
+
     try {
       const response = await fetch(esEdicion ? `/api/socios/${socioAEditar!.id}` : "/api/socios", {
         method: esEdicion ? "PUT" : "POST",
@@ -49,13 +51,12 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Error al guardar el socio");
+        throw new Error(await mensajeDeError(response, "Error al guardar el socio"));
       }
 
       onClose();
-    } catch (error) {
-      console.error(error);
-      alert("Hubo un error al guardar el socio");
+    } catch (error: any) {
+      toast.error(error instanceof TypeError ? ERROR_DE_CONEXION : error?.message || "Error al guardar el socio");
     } finally {
       setIsPending(false);
     }

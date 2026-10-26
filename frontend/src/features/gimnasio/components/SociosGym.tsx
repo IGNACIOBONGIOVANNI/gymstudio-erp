@@ -7,6 +7,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { SocioForm } from "./SocioForm";
+import toast from 'react-hot-toast';
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 
 interface SocioDto {
   id: string;
@@ -60,22 +62,21 @@ export function SociosGym() {
         // Actualizamos el estado local eliminando el registro para evitar recargar
         setSocios(prevSocios => prevSocios.filter(s => s.id !== idToDelete));
       } else {
-        const err = await response.text();
-        alert(`Error al eliminar el socio: ${err}`);
+        toast.error(await mensajeDeError(response, "Error al eliminar el socio"));
       }
     } catch (error) {
       console.error("Error eliminando socio:", error);
-      alert("Error de red al intentar eliminar el socio.");
+      toast.error(ERROR_DE_CONEXION);
     } finally {
       setIsDeleting(false);
       setIdToDelete(null);
     }
-    
+
   };
   const formatearFechaLocal = (fechaStr: string | null | undefined) => {
   if (!fechaStr) return "-";
   const [yyyy, mm, dd] = fechaStr.split('T')[0].split('-');
-  return `${dd}/${mm}/${yyyy}`; 
+  return `${dd}/${mm}/${yyyy}`;
     };
 
   const columns = useMemo(() => [
@@ -226,12 +227,12 @@ export function SociosGym() {
       </div>
 
       {isFormOpen && (
-        <SocioForm 
+        <SocioForm
           socioAEditar={socioToEdit}
           onClose={() => {
             setIsFormOpen(false);
             fetchSocios();
-          }} 
+          }}
         />
       )}
 

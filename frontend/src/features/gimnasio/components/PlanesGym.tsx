@@ -7,6 +7,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { PlanForm } from "./PlanForm";
+import toast from 'react-hot-toast';
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 
 interface PlanDto {
   id: string;
@@ -28,7 +30,7 @@ export function PlanesGym() {
   const [planes, setPlanes] = useState<PlanDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [planToEdit, setPlanToEdit] = useState<PlanDto | null>(null);
-  
+
   // Modal de eliminación
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -61,12 +63,11 @@ export function PlanesGym() {
         // Actualizamos el estado local eliminando el registro para evitar recargar
         setPlanes(prevPlanes => prevPlanes.filter(p => p.id !== idToDelete));
       } else {
-        const err = await response.text();
-        alert(`Error al eliminar el plan: ${err}`);
+        toast.error(await mensajeDeError(response, "Error al eliminar el plan"));
       }
     } catch (error) {
       console.error("Error eliminando plan:", error);
-      alert("Error de red al intentar eliminar el plan.");
+      toast.error(ERROR_DE_CONEXION);
     } finally {
       setIsDeleting(false);
       setIdToDelete(null);
@@ -218,12 +219,12 @@ export function PlanesGym() {
       </div>
 
       {isFormOpen && (
-        <PlanForm 
+        <PlanForm
           planAEditar={planToEdit}
           onClose={() => {
             setIsFormOpen(false);
             fetchPlanes();
-          }} 
+          }}
         />
       )}
 

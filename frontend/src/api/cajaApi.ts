@@ -46,6 +46,8 @@ export interface CrearMovimientoCajaCommand {
   detalle: string;
   tipoMovimiento: number; // 1 = Ingreso, 2 = Egreso
   importe: number;
+  // Cuenta contra la que se registra el asiento (null = la de siempre).
+  cuentaContrapartidaId?: number | null;
 }
 
 /** Registra un nuevo movimiento en la caja */

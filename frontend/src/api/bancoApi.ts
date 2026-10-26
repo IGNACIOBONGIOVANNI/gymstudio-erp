@@ -1,5 +1,8 @@
 export interface MovimientoBancoDto {
+  id: number;
+  fecha: string;
   detalle: string;
+  facturaId?: number | null;
   ingreso: number | null;
   egreso: number | null;
 }
@@ -45,6 +48,8 @@ export interface CrearMovimientoBancoCommand {
   detalle: string;
   tipoMovimiento: number; // 1 = Ingreso, 2 = Egreso
   importe: number;
+  // Cuenta contra la que se registra el asiento (null = la de siempre).
+  cuentaContrapartidaId?: number | null;
 }
 
 /** Registra un nuevo movimiento bancario */

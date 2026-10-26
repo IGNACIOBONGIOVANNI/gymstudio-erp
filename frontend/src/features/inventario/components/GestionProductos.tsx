@@ -7,10 +7,10 @@ import type { ProductoDto } from "../../../api/productosApi";
 export function GestionProductos() {
   const { data: productos = [], isLoading } = useProductos();
   const { crearMutation, actualizarMutation, eliminarMutation } = useMutacionesProducto();
-  
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProducto, setEditingProducto] = useState<ProductoDto | null>(null);
-  
+
   // Form state
   const [nombre, setNombre] = useState("");
   const [precioUnitario, setPrecioUnitario] = useState("");
@@ -97,8 +97,8 @@ export function GestionProductos() {
         toast.success("Producto creado");
       }
       setModalOpen(false);
-    } catch (err) {
-      toast.error("Ocurrió un error");
+    } catch (err: any) {
+      toast.error(err?.message || "Ocurrió un error al guardar el producto");
     }
   };
 
@@ -181,7 +181,7 @@ export function GestionProductos() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-4 space-y-6">
               {/* Sección Básica */}
               <div>

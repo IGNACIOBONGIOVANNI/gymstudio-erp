@@ -1,3 +1,5 @@
+import { mensajeDeError } from "./errores";
+
 export interface ProductoDto {
   id: number;
   nombre: string;
@@ -44,7 +46,7 @@ export const obtenerProductos = async (): Promise<ProductoDto[]> => {
     headers: { "Content-Type": "application/json" },
   });
   if (!res.ok) {
-    throw new Error("Error al obtener productos");
+    throw new Error(await mensajeDeError(res, "Error al obtener productos"));
   }
   return res.json() as Promise<ProductoDto[]>;
 };
@@ -55,7 +57,7 @@ export const crearProducto = async (data: CrearProductoDto): Promise<number> => 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error("Error al crear producto");
+  if (!res.ok) throw new Error(await mensajeDeError(res, "Error al crear producto"));
   return res.json();
 };
 
@@ -65,12 +67,12 @@ export const actualizarProducto = async (data: ActualizarProductoDto): Promise<v
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error("Error al actualizar producto");
+  if (!res.ok) throw new Error(await mensajeDeError(res, "Error al actualizar producto"));
 };
 
 export const eliminarProducto = async (id: number): Promise<void> => {
   const res = await fetch(`/api/productos/${id}`, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error("Error al eliminar producto");
+  if (!res.ok) throw new Error(await mensajeDeError(res, "Error al eliminar producto"));
 };

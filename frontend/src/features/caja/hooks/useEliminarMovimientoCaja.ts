@@ -1,3 +1,4 @@
+import { mensajeDeError } from "../../../api/errores";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -11,12 +12,13 @@ export function useEliminarMovimientoCaja() {
         method: "DELETE",
       });
       if (!response.ok) {
-        throw new Error("No se pudo eliminar el movimiento");
+        throw new Error(await mensajeDeError(response, "No se pudo eliminar el movimiento"));
       }
       return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["libro-caja"] });
+      queryClient.invalidateQueries({ queryKey: ["mayor"] });
       queryClient.invalidateQueries({ queryKey: ["facturas"] });
       queryClient.invalidateQueries({ queryKey: ["libro-banco"] });
       queryClient.invalidateQueries({ queryKey: ["asientos"] });

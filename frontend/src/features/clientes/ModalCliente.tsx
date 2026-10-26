@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../api/errores';
 
 interface ModalClienteProps {
   clienteEditando: any | null;
@@ -33,13 +34,13 @@ export function ModalCliente({ clienteEditando, onClose, onSuccess }: ModalClien
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const isEdit = !!clienteEditando;
-    
-    const url = clienteEditando 
+
+    const url = clienteEditando
       ? `/api/clientes/${clienteEditando.id}`
       : '/api/clientes';
-      
+
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
@@ -48,16 +49,16 @@ export function ModalCliente({ clienteEditando, onClose, onSuccess }: ModalClien
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      
+
       if (res.ok) {
         toast.success(isEdit ? 'Cliente actualizado' : 'Cliente creado');
         onSuccess();
       } else {
-        toast.error('Error al guardar el cliente');
+        toast.error(await mensajeDeError(res, 'Error al guardar el cliente'));
       }
     } catch (error) {
       console.error(error);
-      toast.error('Error de red al guardar');
+      toast.error(ERROR_DE_CONEXION);
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export function ModalCliente({ clienteEditando, onClose, onSuccess }: ModalClien
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
             <div>
@@ -103,7 +104,7 @@ export function ModalCliente({ clienteEditando, onClose, onSuccess }: ModalClien
               </select>
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end gap-3">
             <button type="button" onClick={onClose} className="rounded-md px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancelar</button>
             <button type="submit" disabled={loading} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">

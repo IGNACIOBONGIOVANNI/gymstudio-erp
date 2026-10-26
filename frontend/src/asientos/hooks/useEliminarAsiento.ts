@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { eliminarAsiento, ApiError } from "../asientosApi";
+import toast from "react-hot-toast";
 
 export function useEliminarAsiento() {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ export function useEliminarAsiento() {
       queryClient.invalidateQueries({ queryKey: ["movimientosStock"] });
     },
     onError: (error) => {
-      alert("Error al anular: " + (error.message || "Ocurrió un error inesperado al anular el asiento."));
+      toast.error(error.message || "Ocurrió un error inesperado al anular el asiento.");
     },
   });
 }

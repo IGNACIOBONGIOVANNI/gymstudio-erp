@@ -9,6 +9,8 @@ export function useCrearMovimientoCaja() {
     mutationFn: (command: CrearMovimientoCajaCommand) => crearMovimientoCaja(command),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['libro-caja'] });
+      queryClient.invalidateQueries({ queryKey: ['asientos'] });
+      queryClient.invalidateQueries({ queryKey: ['mayor'] });
       toast.success('Movimiento de caja registrado exitosamente');
     },
     onError: (error: any) => {

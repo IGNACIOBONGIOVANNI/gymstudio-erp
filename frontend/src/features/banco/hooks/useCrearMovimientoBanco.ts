@@ -9,6 +9,8 @@ export function useCrearMovimientoBanco() {
     mutationFn: (command: CrearMovimientoBancoCommand) => crearMovimientoBanco(command),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['libro-banco'] });
+      queryClient.invalidateQueries({ queryKey: ['asientos'] });
+      queryClient.invalidateQueries({ queryKey: ['mayor'] });
       toast.success('Movimiento bancario registrado exitosamente');
     },
     onError: (error: any) => {

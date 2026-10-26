@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
+import toast from 'react-hot-toast';
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 
 export interface PlanEditable {
   id: string | number;
@@ -33,8 +35,15 @@ export function PlanForm({ onClose, planAEditar }: PlanFormProps) {
 
   const handleGuardarPlan = async (e: React.FormEvent) => {
     e.preventDefault();
+    const precio = Number(precioMensual);
+    const meses = Number(duracionMeses);
+    if (!nombre.trim()) return void toast.error("Ingresá el nombre del plan");
+    if (precioMensual.trim() === "" || !Number.isFinite(precio) || precio < 0)
+      return void toast.error("Ingresá un precio válido (0 o más)");
+    if (!Number.isInteger(meses) || meses < 1)
+      return void toast.error("La duración debe ser un número entero de meses (1 o más)");
     setIsPending(true);
-    
+
     try {
       const response = await fetch(esEdicion ? `/api/planes/${planAEditar!.id}` : "/api/planes", {
         method: esEdicion ? "PUT" : "POST",
@@ -49,13 +58,12 @@ export function PlanForm({ onClose, planAEditar }: PlanFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Error al guardar el plan");
+        throw new Error(await mensajeDeError(response, "Error al guardar el plan"));
       }
 
       onClose();
-    } catch (error) {
-      console.error(error);
-      alert("Hubo un error al guardar el plan");
+    } catch (error: any) {
+      toast.error(error instanceof TypeError ? ERROR_DE_CONEXION : error?.message || "Error al guardar el plan");
     } finally {
       setIsPending(false);
     }

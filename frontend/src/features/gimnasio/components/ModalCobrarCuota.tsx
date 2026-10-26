@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { generarComprobante } from "../../../utils/generarComprobante";
+import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 
 interface PlanDto {
   id: string;
@@ -64,7 +65,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
     setIsSubmitting(true);
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
-      
+
       const planActual = planes.find(p => String(p.id) === planSeleccionado);
 
       // 🔥 PAYLOAD ACTUALIZADO: Mandamos el metodoPago como texto ("caja" o "banco") para C#
@@ -83,7 +84,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
 
       if (response.ok) {
         toast.success(`Pago registrado para ${socio.nombre} ${socio.apellido}`);
-        
+
         // Imprimir comprobante
         if (planActual) {
           generarComprobante({
@@ -97,10 +98,10 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
 
         onSuccess();
       } else {
-        toast.error("Error al procesar el pago");
+        toast.error(await mensajeDeError(response, "Error al procesar el pago"));
       }
     } catch (error) {
-      toast.error("Ocurrió un problema de conexión al cobrar");
+      toast.error(ERROR_DE_CONEXION);
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +113,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -121,7 +122,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
             </div>
             <h3 className="text-lg font-bold text-white">Cobrar Membresía</h3>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-slate-400 hover:text-white transition-colors"
           >

@@ -56,7 +56,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
 
         return asientosData;
       };
-      
+
       // 🔥 NUEVA LÓGICA: RECOPILAR TODOS LOS DATOS Y ARMAR UN SOLO PDF
       if (tipo === 'todos') {
         const todosLosTipos = ['diario', 'mayor', 'balance', 'venta', 'compra', 'caja', 'banco'];
@@ -118,7 +118,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
             onClose();
           } else {
             const errorData = await response.json().catch(() => ({}));
-            toast.error(errorData.Mensaje || 'Error al generar el reporte');
+            toast.error(errorData.detail || errorData.Mensaje || 'Error al generar el reporte');
           }
         }
       }
@@ -134,7 +134,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl w-[95%] max-w-md mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
             </div>
             <h3 className="text-lg font-bold text-white">Generar Reporte (PDF)</h3>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-slate-400 hover:text-white transition-colors"
           >

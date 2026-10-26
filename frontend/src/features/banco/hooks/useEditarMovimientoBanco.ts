@@ -1,3 +1,4 @@
+import { mensajeDeError } from '../../../api/errores';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
@@ -20,13 +21,15 @@ export function useEditarMovimientoBanco() {
       });
 
       if (!response.ok) {
-        throw new Error('Error al editar el movimiento');
+        throw new Error(await mensajeDeError(response, 'Error al editar el movimiento'));
       }
 
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['libro-banco'] });
+      queryClient.invalidateQueries({ queryKey: ['asientos'] });
+      queryClient.invalidateQueries({ queryKey: ['mayor'] });
       toast.success('Movimiento actualizado exitosamente');
     },
     onError: (error: any) => {

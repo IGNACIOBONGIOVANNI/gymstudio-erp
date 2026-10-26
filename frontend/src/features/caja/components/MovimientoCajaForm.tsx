@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { Loader2, Plus, X, Pencil } from "lucide-react";
 import { useCrearMovimientoCaja } from "../hooks/useCrearMovimientoCaja";
 // 🔥 Asegurate de tener este hook creado para actualizar (te dejo el código más abajo por las dudas)
@@ -15,18 +16,21 @@ export function MovimientoCajaForm({ clienteId, onClose, movimientoAEditar }: Mo
   const [detalle, setDetalle] = useState("");
   const [tipoMovimiento, setTipoMovimiento] = useState(1);
   const [importe, setImporte] = useState("");
+  // Cuenta contra la que se registra el asiento ("" = la de siempre: Otros Ingresos /
+  // Gastos Generales al crear, o la que ya tenía al editar).
+  const [contrapartida, setContrapartida] = useState("");
 
   const { mutate: crear, isPending: isCreating } = useCrearMovimientoCaja();
   const { mutate: editar, isPending: isEditing } = useEditarMovimientoCaja();
-  
+
   const isPending = isCreating || isEditing;
 
   // Si nos pasan un movimiento, rellenamos los campos automáticamente
   useEffect(() => {
     if (movimientoAEditar) {
       // Formateamos la fecha a YYYY-MM-DD para el input type="date"
-      const fechaFormateada = movimientoAEditar.fecha 
-        ? new Date(movimientoAEditar.fecha).toISOString().split('T')[0] 
+      const fechaFormateada = movimientoAEditar.fecha
+        ? new Date(movimientoAEditar.fecha).toISOString().split('T')[0]
         : "";
       setFecha(fechaFormateada);
       setDetalle(movimientoAEditar.detalle || "");
@@ -52,31 +56,35 @@ export function MovimientoCajaForm({ clienteId, onClose, movimientoAEditar }: Mo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      clienteId,
-      fecha: new Date(fecha).toISOString(),
-      detalle,
-      tipoMovimiento,
-      importe: parseFloat(importe),
-    };
+    const monto = Number(importe);
+    if (!fecha) return void toast.error("Indicá la fecha del movimiento");
+    if (!detalle.trim()) return void toast.error("Indicá el detalle del movimiento");
+    if (!Number.isFinite(monto) || monto <= 0) return void toast.error("El importe debe ser un número mayor a cero");
+
+    const fechaIso = new Date(fecha).toISOString();
+    const cuentaContrapartidaId = contrapartida ? Number(contrapartida) : null;
 
     if (movimientoAEditar) {
-      // Si estamos editando, llamamos a la función de editar pasando el ID
+      // El endpoint de edición recibe el importe como ingreso o como egreso.
       editar(
-        { id: movimientoAEditar.id, data: payload },
         {
-          onSuccess: () => {
-            onClose();
+          id: movimientoAEditar.id,
+          data: {
+            id: movimientoAEditar.id,
+            fecha: fechaIso,
+            detalle,
+            ingreso: tipoMovimiento === 1 ? monto : null,
+            egreso: tipoMovimiento === 2 ? monto : null,
+            cuentaContrapartidaId,
           },
-        }
+        },
+        { onSuccess: () => onClose() }
       );
     } else {
-      // Si es nuevo, llamamos a crear
-      crear(payload, {
-        onSuccess: () => {
-          onClose();
-        },
-      });
+      crear(
+        { clienteId, fecha: fechaIso, detalle, tipoMovimiento, importe: monto, cuentaContrapartidaId },
+        { onSuccess: () => onClose() }
+      );
     }
   };
 
@@ -115,12 +123,43 @@ export function MovimientoCajaForm({ clienteId, onClose, movimientoAEditar }: Mo
             </label>
             <select
               value={tipoMovimiento}
-              onChange={(e) => setTipoMovimiento(Number(e.target.value))}
+              onChange={(e) => {
+                setTipoMovimiento(Number(e.target.value));
+                setContrapartida("");
+              }}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             >
               <option value={1}>Ingreso</option>
               <option value={2}>Egreso</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Cuenta contable (contrapartida)
+            </label>
+            <select
+              value={contrapartida || (movimientoAEditar ? "" : tipoMovimiento === 1 ? "106" : "107")}
+              onChange={(e) => setContrapartida(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            >
+              {tipoMovimiento === 1 ? (
+                <>
+                  {movimientoAEditar && <option value="">Mantener la actual</option>}
+                  <option value="106">Otros Ingresos</option>
+                  <option value="103">Cobro a clientes (Deudores por Ventas)</option>
+                </>
+              ) : (
+                <>
+                  {movimientoAEditar && <option value="">Mantener la actual</option>}
+                  <option value="107">Gastos Generales</option>
+                  <option value="202">Pago a proveedores</option>
+                </>
+              )}
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              El movimiento genera su asiento en el Libro Diario contra esta cuenta.
+            </p>
           </div>
 
           <div>
