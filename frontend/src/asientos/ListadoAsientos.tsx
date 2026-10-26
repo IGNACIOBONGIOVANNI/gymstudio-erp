@@ -22,7 +22,7 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
 
   const handleDobleClicFila = async (asientoId: number) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5122';
+      const apiUrl = import.meta.env.VITE_API_URL || '';
       
       const response = await fetch(`${apiUrl}/api/asientos/${asientoId}/factura`);
       

@@ -1,15 +1,12 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
-    container_name: contable-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: estudio_contable
     ports:
-      - "5432:5432"
+      - "5433:5432" # 5433 en la PC, para no chocar con un PostgreSQL local
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -23,7 +20,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: contable-backend
     ports:
       - "5122:5122"
     environment:
@@ -44,7 +40,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: contable-frontend
     ports:
       - "5173:5173"
     volumes:

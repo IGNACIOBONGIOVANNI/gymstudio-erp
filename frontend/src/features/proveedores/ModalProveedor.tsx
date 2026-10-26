@@ -37,8 +37,8 @@ export function ModalProveedor({ proveedorEditando, onClose, onSuccess }: ModalP
     const isEdit = !!proveedorEditando;
     
     const url = proveedorEditando 
-      ? `http://localhost:5122/api/proveedores/${proveedorEditando.id}`
-      : 'http://localhost:5122/api/proveedores';
+      ? `/api/proveedores/${proveedorEditando.id}`
+      : '/api/proveedores';
       
     const method = isEdit ? 'PUT' : 'POST';
 

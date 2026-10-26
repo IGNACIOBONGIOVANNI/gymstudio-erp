@@ -37,8 +37,8 @@ export function ModalCliente({ clienteEditando, onClose, onSuccess }: ModalClien
     const isEdit = !!clienteEditando;
     
     const url = clienteEditando 
-      ? `http://localhost:5122/api/clientes/${clienteEditando.id}`
-      : 'http://localhost:5122/api/clientes';
+      ? `/api/clientes/${clienteEditando.id}`
+      : '/api/clientes';
       
     const method = isEdit ? 'PUT' : 'POST';
 

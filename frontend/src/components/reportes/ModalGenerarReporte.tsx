@@ -22,7 +22,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
 
     setIsSubmitting(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5122';
+      const apiUrl = import.meta.env.VITE_API_URL || '';
 
       const obtenerDatosDiario = async (filtroDesde?: string, filtroHasta?: string) => {
         const queryParams = new URLSearchParams({ tipo: 'diario' });

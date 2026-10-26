@@ -9,7 +9,7 @@ export default function ModuloProveedores() {
   const [proveedorEditando, setproveedorEditando] = useState<any | null>(null);
 
   const fetchproveedores = () => {
-    fetch('http://localhost:5122/api/proveedores')
+    fetch('/api/proveedores')
       .then(res => res.json())
       .then(data => setproveedores(data));
   };
@@ -22,7 +22,7 @@ export default function ModuloProveedores() {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este proveedor?')) return;
 
     try {
-      const res = await fetch(`http://localhost:5122/api/proveedores/${id}`, {
+      const res = await fetch(`/api/proveedores/${id}`, {
         method: 'DELETE'
       });
       if (res.ok) {

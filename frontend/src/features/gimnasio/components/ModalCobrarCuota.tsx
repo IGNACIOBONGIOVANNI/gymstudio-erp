@@ -33,7 +33,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
   useEffect(() => {
     const fetchPlanes = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5122';
+        const apiUrl = import.meta.env.VITE_API_URL || '';
         const response = await fetch(`${apiUrl}/api/planes`);
         if (response.ok) {
           const data = await response.json();
@@ -63,7 +63,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
 
     setIsSubmitting(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5122';
+      const apiUrl = import.meta.env.VITE_API_URL || '';
       
       const planActual = planes.find(p => String(p.id) === planSeleccionado);
 

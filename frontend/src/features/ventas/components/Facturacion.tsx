@@ -43,12 +43,12 @@ export function Facturacion() {
 
   // 1. Carga inicial de datos
   useEffect(() => {
-    fetch('http://localhost:5122/api/clientes')
+    fetch('/api/clientes')
       .then(res => res.json())
       .then(data => setClientes(data))
       .catch(err => console.error(err));
       
-    fetch('http://localhost:5122/api/proveedores')
+    fetch('/api/proveedores')
       .then(res => res.json())
       .then(data => setProveedores(data))
       .catch(err => console.error(err));

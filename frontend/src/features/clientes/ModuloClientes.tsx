@@ -9,7 +9,7 @@ export default function ModuloClientes() {
   const [clienteEditando, setClienteEditando] = useState<any | null>(null);
 
   const fetchClientes = () => {
-    fetch('http://localhost:5122/api/clientes')
+    fetch('/api/clientes')
       .then(res => res.json())
       .then(data => setClientes(data));
   };
@@ -22,7 +22,7 @@ export default function ModuloClientes() {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) return;
 
     try {
-      const res = await fetch(`http://localhost:5122/api/clientes/${id}`, {
+      const res = await fetch(`/api/clientes/${id}`, {
         method: 'DELETE'
       });
       if (res.ok) {
