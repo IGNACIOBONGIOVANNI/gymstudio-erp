@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EstudioContable.API/EstudioContable.API.csproj" />
+    <Project Path="src/EstudioContable.Application/EstudioContable.Application.csproj" />
+    <Project Path="src/EstudioContable.Domain/EstudioContable.Domain.csproj" />
+    <Project Path="src/EstudioContable.Infrastructure/EstudioContable.Infrastructure.csproj" />
+  </Folder>
+</Solution>

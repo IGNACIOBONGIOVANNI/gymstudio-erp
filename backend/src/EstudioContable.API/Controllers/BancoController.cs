@@ -1,0 +1,70 @@
+using System.Threading;
+using System.Threading.Tasks;
+using EstudioContable.Application.Banco.Commands;
+using EstudioContable.Application.Banco.Queries.ObtenerLibroBanco;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EstudioContable.API.Controllers
+{
+    [ApiController]
+    [Route("api/banco")]
+    [Authorize]
+    public class BancoController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+
+        public BancoController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        /// <summary>
+        /// Obtiene el Libro Banco del cliente.
+        /// </summary>
+        [HttpGet]
+        [AllowAnonymous] // Temporal para probar sin JWT
+        public async Task<IActionResult> Get([FromQuery] string clienteId, CancellationToken cancellationToken)
+        {
+            var query = new ObtenerLibroBancoQuery(clienteId);
+            var resultado = await _mediator.Send(query, cancellationToken);
+            return Ok(resultado);
+        }
+
+        /// <summary>
+        /// Registra un nuevo movimiento bancario.
+        /// </summary>
+        [HttpPost]
+        [AllowAnonymous] // Temporal para probar sin JWT
+        public async Task<IActionResult> Post([FromBody] CrearMovimientoBancoCommand command, CancellationToken cancellationToken)
+        {
+            var id = await _mediator.Send(command, cancellationToken);
+            return StatusCode(201, new { Id = id });
+        }
+
+        /// <summary>
+        /// Edita un movimiento de banco existente.
+        /// </summary>
+        [HttpPut("{id}")]
+        [AllowAnonymous] // Temporal para probar sin JWT
+        public async Task<IActionResult> Put(int id, [FromBody] EditarMovimientoBancoCommand command, CancellationToken cancellationToken)
+        {
+            var commandWithId = command with { Id = id };
+            await _mediator.Send(commandWithId, cancellationToken);
+            return Ok(new { message = "Movimiento bancario actualizado correctamente" });
+        }
+
+        /// <summary>
+        /// Elimina un movimiento de banco.
+        /// </summary>
+        [HttpDelete("{id}")]
+        [AllowAnonymous] // Temporal para probar sin JWT
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        {
+            var command = new EliminarMovimientoBancoCommand(id); 
+            await _mediator.Send(command, cancellationToken);
+            return Ok(new { message = "Movimiento bancario eliminado correctamente" });
+        }
+    }
+}

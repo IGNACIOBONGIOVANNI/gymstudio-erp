@@ -1,0 +1,31 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+*.log
+logs/
+
+# Editores / SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Configuración local de Claude Code
+.claude/settings.local.json

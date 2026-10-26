@@ -1,0 +1,31 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace EstudioContable.Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class AgregarCondicionPago : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<string>(
+                name: "CondicionPago",
+                schema: "contabilidad",
+                table: "Facturas",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "CondicionPago",
+                schema: "contabilidad",
+                table: "Facturas");
+        }
+    }
+}

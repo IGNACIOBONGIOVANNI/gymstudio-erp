@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: contable-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: estudio_contable
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d estudio_contable"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: contable-backend
+    ports:
+      - "5122:5122"
+    environment:
+      # Connection string uses the 'db' service hostname
+      - ConnectionStrings__DefaultConnection=Host=db;Database=estudio_contable;Username=postgres;Password=password
+      - DOTNET_USE_POLLING_FILE_WATCHER=1 # Important for hot-reload on Windows hosts via Docker
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./backend:/app # Bind mount to allow hot reload of code
+      # Map nuget packages to avoid downloading every time
+      - nuget_packages:/root/.nuget/packages 
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: contable-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app # Bind mount to allow hot reload
+      - /app/node_modules # Exclude node_modules from host to prevent OS incompatibility
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  nuget_packages:
