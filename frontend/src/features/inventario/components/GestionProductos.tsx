@@ -119,12 +119,12 @@ export function GestionProductos() {
     <div className="flex flex-col gap-6">
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Gestión de Productos</h2>
-          <p className="text-sm text-slate-500">Administrá el catálogo y ABM de productos.</p>
+          
+          <p className="text-sm text-slate-500">Catálogo de productos con su costo, precio de venta y stock.</p>
         </div>
         <button
           onClick={handleOpenNuevo}
-          className="flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+          className="flex items-center gap-2 rounded-md bg-marca-600 px-4 py-2 text-sm font-medium text-white hover:bg-marca-700"
         >
           <Plus className="h-4 w-4" />
           Nuevo Producto
@@ -139,7 +139,7 @@ export function GestionProductos() {
           </div>
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
               <tr>
                 <th className="px-4 py-3">Nombre</th>
                 <th className="px-4 py-3">Marca/Sabor</th>
@@ -256,7 +256,7 @@ export function GestionProductos() {
                 <button type="button" onClick={() => setModalOpen(false)} className="rounded px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                   Cancelar
                 </button>
-                <button type="submit" disabled={crearMutation.isPending || actualizarMutation.isPending} className="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                <button type="submit" disabled={crearMutation.isPending || actualizarMutation.isPending} className="rounded bg-marca-600 px-4 py-2 text-sm font-medium text-white hover:bg-marca-700 disabled:opacity-50">
                   Guardar
                 </button>
               </div>

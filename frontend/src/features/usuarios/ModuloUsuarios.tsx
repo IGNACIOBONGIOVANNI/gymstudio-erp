@@ -110,11 +110,9 @@ export default function ModuloUsuarios() {
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                Administración de Usuarios y Permisos
-              </h2>
+              
               <p className="text-xs sm:text-sm text-slate-500">
-                Control de acceso, roles contables y auditoría de sesiones activas en el ERP
+                Quién puede entrar al sistema y con qué rol.
               </p>
             </div>
           </div>
@@ -126,7 +124,7 @@ export default function ModuloUsuarios() {
               setUsuarioEditando(null);
               setModalAbierto(true);
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg bg-marca-600 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-sm transition-all hover:bg-marca-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             <Plus className="h-4 w-4" />
             <span>Nuevo Usuario</span>
@@ -138,7 +136,7 @@ export default function ModuloUsuarios() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Usuarios</p>
+            <p className="text-xs font-medium text-slate-500 ">Total Usuarios</p>
             <h4 className="text-2xl font-bold text-slate-900 tabular-nums mt-1">{stats.total}</h4>
           </div>
           <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600">
@@ -148,7 +146,7 @@ export default function ModuloUsuarios() {
 
         <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Activos</p>
+            <p className="text-xs font-medium text-slate-500 ">Activos</p>
             <h4 className="text-2xl font-bold text-emerald-600 tabular-nums mt-1">{stats.activos}</h4>
           </div>
           <div className="h-10 w-10 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600">
@@ -158,7 +156,7 @@ export default function ModuloUsuarios() {
 
         <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Administradores</p>
+            <p className="text-xs font-medium text-slate-500 ">Administradores</p>
             <h4 className="text-2xl font-bold text-purple-600 tabular-nums mt-1">{stats.jefes}</h4>
           </div>
           <div className="h-10 w-10 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600">
@@ -168,7 +166,7 @@ export default function ModuloUsuarios() {
 
         <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Contadores</p>
+            <p className="text-xs font-medium text-slate-500 ">Contadores</p>
             <h4 className="text-2xl font-bold text-blue-600 tabular-nums mt-1">{stats.contadores}</h4>
           </div>
           <div className="h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
@@ -233,19 +231,19 @@ export default function ModuloUsuarios() {
           <table className="w-full text-sm">
             <thead className="bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="h-10 px-4 text-left font-semibold text-slate-600 uppercase text-xs tracking-wider">
+                <th className="h-10 px-4 text-left font-semibold text-slate-600 text-xs ">
                   Usuario
                 </th>
-                <th className="h-10 px-4 text-left font-semibold text-slate-600 uppercase text-xs tracking-wider">
+                <th className="h-10 px-4 text-left font-semibold text-slate-600 text-xs ">
                   Rol Asignado
                 </th>
-                <th className="h-10 px-4 text-center font-semibold text-slate-600 uppercase text-xs tracking-wider">
+                <th className="h-10 px-4 text-center font-semibold text-slate-600 text-xs ">
                   Estado
                 </th>
-                <th className="h-10 px-4 text-left font-semibold text-slate-600 uppercase text-xs tracking-wider">
+                <th className="h-10 px-4 text-left font-semibold text-slate-600 text-xs ">
                   Último Acceso
                 </th>
-                <th className="h-10 px-4 text-right font-semibold text-slate-600 uppercase text-xs tracking-wider">
+                <th className="h-10 px-4 text-right font-semibold text-slate-600 text-xs ">
                   Acciones
                 </th>
               </tr>

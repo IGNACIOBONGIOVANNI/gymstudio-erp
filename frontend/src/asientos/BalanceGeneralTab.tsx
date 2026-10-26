@@ -103,7 +103,7 @@ export function BalanceGeneralTab() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-        <h2 className="text-xl font-bold text-slate-800">Balance General</h2>
+        <p className="text-sm text-slate-500">Situación patrimonial según los asientos confirmados.</p>
         <select
           value={periodo}
           onChange={(e) => setPeriodo(e.target.value)}
@@ -219,7 +219,7 @@ export function BalanceGeneralTab() {
           
           {/* Columna Izquierda: Activos */}
           <div className="p-0 flex flex-col h-full">
-            <div className="bg-emerald-50/40 px-6 py-2.5 border-b border-slate-200/80 font-bold text-xs uppercase tracking-wider text-emerald-800">
+            <div className="bg-emerald-50/40 px-6 py-2.5 border-b border-slate-200/80 font-bold text-xs text-emerald-800">
               ACTIVO
             </div>
             <ul className="divide-y divide-slate-100 flex-grow">
@@ -231,14 +231,14 @@ export function BalanceGeneralTab() {
               ))}
             </ul>
             <div className="flex justify-between px-6 py-4 bg-emerald-50 font-bold border-t border-emerald-200 text-emerald-900 mt-auto">
-              <span>TOTAL ACTIVO</span>
+              <span>Total Activo</span>
               <span className="tabular-nums">{formatCurrency(data.totalActivo)}</span>
             </div>
           </div>
 
           {/* Columna Derecha: Pasivo y Patrimonio Neto */}
           <div className="p-0 flex flex-col h-full">
-            <div className="bg-red-50/40 px-6 py-2.5 border-b border-slate-200/80 font-bold text-xs uppercase tracking-wider text-red-800">
+            <div className="bg-red-50/40 px-6 py-2.5 border-b border-slate-200/80 font-bold text-xs text-red-800">
               PASIVO
             </div>
             <ul className="divide-y divide-slate-100">
@@ -249,12 +249,12 @@ export function BalanceGeneralTab() {
                 </li>
               ))}
               <li className="flex justify-between px-6 py-3 bg-red-50/50 font-bold border-t border-red-100 text-red-900">
-                <span>TOTAL PASIVO</span>
+                <span>Total Pasivo</span>
                 <span className="tabular-nums">{formatCurrency(data.totalPasivo)}</span>
               </li>
             </ul>
 
-            <div className="bg-blue-50/40 px-6 py-2.5 border-y border-slate-200/80 font-bold text-xs uppercase tracking-wider text-blue-800 mt-4">
+            <div className="bg-blue-50/40 px-6 py-2.5 border-y border-slate-200/80 font-bold text-xs text-blue-800 mt-4">
               PATRIMONIO NETO
             </div>
             <ul className="divide-y divide-slate-100 flex-grow">

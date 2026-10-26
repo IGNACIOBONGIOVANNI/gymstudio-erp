@@ -117,7 +117,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
           {/* Nombre */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Nombre Completo *
             </label>
             <div className="relative">
@@ -135,7 +135,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
           {/* Email / Usuario */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               Usuario / Correo Electrónico *
             </label>
             <div className="relative">
@@ -154,7 +154,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
           {/* Rol y Teléfono */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Rol en el Sistema *
               </label>
               <div className="relative">
@@ -172,7 +172,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Teléfono de Contacto
               </label>
               <div className="relative">
@@ -190,7 +190,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
           {/* Contraseña */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
               {esEdicion ? 'Contraseña (opcional)' : 'Contraseña Inicial *'}
             </label>
             <div className="relative">
@@ -207,7 +207,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
           {/* Estado */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
+            <label className="block text-xs font-semibold text-slate-600 mb-2">
               Estado de la Cuenta
             </label>
             <div className="flex gap-4">
@@ -268,7 +268,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-marca-600 rounded-lg hover:bg-marca-700 shadow-sm transition-all active:scale-95 disabled:opacity-50"
             >
               {esEdicion ? 'Guardar Cambios' : 'Crear Usuario'}
             </button>

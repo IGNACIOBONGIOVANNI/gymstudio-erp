@@ -158,13 +158,13 @@ export function SociosGym() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-900">Gestin de Socios</h2>
+        <p className="text-sm text-slate-500">Datos de contacto, plan actual y vencimiento de cada socio.</p>
         <button
           onClick={() => {
             setSocioToEdit(null);
             setIsFormOpen(true);
           }}
-          className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+          className="inline-flex items-center justify-center rounded-md bg-marca-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-marca-700 focus:outline-none focus:ring-2 focus:ring-marca-500 focus:ring-offset-2"
         >
           <Plus className="mr-2 h-4 w-4" />
           Nuevo Socio

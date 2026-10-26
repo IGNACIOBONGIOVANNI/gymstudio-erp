@@ -127,7 +127,7 @@ export default function ModuloConfiguracion() {
           <button
             type="button"
             onClick={() => handleGuardar()}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-lg bg-marca-600 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-sm transition-all hover:bg-marca-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             <Save className="h-4 w-4" />
             <span>Guardar Configuración</span>
@@ -248,7 +248,7 @@ export default function ModuloConfiguracion() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Razón Social *
                 </label>
                 <input
@@ -262,7 +262,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Nombre de Fantasía
                 </label>
                 <input
@@ -275,7 +275,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   CUIT (con guiones) *
                 </label>
                 <input
@@ -289,7 +289,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Condición Frente al IVA *
                 </label>
                 <select
@@ -304,7 +304,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Punto de Venta Predeterminado *
                 </label>
                 <input
@@ -321,7 +321,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Ingresos Brutos (IIBB)
                 </label>
                 <input
@@ -334,7 +334,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Domicilio Comercial
                 </label>
                 <input
@@ -347,7 +347,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Teléfono de Contacto
                 </label>
                 <input
@@ -360,7 +360,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Email de Facturación / Administración
                 </label>
                 <input
@@ -391,7 +391,7 @@ export default function ModuloConfiguracion() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Moneda Principal del Sistema
                 </label>
                 <select
@@ -405,7 +405,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Alícuota General de IVA Predeterminada
                 </label>
                 <select
@@ -421,7 +421,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Mes de Cierre de Ejercicio Económico
                 </label>
                 <select
@@ -437,7 +437,7 @@ export default function ModuloConfiguracion() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Método de Valuación de Inventario (Stock)
                 </label>
                 <select
@@ -512,7 +512,7 @@ export default function ModuloConfiguracion() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Tiempo de Inactividad para Cierre de Sesión
                 </label>
                 <select
@@ -609,7 +609,7 @@ export default function ModuloConfiguracion() {
                   <button
                     type="button"
                     onClick={handleExportarJSON}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm transition-all active:scale-95"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-marca-600 rounded-lg hover:bg-marca-700 shadow-sm transition-all active:scale-95"
                   >
                     <Download className="h-4 w-4" />
                     <span>Descargar Backup JSON</span>

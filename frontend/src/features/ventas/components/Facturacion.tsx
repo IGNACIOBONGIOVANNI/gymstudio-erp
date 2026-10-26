@@ -183,7 +183,7 @@ export function Facturacion() {
   return (
     <form onSubmit={handleSubmit} className="mx-auto flex max-w-5xl flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold text-slate-900">Nueva Factura</h2>
+        
         <p className="text-sm text-slate-500">
           Cargá los detalles del comprobante y los ítems a facturar.
         </p>
@@ -284,7 +284,7 @@ export function Facturacion() {
       <div className="overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full min-w-[640px] border-collapse bg-white">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500">
               <th className="px-3 py-2">Descripción</th>
               <th className="px-3 py-2 w-24">Cantidad</th>
               <th className="px-3 py-2 w-32 text-right">Precio Unit.</th>
@@ -406,7 +406,7 @@ export function Facturacion() {
         <button
           type="submit"
           disabled={enviando || items.length === 0 || subtotalGeneral === 0}
-          className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="inline-flex items-center gap-2 rounded-md bg-marca-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-marca-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {enviando && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
           Emitir Factura

@@ -32,14 +32,14 @@ function CuentaT({
             <tr>
               <th
                 colSpan={3}
-                className="border-b border-slate-200 bg-slate-50/80 py-4 text-center font-semibold text-slate-800 tracking-wide"
+                className="border-b border-slate-200 bg-slate-50/80 py-4 text-center font-semibold text-slate-800 "
               >
                 {title}
               </th>
             </tr>
             <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
               <th className="w-[45%] py-2.5 px-4 sm:px-6 text-left font-medium">Debe (D)</th>
-              <th className="w-[10%] border-x border-slate-200 bg-slate-100 py-2.5 px-2 text-center text-xs font-semibold uppercase tracking-wider text-slate-600">
+              <th className="w-[10%] border-x border-slate-200 bg-slate-100 py-2.5 px-2 text-center text-xs font-semibold text-slate-600">
                 {shortTitle}
               </th>
               <th className="w-[45%] py-2.5 px-4 sm:px-6 text-left font-medium">Haber (H)</th>
@@ -202,7 +202,7 @@ export function LibroMayor() {
       </div>
 
       <div className="flex flex-col items-center justify-center space-y-2 mb-8">
-        <label htmlFor="selector-cuenta" className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <label htmlFor="selector-cuenta" className="text-xs font-bold text-slate-500 ">
           Seleccione la cuenta a visualizar
         </label>
         <div className="relative w-72 sm:w-80">

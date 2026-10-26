@@ -13,7 +13,7 @@ export function LibroStock() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold text-slate-900">Libro Stock (Kardex)</h2>
+        
         <p className="text-sm text-slate-500">
           Visualizá el historial de movimientos de inventario de un producto específico.
         </p>
@@ -44,7 +44,7 @@ export function LibroStock() {
         ) : (
           <table className="w-full min-w-[640px] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Detalle</th>
                 <th className="px-4 py-3 text-right">Ingreso</th>

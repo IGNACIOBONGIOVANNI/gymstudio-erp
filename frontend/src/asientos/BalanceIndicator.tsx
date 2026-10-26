@@ -22,11 +22,11 @@ export function BalanceIndicator({ balance }: BalanceIndicatorProps) {
     >
       <div className="flex gap-6">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Debe</p>
+          <p className="text-xs font-medium text-slate-500">Debe</p>
           <p className="font-mono text-lg tabular-nums text-slate-900">{formatMonto(totalDebe)}</p>
         </div>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Haber</p>
+          <p className="text-xs font-medium text-slate-500">Haber</p>
           <p className="font-mono text-lg tabular-nums text-slate-900">{formatMonto(totalHaber)}</p>
         </div>
       </div>

@@ -152,7 +152,7 @@ export function RecepcionGym() {
               onClick={() => {
                 setSocioSeleccionado(info.row.original);
               }}
-              className="inline-flex items-center justify-center rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center justify-center rounded-md bg-marca-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-marca-700 transition-colors"
             >
               <CreditCard className="mr-1.5 h-3.5 w-3.5" />
               Cobrar Cuota

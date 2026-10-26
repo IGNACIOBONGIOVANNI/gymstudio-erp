@@ -40,8 +40,8 @@ export function Login() {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <div className="bg-slate-900 p-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-2">Sistema ERP</h2>
-          <p className="text-slate-400 text-sm">Iniciá sesión para continuar</p>
+          <h2 className="text-3xl font-semibold tracking-tight text-white mb-1">GymStudio</h2>
+          <p className="text-slate-400 text-sm">Ingresá con tu email y contraseña</p>
         </div>
         <div className="p-8">
           {error && (
@@ -81,7 +81,7 @@ export function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-slate-900 text-white font-semibold py-3 rounded-lg hover:bg-slate-800 transition-colors flex items-center justify-center disabled:opacity-70"
+              className="w-full bg-marca-600 text-white font-semibold py-3 rounded-lg hover:bg-marca-700 transition-colors flex items-center justify-center disabled:opacity-70"
             >
               {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
               {isLoading ? 'Ingresando...' : 'Ingresar'}

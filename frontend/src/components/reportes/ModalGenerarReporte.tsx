@@ -212,7 +212,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-70"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-marca-600 rounded-lg hover:bg-marca-700 transition-colors disabled:opacity-70"
               >
                 {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Generar

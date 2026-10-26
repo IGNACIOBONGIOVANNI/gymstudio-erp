@@ -149,9 +149,12 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
 
   const asientosFiltrados = useMemo(() => {
     if (!asientos) return [];
-    if (!fechaFiltro) return asientos;
-    
-    return asientos.filter(a => a.fecha.startsWith(fechaFiltro));
+    // Orden cronológico (fecha y número) para que cada día quede agrupado una sola vez.
+    const ordenados = [...asientos].sort((x, y) =>
+      String(x.fecha).localeCompare(String(y.fecha)) || x.numeroAsiento - y.numeroAsiento);
+    if (!fechaFiltro) return ordenados;
+
+    return ordenados.filter(a => a.fecha.startsWith(fechaFiltro));
   }, [asientos, fechaFiltro]);
 
   const totalesPorFecha = useMemo(() => {
@@ -282,7 +285,7 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
                     <Fragment key={row.id}>
                       {showHeader && (
                         <tr className="bg-slate-100 border-b border-slate-200">
-                          <td colSpan={columns.length} className="px-4 py-3 text-sm font-bold text-slate-700 uppercase tracking-wider">
+                          <td colSpan={columns.length} className="px-4 py-3 text-sm font-bold text-slate-700 ">
                             Asientos del {rowFecha}
                           </td>
                         </tr>
@@ -357,8 +360,8 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
                       )}
                       {showFooter && (
                         <tr className="bg-slate-200/60 border-b border-slate-300">
-                          <td colSpan={columns.length - 2} className="px-4 py-3 text-sm font-bold text-slate-800 text-right uppercase">
-                            TOTAL DEL DÍA {rowFecha}:
+                          <td colSpan={columns.length - 2} className="px-4 py-3 text-sm font-bold text-slate-800 text-right ">
+                            Total del día {rowFecha}:
                           </td>
                           <td className="px-4 py-3 text-sm font-bold text-slate-800 text-right">
                             <span className="text-slate-600 font-medium">Debe:</span> <span className="tabular-nums font-bold text-slate-900">{formatCurrency(totalesPorFecha[rowFecha]?.debe || 0)}</span> <br />

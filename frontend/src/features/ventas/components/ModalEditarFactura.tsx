@@ -164,12 +164,12 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <span className="block text-xs uppercase tracking-wide text-slate-500 font-semibold">Total Modificado</span>
+                <span className="block text-xs text-slate-500 font-semibold">Total Modificado</span>
                 <span className="text-xl font-bold text-slate-900">{formatARS(total)}</span>
               </div>
               <div className="h-10 border-l border-slate-200 mx-2"></div>
               <button type="button" onClick={onClose} disabled={enviando} className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancelar</button>
-              <button type="submit" disabled={enviando || items.length === 0} className="flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              <button type="submit" disabled={enviando || items.length === 0} className="flex items-center gap-2 rounded-md bg-marca-600 px-6 py-2 text-sm font-medium text-white hover:bg-marca-700 disabled:opacity-50">
                 {enviando ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Guardar Cambios
               </button>

@@ -201,7 +201,7 @@ export function ModalCobrarCuota({ socio, onClose, onSuccess }: Props) {
                 <button
                   type="submit"
                   disabled={isSubmitting || !planSeleccionado}
-                  className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-70"
+                  className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-marca-600 rounded-lg hover:bg-marca-700 transition-colors disabled:opacity-70"
                 >
                   {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Confirmar Cobro

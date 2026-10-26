@@ -51,10 +51,10 @@ export default function ModuloClientes() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-semibold text-slate-900">Directorio de Clientes</h2>
+        <p className="text-sm text-slate-500">Empresas y personas a las que les facturás.</p>
         <button
           onClick={handleNuevo}
-          className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+          className="inline-flex items-center gap-2 rounded-md bg-marca-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-marca-700"
         >
           <Plus className="h-4 w-4" />
           Nuevo Cliente
@@ -65,11 +65,11 @@ export default function ModuloClientes() {
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Razón Social</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">CUIT / DNI</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Condición IVA</th>
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">Acciones</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Razón Social</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">CUIT / DNI</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">Condición IVA</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-slate-500">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 bg-white">

@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { FileText, LogOut, User } from 'lucide-react'
+import {
+  LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
+  ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
+  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck,
+} from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
 import { LibroMayor } from './asientos/LibroMayor'
@@ -21,398 +25,280 @@ import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { Facturacion } from './features/ventas/components/Facturacion'
 import { LibroStock } from './features/inventario/components/LibroStock'
 import { GestionProductos } from './features/inventario/components/GestionProductos'
+import { obtenerConfiguracion } from './features/configuracion/configuracionStorage'
 
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Login } from './components/Login'
 import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
+import { useCuentas } from './asientos/hooks/useCuentas'
 
 const queryClient = new QueryClient()
 
-import { useCuentas } from './asientos/hooks/useCuentas'
+type Rol = 'Administrador' | 'Contador' | 'Recepcion'
 
+interface Vista {
+  id: string
+  titulo: string
+  icono: ReactNode
+  /** Roles que la ven en el menú (la API controla los permisos reales). */
+  roles?: Rol[]
+  /** Las pantallas que son un formulario suelto se muestran dentro de una tarjeta. */
+  tarjeta?: boolean
+}
+
+interface Grupo {
+  titulo: string
+  vistas: Vista[]
+}
+
+const icono = 'h-4 w-4 shrink-0'
+const GESTION: Rol[] = ['Administrador', 'Contador']
+
+const MENU: Grupo[] = [
+  {
+    titulo: 'Recepción',
+    vistas: [
+      { id: 'recepcion', titulo: 'Recepción', icono: <DoorOpen className={icono} /> },
+      { id: 'socios', titulo: 'Socios', icono: <Users className={icono} /> },
+      { id: 'planes', titulo: 'Planes', icono: <CalendarRange className={icono} /> },
+    ],
+  },
+  {
+    titulo: 'Ventas y compras',
+    vistas: [
+      { id: 'facturar', titulo: 'Facturar', icono: <Receipt className={icono} />, tarjeta: true },
+      { id: 'ventas', titulo: 'Libro de Ventas', icono: <BookOpenText className={icono} /> },
+      { id: 'compras', titulo: 'Libro de Compras', icono: <ShoppingCart className={icono} /> },
+      { id: 'clientes', titulo: 'Clientes', icono: <Building2 className={icono} /> },
+      { id: 'proveedores', titulo: 'Proveedores', icono: <Truck className={icono} /> },
+    ],
+  },
+  {
+    titulo: 'Tesorería',
+    vistas: [
+      { id: 'caja', titulo: 'Caja', icono: <Wallet className={icono} /> },
+      { id: 'banco', titulo: 'Banco', icono: <Landmark className={icono} /> },
+    ],
+  },
+  {
+    titulo: 'Stock',
+    vistas: [
+      { id: 'productos', titulo: 'Productos', icono: <Package className={icono} /> },
+      { id: 'stock', titulo: 'Movimientos de stock', icono: <History className={icono} /> },
+    ],
+  },
+  {
+    titulo: 'Contabilidad',
+    vistas: [
+      { id: 'diario', titulo: 'Libro Diario', icono: <BookText className={icono} /> },
+      { id: 'mayor', titulo: 'Libro Mayor', icono: <Scale className={icono} /> },
+      { id: 'balance', titulo: 'Balance General', icono: <BarChart3 className={icono} /> },
+      { id: 'asiento', titulo: 'Nuevo asiento', icono: <FilePlus2 className={icono} />, roles: GESTION, tarjeta: true },
+    ],
+  },
+  {
+    titulo: 'Administración',
+    vistas: [
+      { id: 'usuarios', titulo: 'Usuarios', icono: <UserCog className={icono} />, roles: ['Administrador'] },
+      { id: 'configuracion', titulo: 'Configuración', icono: <Settings className={icono} />, roles: ['Administrador'] },
+      { id: 'auditoria', titulo: 'Auditoría', icono: <ShieldCheck className={icono} />, roles: ['Administrador'] },
+    ],
+  },
+]
+
+function iniciales(nombre: string) {
+  return nombre.split(' ').filter(Boolean).map((n) => n[0]).slice(0, 2).join('').toUpperCase()
+}
+
+const ETIQUETA_ROL: Record<string, string> = {
+  Administrador: 'Administrador',
+  Contador: 'Contador',
+  Recepcion: 'Recepción',
+}
 
 function AppContent() {
-  const { user, logout } = useAuth();
-  const { data: cuentas = [] } = useCuentas(Boolean(user));
-  
-  const [modulo, setModulo] = useState<'contable' | 'gimnasio' | 'stock' | 'clientes' | 'proveedores' | 'usuarios' | 'configuracion' | 'auditoria'>('contable');
-  const [tabContable, setTabContable] = useState<'nuevo' | 'listado' | 'mayor' | 'ventas' | 'compras' | 'caja' | 'banco' | 'facturacion' | 'balance'>('listado');
-  const [tabGimnasio, setTabGimnasio] = useState<'planes' | 'socios' | 'recepcion'>('recepcion');
-  const [tabStock, setTabStock] = useState<'libro' | 'productos'>('libro');
-  const [showReporteModal, setShowReporteModal] = useState(false);
+  const { user, logout } = useAuth()
+  const { data: cuentas = [] } = useCuentas(Boolean(user))
+  const rol = user?.rol as Rol | undefined
 
-  // La API es la que realmente controla los permisos; esto sólo oculta menús.
-  const esJefe = user?.rol === 'Administrador';
+  // Menú filtrado según el rol del usuario.
+  const menu = useMemo(
+    () =>
+      MENU.map((g) => ({ ...g, vistas: g.vistas.filter((v) => !v.roles || (rol && v.roles.includes(rol))) }))
+        .filter((g) => g.vistas.length > 0),
+    [rol]
+  )
+  const vistas = menu.flatMap((g) => g.vistas)
 
+  const [vistaId, setVistaId] = useState<string>(rol === 'Recepcion' ? 'recepcion' : 'diario')
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const [mostrarReportes, setMostrarReportes] = useState(false)
+
+  // Si el rol cambia (otro usuario inicia sesión) y la vista ya no está permitida, volver al inicio.
   useEffect(() => {
-    if (!esJefe && (modulo === 'usuarios' || modulo === 'configuracion' || modulo === 'auditoria')) {
-      setModulo('contable');
+    if (user && !vistas.some((v) => v.id === vistaId)) {
+      setVistaId(rol === 'Recepcion' ? 'recepcion' : 'diario')
     }
-  }, [esJefe, modulo]);
+  }, [user, rol, vistaId, vistas])
 
   if (!user) {
-    return <Login />;
+    return <Login />
   }
+
+  const vista = vistas.find((v) => v.id === vistaId) ?? vistas[0]
+  const negocio = obtenerConfiguracion().nombreFantasia || obtenerConfiguracion().razonSocial
+
+  const irA = (id: string) => {
+    setVistaId(id)
+    setMenuAbierto(false)
+    window.scrollTo({ top: 0 })
+  }
+
+  const contenido = (() => {
+    switch (vista.id) {
+      case 'recepcion': return <RecepcionGym />
+      case 'socios': return <SociosGym />
+      case 'planes': return <PlanesGym />
+      case 'facturar': return <Facturacion />
+      case 'ventas': return <LibroVenta />
+      case 'compras': return <LibroCompra />
+      case 'clientes': return <ModuloClientes />
+      case 'proveedores': return <ModuloProveedores />
+      case 'caja': return <LibroCaja clienteId="1" />
+      case 'banco': return <LibroBanco clienteId="1" />
+      case 'productos': return <GestionProductos />
+      case 'stock': return <LibroStock />
+      case 'diario': return <ListadoAsientos clienteId="1" />
+      case 'mayor': return <LibroMayor />
+      case 'balance': return <BalanceGeneralTab />
+      case 'asiento':
+        return (
+          <AsientoForm
+            clienteId="1"
+            // Caja y Banco se mueven desde sus libros (son cuentas de control).
+            cuentas={cuentas.filter((c) => c.id !== '101' && c.id !== '102')}
+            onConfirmado={() => irA('diario')}
+          />
+        )
+      case 'usuarios': return <ModuloUsuarios />
+      case 'configuracion': return <ModuloConfiguracion />
+      case 'auditoria': return <ModuloAuditoria />
+      default: return null
+    }
+  })()
+
+  const barraLateral = (
+    <div className="flex h-full flex-col bg-slate-900 text-slate-300">
+      <div className="px-5 pt-5 pb-3">
+        <p className="text-xl font-semibold tracking-tight text-white">GymStudio</p>
+        {negocio && <p className="mt-0.5 truncate text-sm text-slate-400">{negocio}</p>}
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-3 pb-3 [scrollbar-width:thin] [scrollbar-color:var(--color-slate-700)_transparent]" aria-label="Menú principal">
+        {menu.map((grupo) => (
+          <div key={grupo.titulo} className="mt-3 first:mt-0">
+            <p className="px-2 pb-1 text-xs font-medium text-slate-500">{grupo.titulo}</p>
+            <ul className="space-y-0.5">
+              {grupo.vistas.map((v) => {
+                const activa = v.id === vista.id
+                return (
+                  <li key={v.id}>
+                    <button
+                      onClick={() => irA(v.id)}
+                      aria-current={activa ? 'page' : undefined}
+                      className={`relative flex w-full items-center gap-2.5 rounded-md px-2 py-[5px] text-left text-sm transition-colors ${
+                        activa
+                          ? 'bg-slate-800 font-medium text-white before:absolute before:left-0 before:top-1 before:bottom-1 before:w-[3px] before:rounded-full before:bg-marca-400'
+                          : 'hover:bg-slate-800/60 hover:text-white'
+                      }`}
+                    >
+                      {v.icono}
+                      {v.titulo}
+                    </button>
+                  </li>
+                )
+              })}
+              {grupo.titulo === 'Contabilidad' && (
+                <li>
+                  <button
+                    onClick={() => { setMostrarReportes(true); setMenuAbierto(false) }}
+                    className="flex w-full items-center gap-2.5 rounded-md px-2 py-[5px] text-left text-sm transition-colors hover:bg-slate-800/60 hover:text-white"
+                  >
+                    <FileText className={icono} />
+                    Reportes en PDF
+                  </button>
+                </li>
+              )}
+            </ul>
+          </div>
+        ))}
+      </nav>
+
+      <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-marca-700 text-xs font-semibold text-white">
+          {iniciales(user.nombre || '?')}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-white">{user.nombre}</p>
+          <p className="text-xs text-slate-400">{ETIQUETA_ROL[user.rol] ?? user.rol}</p>
+        </div>
+        <button
+          onClick={logout}
+          className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+          title="Cerrar sesión"
+          aria-label="Cerrar sesión"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-slate-50">
-      
-      <div className="bg-slate-900 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-8">
-            <span className="text-white font-bold text-lg tracking-tight">GymStudio ERP</span>
-            <nav className="flex flex-wrap gap-4">
-              <button
-                onClick={() => setModulo('contable')}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  modulo === 'contable'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                Módulo Contable
-              </button>
-              <button
-                onClick={() => setModulo('gimnasio')}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  modulo === 'gimnasio'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                Módulo Gimnasio
-              </button>
-              <button
-                onClick={() => setModulo('stock')}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  modulo === 'stock'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                Módulo Stock
-              </button>
-              <button
-                onClick={() => setModulo('clientes')}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  modulo === 'clientes'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                Módulo Clientes
-              </button>
-              <button
-                onClick={() => setModulo('proveedores')}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                  modulo === 'proveedores'
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                Módulo Proveedores
-              </button>
+      {/* Barra lateral fija en pantallas grandes */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 lg:block">{barraLateral}</aside>
 
-              {esJefe && (
-                <>
-                  <button
-                    onClick={() => setModulo('usuarios')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      modulo === 'usuarios'
-                        ? 'bg-slate-800 text-white'
-                        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                    }`}
-                  >
-                    Admin de Usuarios
-                  </button>
-                  <button
-                    onClick={() => setModulo('configuracion')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      modulo === 'configuracion'
-                        ? 'bg-slate-800 text-white'
-                        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                    }`}
-                  >
-                    Configuración
-                  </button>
-                  <button
-                    onClick={() => setModulo('auditoria')}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      modulo === 'auditoria'
-                        ? 'bg-slate-800 text-white'
-                        : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                    }`}
-                  >
-                    Auditoría
-                  </button>
-                </>
-              )}
-            </nav>
-          </div>
-          
-          <div className="flex items-center gap-4 border-l border-slate-700 pl-4 ml-auto">
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-medium text-white">{user.nombre}</span>
-              <span className="text-xs text-slate-400 font-medium">{user.rol}</span>
-            </div>
-            <div className="h-8 w-8 bg-slate-700 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
-              {user.nombre
-                ? user.nombre
-                    .split(' ')
-                    .map((n) => n[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase()
-                : <User className="h-4 w-4" />}
-            </div>
-            <button 
-              onClick={logout}
-              className="ml-2 text-slate-400 hover:text-red-400 transition-colors"
-              title="Cerrar Sesión"
+      {/* En celular y tablet: barra superior con menú desplegable */}
+      <header className="sticky top-0 z-30 flex items-center justify-between bg-slate-900 px-4 py-3 lg:hidden">
+        <button
+          onClick={() => setMenuAbierto(true)}
+          className="rounded-md p-1.5 text-slate-300 hover:bg-slate-800 hover:text-white"
+          aria-label="Abrir menú"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <span className="font-semibold text-white">GymStudio</span>
+        <span className="w-8" />
+      </header>
+      {menuAbierto && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-slate-950/50" onClick={() => setMenuAbierto(false)} />
+          <aside className="absolute inset-y-0 left-0 w-64 shadow-xl">
+            {barraLateral}
+            <button
+              onClick={() => setMenuAbierto(false)}
+              className="absolute right-3 top-5 rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
+              aria-label="Cerrar menú"
             >
-              <LogOut className="h-5 w-5" />
+              <X className="h-5 w-5" />
             </button>
-          </div>
+          </aside>
         </div>
-      </div>
+      )}
 
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="mb-8 text-3xl font-bold tracking-tight text-slate-900">
-            {modulo === 'contable' && 'Módulo Contable'}
-            {modulo === 'gimnasio' && 'Módulo Gimnasio'}
-            {modulo === 'stock' && 'Módulo Stock'}
-            {modulo === 'clientes' && 'Módulo Clientes'}
-            {modulo === 'proveedores' && 'Módulo Proveedores'}
-          </h1>
-          
-          {modulo === 'contable' && (
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-1">
-              <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto whitespace-nowrap scrollbar-none py-1">
-                <button
-                  onClick={() => setTabContable('listado')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'listado'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Libro Diario
-                </button>
-                <button
-                  onClick={() => setTabContable('mayor')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'mayor'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Libro Mayor
-                </button>
-                <button
-                  onClick={() => setTabContable('balance')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'balance'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Balance General
-                </button>
-                <button
-                  onClick={() => setTabContable('ventas')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'ventas'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Libro Venta
-                </button>
-                <button
-                  onClick={() => setTabContable('compras')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'compras'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Libro Compra
-                </button>
-                <button
-                  onClick={() => setTabContable('caja')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'caja'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Libro Caja
-                </button>
-                <button
-                  onClick={() => setTabContable('banco')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'banco'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Libro Banco
-                </button>
-                <button
-                  onClick={() => setTabContable('nuevo')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'nuevo'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Nuevo Asiento
-                </button>
-                <button
-                  onClick={() => setTabContable('facturacion')}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 whitespace-nowrap ${
-                    tabContable === 'facturacion'
-                      ? 'border-slate-900 text-slate-900'
-                      : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                  }`}
-                >
-                  Facturación
-                </button>
-              </div>
-              <div className="shrink-0 pb-2 md:pb-0 flex items-center">
-                <button
-                  onClick={() => setShowReporteModal(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 min-h-[40px] text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  <FileText className="h-4 w-4 shrink-0" />
-                  <span>Generar Reporte (PDF)</span>
-                </button>
-              </div>
-            </div>
+      <main className="lg:pl-60">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <h1 className="mb-6 text-2xl font-semibold tracking-tight text-slate-900">{vista.titulo}</h1>
+          {vista.tarjeta ? (
+            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">{contenido}</div>
+          ) : (
+            contenido
           )}
-
-          {showReporteModal && <ModalGenerarReporte onClose={() => setShowReporteModal(false)} />}
-
-          {modulo === 'gimnasio' && (
-            <div className="mb-6 flex flex-wrap gap-4 border-b border-slate-200">
-              <button
-                onClick={() => setTabGimnasio('recepcion')}
-                className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  tabGimnasio === 'recepcion'
-                    ? 'border-slate-900 text-slate-900'
-                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                }`}
-              >
-                Recepción
-              </button>
-              <button
-                onClick={() => setTabGimnasio('planes')}
-                className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  tabGimnasio === 'planes'
-                    ? 'border-slate-900 text-slate-900'
-                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                }`}
-              >
-                Planes
-              </button>
-              <button
-                onClick={() => setTabGimnasio('socios')}
-                className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  tabGimnasio === 'socios'
-                    ? 'border-slate-900 text-slate-900'
-                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                }`}
-              >
-                Socios
-              </button>
-            </div>
-          )}
-
-          {modulo === 'stock' && (
-            <div className="mb-6 flex flex-wrap gap-4 border-b border-slate-200">
-              <button
-                onClick={() => setTabStock('libro')}
-                className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  tabStock === 'libro'
-                    ? 'border-slate-900 text-slate-900'
-                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                }`}
-              >
-                Libro Stock
-              </button>
-              <button
-                onClick={() => setTabStock('productos')}
-                className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                  tabStock === 'productos'
-                    ? 'border-slate-900 text-slate-900'
-                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                }`}
-              >
-                Gestión Productos
-              </button>
-            </div>
-          )}
-
-          <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-            {modulo === 'contable' && (
-              <>
-                {tabContable === 'nuevo' && (
-                  <AsientoForm 
-                    clienteId="1" 
-                    // Caja y Banco se mueven desde sus libros (son cuentas de control).
-                    cuentas={cuentas.filter(c => c.id !== "101" && c.id !== "102")} 
-                    onConfirmado={() => setTabContable('listado')}
-                  />
-                )}
-                {tabContable === 'listado' && <ListadoAsientos clienteId="1" />}
-                {tabContable === 'mayor' && <LibroMayor />}
-                {tabContable === 'balance' && <BalanceGeneralTab />}
-                {tabContable === 'ventas' && <LibroVenta />}
-                {tabContable === 'compras' && <LibroCompra />}
-                {tabContable === 'caja' && <LibroCaja clienteId="1" />}
-                {tabContable === 'banco' && <LibroBanco clienteId="1" />}
-                {tabContable === 'facturacion' && <Facturacion />}
-              </>
-            )}
-
-            {modulo === 'gimnasio' && (
-              <>
-                {tabGimnasio === 'recepcion' && <RecepcionGym />}
-                {tabGimnasio === 'planes' && <PlanesGym />}
-                {tabGimnasio === 'socios' && <SociosGym />}
-              </>
-            )}
-
-            {modulo === 'stock' && (
-              <>
-                {tabStock === 'libro' && <LibroStock />}
-                {tabStock === 'productos' && <GestionProductos />}
-              </>
-            )}
-
-            {modulo === 'clientes' && (
-              <ModuloClientes />
-            )}
-            
-            {modulo === 'proveedores' && (
-              <ModuloProveedores />
-            )}
-
-            {modulo === 'usuarios' && (
-              <ModuloUsuarios />
-            )}
-
-            {modulo === 'configuracion' && (
-              <ModuloConfiguracion />
-            )}
-
-            {modulo === 'auditoria' && (
-              <ModuloAuditoria />
-            )}
-          </div>
         </div>
-      </div>
+      </main>
+
+      {mostrarReportes && <ModalGenerarReporte onClose={() => setMostrarReportes(false)} />}
     </div>
   )
 }

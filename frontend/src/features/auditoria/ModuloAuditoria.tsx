@@ -103,7 +103,7 @@ export default function ModuloAuditoria() {
             <History className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Auditoría</h2>
+            
             <p className="text-xs sm:text-sm text-slate-500">
               Quién modificó qué y cuándo. Lo registra la base de datos con un trigger, sea cual sea el origen del cambio.
             </p>
@@ -129,7 +129,7 @@ export default function ModuloAuditoria() {
           />
           <button
             onClick={cargar}
-            className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 rounded-md bg-marca-600 px-3 py-2 text-sm font-medium text-white hover:bg-marca-700"
           >
             {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             Actualizar
