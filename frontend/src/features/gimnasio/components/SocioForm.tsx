@@ -1,15 +1,26 @@
 import { useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 
-interface SocioFormProps {
-  onClose: () => void;
+export interface SocioEditable {
+  id: string | number;
+  nombre: string;
+  apellido: string;
+  dni: string;
+  telefono: string;
 }
 
-export function SocioForm({ onClose }: SocioFormProps) {
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [dni, setDni] = useState("");
-  const [telefono, setTelefono] = useState("");
+interface SocioFormProps {
+  onClose: () => void;
+  // Si viene un socio, el formulario edita (PUT) en lugar de crear (POST).
+  socioAEditar?: SocioEditable | null;
+}
+
+export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
+  const esEdicion = Boolean(socioAEditar);
+  const [nombre, setNombre] = useState(socioAEditar?.nombre ?? "");
+  const [apellido, setApellido] = useState(socioAEditar?.apellido ?? "");
+  const [dni, setDni] = useState(socioAEditar?.dni ?? "");
+  const [telefono, setTelefono] = useState(socioAEditar?.telefono ?? "");
   const [isPending, setIsPending] = useState(false);
 
   const handleLimpiar = () => {
@@ -24,8 +35,8 @@ export function SocioForm({ onClose }: SocioFormProps) {
     setIsPending(true);
     
     try {
-      const response = await fetch("/api/socios", {
-        method: "POST",
+      const response = await fetch(esEdicion ? `/api/socios/${socioAEditar!.id}` : "/api/socios", {
+        method: esEdicion ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -55,7 +66,7 @@ export function SocioForm({ onClose }: SocioFormProps) {
       <div className="w-full max-w-sm rounded-xl bg-white shadow-xl ring-1 ring-slate-900/5">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            Nuevo Socio
+            {esEdicion ? "Editar Socio" : "Nuevo Socio"}
           </h2>
           <button
             onClick={onClose}

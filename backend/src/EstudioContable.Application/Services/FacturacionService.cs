@@ -51,17 +51,17 @@ namespace EstudioContable.Application.Services
             await _context.SaveChangesAsync(cancellationToken);
             factura.AsientoContableId = asiento.Id;
 
-            // 3. Generar el Movimiento de Tesorera (Libro Caja)
+            // 3. Generar el Movimiento de Tesorería (Libro Caja)
             if (factura.CondicionPago == "TransferenciaBanco")
             {
                 var tipoMov = factura.TipoOperacion == "Venta" ? TipoMovimientoBanco.Ingreso : TipoMovimientoBanco.Egreso;
-                var mov = new MovimientoBanco("1", factura.Fecha, $"Factura de {factura.TipoOperacion} N {factura.Id} - {factura.Cliente}", tipoMov, factura.Total, factura.Id);
+                var mov = new MovimientoBanco("1", factura.Fecha, $"Factura de {factura.TipoOperacion} N° {factura.Id} - {factura.Cliente}", tipoMov, factura.Total, factura.Id);
                 _context.MovimientosBanco.Add(mov);
             }
             else if (factura.CondicionPago == "ContadoCaja")
             {
                 var tipoMov = factura.TipoOperacion == "Venta" ? TipoMovimientoCaja.Ingreso : TipoMovimientoCaja.Egreso;
-                var mov = new MovimientoCaja("1", factura.Fecha, $"Factura de {factura.TipoOperacion} N {factura.Id} - {factura.Cliente}", tipoMov, factura.Total, factura.Id);
+                var mov = new MovimientoCaja("1", factura.Fecha, $"Factura de {factura.TipoOperacion} N° {factura.Id} - {factura.Cliente}", tipoMov, factura.Total, factura.Id);
                 _context.MovimientosCaja.Add(mov);
             }
 

@@ -15,7 +15,7 @@ interface SocioDto {
   dni: string;
   telefono: string;
   planId?: string;
-  planNombre?: string;
+  planActualNombre?: string;
   fechaVencimiento?: string | null;
   activo: boolean;
 }
@@ -28,7 +28,7 @@ export function SociosGym() {
   const [isLoading, setIsLoading] = useState(true);
   const [socioToEdit, setSocioToEdit] = useState<SocioDto | null>(null);
 
-  // Modal de eliminacin
+  // Modal de eliminación
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -96,7 +96,7 @@ export function SociosGym() {
         </div>
       ),
     }),
-    columnHelper.accessor("planNombre", {
+    columnHelper.accessor("planActualNombre", {
       header: "Plan Actual",
       cell: (info) => (
         <span className="text-slate-600">
@@ -238,9 +238,9 @@ export function SociosGym() {
       {idToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Confirmar Eliminacin</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Confirmar Eliminación</h3>
             <p className="text-slate-600 mb-6">
-              Ests seguro de que deseas eliminar este registro? Esta accin no se puede deshacer.
+              ¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end gap-3">
               <button

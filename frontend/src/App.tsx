@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
-import toast from 'react-hot-toast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { FileText, Loader2, LogOut, User } from 'lucide-react'
-import { exportarReporteCompletoPDF } from './utils/exportarPDF'
+import { FileText, LogOut, User } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
 import { LibroMayor } from './asientos/LibroMayor'
@@ -31,10 +29,6 @@ const queryClient = new QueryClient()
 
 import { cuentasDePrueba } from './asientos/cuentas'
 
-import { obtenerAsientos, obtenerSaldosMayor } from './asientos/asientosApi'
-import { obtenerLibroVenta } from './api/ventasApi'
-import { obtenerLibroCompra } from './api/comprasApi'
-import { obtenerLibroCaja } from './api/cajaApi'
 
 function AppContent() {
   const { user, logout } = useAuth();
@@ -44,7 +38,6 @@ function AppContent() {
   const [tabGimnasio, setTabGimnasio] = useState<'planes' | 'socios' | 'recepcion'>('recepcion');
   const [tabStock, setTabStock] = useState<'libro' | 'productos'>('libro');
   const [showReporteModal, setShowReporteModal] = useState(false);
-  const [generandoPDF, setGenerandoPDF] = useState(false);
 
   const esJefe = Boolean(
     user?.rol &&
@@ -59,27 +52,6 @@ function AppContent() {
       setModulo('contable');
     }
   }, [esJefe, modulo]);
-
-  const handleExportarPDF = async () => {
-    try {
-      setGenerandoPDF(true);
-      const clienteId = "1";
-      const [asientos, ventas, compras, caja, mayor] = await Promise.all([
-        obtenerAsientos(clienteId),
-        obtenerLibroVenta(clienteId),
-        obtenerLibroCompra(clienteId),
-        obtenerLibroCaja(clienteId),
-        obtenerSaldosMayor(clienteId)
-      ]);
-      
-      exportarReporteCompletoPDF(asientos, ventas, compras, caja, mayor);
-      toast.success("Reporte exportado con éxito");
-    } catch (error) {
-      toast.error("Error al generar el reporte PDF");
-    } finally {
-      setGenerandoPDF(false);
-    }
-  };
 
   if (!user) {
     return <Login />;

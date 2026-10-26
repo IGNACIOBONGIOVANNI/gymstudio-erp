@@ -46,6 +46,17 @@ namespace EstudioContable.API.Controllers
             return Ok(new { Id = id });
         }
 
+        public record ActualizarSocioRequest(string Nombre, string Apellido, string Dni, string Telefono);
+
+        [HttpPut("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ActualizarSocio(long id, [FromBody] ActualizarSocioRequest request, CancellationToken cancellationToken)
+        {
+            var command = new ActualizarSocioCommand(id, request.Nombre, request.Apellido, request.Dni, request.Telefono);
+            var existe = await _mediator.Send(command, cancellationToken);
+            return existe ? NoContent() : NotFound();
+        }
+
         [HttpDelete("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> EliminarSocio(long id, CancellationToken cancellationToken)

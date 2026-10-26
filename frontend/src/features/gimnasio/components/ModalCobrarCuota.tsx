@@ -7,7 +7,7 @@ interface PlanDto {
   id: string;
   nombre: string;
   precioMensual: number;
-  duracionDias: number;
+  duracionMeses: number;
 }
 
 interface SocioSeleccionado {

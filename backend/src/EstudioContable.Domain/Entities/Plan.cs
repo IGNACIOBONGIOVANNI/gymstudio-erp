@@ -26,5 +26,16 @@ namespace EstudioContable.Domain.Entities
             DuracionMeses = duracionMeses;
             Activo = activo;
         }
+
+        public void Actualizar(string nombre, decimal precioMensual, int duracionMeses)
+        {
+            if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre del plan es requerido.");
+            if (precioMensual < 0) throw new ArgumentException("El precio mensual no puede ser negativo.");
+            if (duracionMeses <= 0) throw new ArgumentException("La duración en meses debe ser mayor a cero.");
+
+            Nombre = nombre;
+            PrecioMensual = precioMensual;
+            DuracionMeses = duracionMeses;
+        }
     }
 }

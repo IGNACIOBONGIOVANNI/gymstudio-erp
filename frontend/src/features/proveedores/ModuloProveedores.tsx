@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { ModalProveedor } from './ModalProveedor';
 import toast from 'react-hot-toast';

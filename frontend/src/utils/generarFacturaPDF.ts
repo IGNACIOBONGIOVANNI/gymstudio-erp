@@ -155,7 +155,7 @@ export function generarFacturaPDF(factura: FacturaDto) {
   doc.setFont("helvetica", "normal");
   doc.text("Razón Social: " + emisorRazonSocial, 15, 28);
   doc.text("Domicilio Comercial: " + emisorDomicilio, 15, 33);
-  doc.text(`Condición frente al IVA: ${condicionIVAEmisor}`, 15, 38);
+  doc.text(`Condición frente al IVA: ${emisorCondIva}`, 15, 38);
 
   doc.rect(98, 10, 14, 14);
   doc.setFontSize(22);

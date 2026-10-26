@@ -12,7 +12,7 @@ interface PlanDto {
   id: string;
   nombre: string;
   precioMensual: number;
-  duracionDias: number;
+  duracionMeses: number;
   activo: boolean;
 }
 
@@ -29,7 +29,7 @@ export function PlanesGym() {
   const [isLoading, setIsLoading] = useState(true);
   const [planToEdit, setPlanToEdit] = useState<PlanDto | null>(null);
   
-  // Modal de eliminacin
+  // Modal de eliminación
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -88,11 +88,11 @@ export function PlanesGym() {
         </div>
       ),
     }),
-    columnHelper.accessor("duracionDias", {
-      header: () => <div className="text-center">Duracin (Das)</div>,
+    columnHelper.accessor("duracionMeses", {
+      header: () => <div className="text-center">Duración (Meses)</div>,
       cell: (info) => (
         <div className="text-center text-slate-600">
-          {info.getValue() || 30}
+          {info.getValue()}
         </div>
       ),
     }),
@@ -230,9 +230,9 @@ export function PlanesGym() {
       {idToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Confirmar Eliminacin</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Confirmar Eliminación</h3>
             <p className="text-slate-600 mb-6">
-              Ests seguro de que deseas eliminar este registro? Esta accin no se puede deshacer.
+              ¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end gap-3">
               <button

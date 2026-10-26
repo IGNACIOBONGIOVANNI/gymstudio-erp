@@ -1,15 +1,28 @@
 import { useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 
-interface PlanFormProps {
-  onClose: () => void;
+export interface PlanEditable {
+  id: string | number;
+  nombre: string;
+  precioMensual: number;
+  duracionMeses: number;
 }
 
-export function PlanForm({ onClose }: PlanFormProps) {
-  const [nombre, setNombre] = useState("");
-  const [precioMensual, setPrecioMensual] = useState("");
-  // 🔥 NUEVO ESTADO PARA LA DURACIÓN (Arranca en 1 mes por defecto)
-  const [duracionMeses, setDuracionMeses] = useState("1");
+interface PlanFormProps {
+  onClose: () => void;
+  // Si viene un plan, el formulario edita (PUT) en lugar de crear (POST).
+  planAEditar?: PlanEditable | null;
+}
+
+export function PlanForm({ onClose, planAEditar }: PlanFormProps) {
+  const esEdicion = Boolean(planAEditar);
+  const [nombre, setNombre] = useState(planAEditar?.nombre ?? "");
+  const [precioMensual, setPrecioMensual] = useState(
+    planAEditar ? String(planAEditar.precioMensual) : ""
+  );
+  const [duracionMeses, setDuracionMeses] = useState(
+    String(planAEditar?.duracionMeses || 1)
+  );
   const [isPending, setIsPending] = useState(false);
 
   const handleLimpiar = () => {
@@ -23,15 +36,15 @@ export function PlanForm({ onClose }: PlanFormProps) {
     setIsPending(true);
     
     try {
-      const response = await fetch("/api/planes", {
-        method: "POST",
+      const response = await fetch(esEdicion ? `/api/planes/${planAEditar!.id}` : "/api/planes", {
+        method: esEdicion ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           nombre,
           precioMensual: parseFloat(precioMensual),
-          duracionMeses: parseInt(duracionMeses, 10), // 🔥 LO MANDAMOS AL BACKEND
+          duracionMeses: parseInt(duracionMeses, 10),
         }),
       });
 
@@ -53,7 +66,7 @@ export function PlanForm({ onClose }: PlanFormProps) {
       <div className="w-full max-w-sm rounded-xl bg-white shadow-xl ring-1 ring-slate-900/5">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            Nuevo Plan
+            {esEdicion ? "Editar Plan" : "Nuevo Plan"}
           </h2>
           <button
             onClick={onClose}

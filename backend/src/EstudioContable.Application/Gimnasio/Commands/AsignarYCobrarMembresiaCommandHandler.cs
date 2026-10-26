@@ -34,7 +34,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
                 socio.RenovarPlan(plan.Id, plan.DuracionMeses);
 
-                // 1. Crear Membresa
+                // 1. Crear Membresía
                 var membresia = new Membresia(
                     socioId: socio.Id,
                     planId: plan.Id,
@@ -45,7 +45,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 _context.Membresias.Add(membresia);
                 await _context.SaveChangesAsync(cancellationToken); // Genera membresia.Id
 
-                // 2. Facturar Cuota a travs del Servicio (Esto delega Diario y Caja a Contabilidad)
+                // 2. Facturar Cuota a través del Servicio (Esto delega Diario y Caja a Contabilidad)
                 var condicionPagoString = (request.MetodoPago?.ToLower() == "banco") ? "TransferenciaBanco" : "ContadoCaja";
                 
                 var factura = new Factura
@@ -63,7 +63,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                     {
                         new FacturaItem
                         {
-                            Descripcion = $"Cuota Membresa - {plan.Nombre}",
+                            Descripcion = $"Cuota Membresía - {plan.Nombre}",
                             Cantidad = 1,
                             PrecioUnitario = plan.PrecioMensual,
                             Subtotal = plan.PrecioMensual

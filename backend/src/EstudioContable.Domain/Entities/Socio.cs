@@ -36,6 +36,17 @@ namespace EstudioContable.Domain.Entities
             Estado = "Vencido";
         }
 
+        public void ActualizarDatos(string nombre, string apellido, string dni, string telefono)
+        {
+            if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre es requerido.");
+            if (string.IsNullOrWhiteSpace(apellido)) throw new ArgumentException("El apellido es requerido.");
+
+            Nombre = nombre;
+            Apellido = apellido;
+            Dni = dni;
+            Telefono = telefono;
+        }
+
         public void RenovarPlan(long planId, int duracionMeses)
         {
             PlanActualId = planId;

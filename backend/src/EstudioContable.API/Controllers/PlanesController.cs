@@ -38,6 +38,17 @@ namespace EstudioContable.API.Controllers
             return Ok(new { Id = id });
         }
 
+        public record ActualizarPlanRequest(string Nombre, decimal PrecioMensual, int DuracionMeses);
+
+        [HttpPut("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ActualizarPlan(long id, [FromBody] ActualizarPlanRequest request, CancellationToken cancellationToken)
+        {
+            var command = new ActualizarPlanCommand(id, request.Nombre, request.PrecioMensual, request.DuracionMeses);
+            var existe = await _mediator.Send(command, cancellationToken);
+            return existe ? NoContent() : NotFound();
+        }
+
         [HttpDelete("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> EliminarPlan(long id, CancellationToken cancellationToken)

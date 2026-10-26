@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { 
   Users, Search, Plus, Edit2, Trash2, ShieldCheck, 
-  CheckCircle2, XCircle, RotateCcw, Clock, AlertTriangle 
+  CheckCircle2, RotateCcw, Clock, AlertTriangle 
 } from 'lucide-react';
 import type { Usuario, RolUsuario } from './types';
 import { 

@@ -23,7 +23,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
         public async Task<bool> Handle(CobrarMembresiaCommand request, CancellationToken cancellationToken)
         {
-            // Iniciamos la transaccin para garantizar Atomicidad (Gimnasio + Contabilidad)
+            // Iniciamos la transacción para garantizar Atomicidad (Gimnasio + Contabilidad)
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try
@@ -34,7 +34,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                     .FirstOrDefaultAsync(m => m.Id == request.MembresiaId, cancellationToken);
 
                 if (membresia == null)
-                    throw new Exception($"Membresa con ID {request.MembresiaId} no encontrada.");
+                    throw new Exception($"Membresía con ID {request.MembresiaId} no encontrada.");
 
                 if (membresia.EstaPagada)
                     throw new Exception("La membresa ya se encuentra pagada.");
@@ -43,10 +43,10 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 membresia.MarcarComoPagada();
                 membresia.Socio.RenovarPlan(membresia.Plan.Id, membresia.Plan.DuracionMeses);
 
-                var descripcionItem = $"Cuota Membresa - {membresia.Plan.Nombre}";
+                var descripcionItem = $"Cuota Membresía - {membresia.Plan.Nombre}";
                 var condicionPagoString = (request.MetodoPago?.ToLower() == "banco") ? "TransferenciaBanco" : "ContadoCaja";
 
-                // 2. Lgica Contable (Creacin de la Factura genrica tal como lo hace el Mculo Contable)
+                // 2. Lgica Contable (Creación de la Factura genrica tal como lo hace el Mculo Contable)
                 var factura = new Factura
                 {
                     Fecha = DateTime.UtcNow,
@@ -72,7 +72,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 
                 _context.Facturas.Add(factura);
 
-                // 3. Generacin de Asiento de Partida Doble vinculado a la factura
+                // 3. Generación de Asiento de Partida Doble vinculado a la factura
                 var maxNumero = await _context.AsientosContables
                     .MaxAsync(a => (long?)a.NumeroAsiento, cancellationToken) ?? 0;
                 
@@ -106,18 +106,18 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 // 5. Generamos el Movimiento de Caja/Banco para el Libro Caja (tal como lo hace FacturasController)
                 if (request.MetodoPago?.ToLower() == "banco")
                 {
-                    var mov = new MovimientoBanco("1", DateTime.UtcNow, $"Factura de Venta N {factura.Id} - {factura.Cliente}", TipoMovimientoBanco.Ingreso, factura.Total, factura.Id);
+                    var mov = new MovimientoBanco("1", DateTime.UtcNow, $"Factura de Venta N° {factura.Id} - {factura.Cliente}", TipoMovimientoBanco.Ingreso, factura.Total, factura.Id);
                     _context.MovimientosBanco.Add(mov);
                 }
                 else
                 {
-                    var mov = new MovimientoCaja("1", DateTime.UtcNow, $"Factura de Venta N {factura.Id} - {factura.Cliente}", TipoMovimientoCaja.Ingreso, factura.Total, factura.Id);
+                    var mov = new MovimientoCaja("1", DateTime.UtcNow, $"Factura de Venta N° {factura.Id} - {factura.Cliente}", TipoMovimientoCaja.Ingreso, factura.Total, factura.Id);
                     _context.MovimientosCaja.Add(mov);
                 }
 
                 await _context.SaveChangesAsync(cancellationToken);
 
-                // Hacemos el Commit de la transaccin
+                // Hacemos el Commit de la transacción
                 await transaction.CommitAsync(cancellationToken);
 
                 return true;
