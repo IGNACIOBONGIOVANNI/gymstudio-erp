@@ -224,9 +224,13 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
+
 static Task EscribirProblema(HttpResponse response, int status, string titulo, string detalle)
 {
     response.StatusCode = status;
     response.ContentType = "application/problem+json";
     return response.WriteAsync(JsonSerializer.Serialize(new ProblemDetails { Status = status, Title = titulo, Detail = detalle }));
 }
+
+// Visible para los tests de integración (WebApplicationFactory<Program>).
+public partial class Program { }

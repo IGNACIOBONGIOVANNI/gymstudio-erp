@@ -5,4 +5,8 @@
     <Project Path="src/EstudioContable.Domain/EstudioContable.Domain.csproj" />
     <Project Path="src/EstudioContable.Infrastructure/EstudioContable.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EstudioContable.Domain.Tests/EstudioContable.Domain.Tests.csproj" />
+    <Project Path="tests/EstudioContable.IntegrationTests/EstudioContable.IntegrationTests.csproj" />
+  </Folder>
 </Solution>

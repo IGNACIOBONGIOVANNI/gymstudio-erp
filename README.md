@@ -115,6 +115,26 @@ Triggers (partida doble, inmutabilidad de asientos, auditoría), restricciones
 [docs/BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md). El esquema completo está en
 [01_esquema_base_datos.sql](01_esquema_base_datos.sql).
 
+## Tests
+
+```bash
+dotnet test backend/EstudioContable.slnx
+```
+
+- **Dominio** (`backend/tests/EstudioContable.Domain.Tests`, sin base de datos):
+  partida doble, contraasientos, CUIT, DNI, renovación de membresías, stock,
+  movimientos de caja y banco, usuarios.
+- **Integración** (`backend/tests/EstudioContable.IntegrationTests`): levantan la
+  API completa contra un PostgreSQL real y descartable (Testcontainers, requiere
+  Docker abierto). Facturar, editar y anular dejando caja, Mayor y stock
+  cuadrados; caja negativa; transferencias; permisos por rol; y los triggers y la
+  auditoría probados con SQL directo.
+- Cada test protege una regla concreta. Si se rompe la regla, el test falla (se
+  verificó rompiendo el código a propósito).
+
+En GitHub, el workflow `.github/workflows/ci.yml` corre los tests y el build del
+frontend en cada push.
+
 ## Configuración fuera de desarrollo
 
 `appsettings.json` deja vacía la clave JWT a propósito: fuera del entorno
