@@ -2,7 +2,9 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EstudioContable.API.Auth;
 using EstudioContable.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -106,6 +108,7 @@ namespace EstudioContable.API.Controllers
         /// versión anterior (contraasiento, tesorería y stock inversos) y aplica los nuevos.
         /// </summary>
         [HttpPut("{id}")]
+        [Authorize(Roles = Roles.Gestion)]
         public async Task<IActionResult> ActualizarFactura(long id, [FromBody] ActualizarFacturaDto dto, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -140,6 +143,7 @@ namespace EstudioContable.API.Controllers
         /// con movimientos inversos. Nunca se borra (trazabilidad contable y fiscal).
         /// </summary>
         [HttpPost("{id}/anular")]
+        [Authorize(Roles = Roles.Gestion)]
         public async Task<IActionResult> AnularFactura(long id, CancellationToken cancellationToken)
         {
             await _facturacionService.AnularFacturaAsync(id, cancellationToken);

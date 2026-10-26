@@ -9,7 +9,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/compras")]
-    [Authorize]
     public class ComprasController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -23,7 +22,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene el Libro Compra con todas las facturas de compra de un cliente.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Get([FromQuery] long? clienteId, CancellationToken cancellationToken)
         {
             var query = new ObtenerLibroCompraQuery(clienteId);
@@ -35,7 +33,6 @@ namespace EstudioContable.API.Controllers
         /// Crea una factura de compra manual.
         /// </summary>
         [HttpPost]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Post([FromBody] EstudioContable.Application.Compras.Commands.CrearFacturaCompraCommand command, CancellationToken cancellationToken)
         {
             var id = await _mediator.Send(command, cancellationToken);
@@ -45,7 +42,6 @@ namespace EstudioContable.API.Controllers
         /// Elimina una factura de compra y sus movimientos asociados.
         /// </summary>
         [HttpDelete("{id}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
         {
             var command = new EstudioContable.Application.Compras.Commands.EliminarFacturaCompraCommand(id);

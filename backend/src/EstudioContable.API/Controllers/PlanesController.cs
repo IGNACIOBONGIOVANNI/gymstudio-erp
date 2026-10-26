@@ -23,7 +23,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetPlanes(CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(new ObtenerPlanesQuery(), cancellationToken);
@@ -31,7 +30,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         public async Task<IActionResult> CrearPlan([FromBody] CrearPlanCommand command, CancellationToken cancellationToken)
         {
             var id = await _mediator.Send(command, cancellationToken);
@@ -41,7 +39,6 @@ namespace EstudioContable.API.Controllers
         public record ActualizarPlanRequest(string Nombre, decimal PrecioMensual, int DuracionMeses);
 
         [HttpPut("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> ActualizarPlan(long id, [FromBody] ActualizarPlanRequest request, CancellationToken cancellationToken)
         {
             var command = new ActualizarPlanCommand(id, request.Nombre, request.PrecioMensual, request.DuracionMeses);
@@ -50,7 +47,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> EliminarPlan(long id, CancellationToken cancellationToken)
         {
             var plan = await _context.Planes.FindAsync(new object[] { id }, cancellationToken);

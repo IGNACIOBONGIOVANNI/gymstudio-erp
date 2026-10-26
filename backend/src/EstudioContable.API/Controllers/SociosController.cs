@@ -23,7 +23,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetSocios(CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(new ObtenerSociosQuery(), cancellationToken);
@@ -31,7 +30,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpGet("estado")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetEstadoSocios(CancellationToken cancellationToken)
         {
             var result = await _mediator.Send(new ObtenerEstadoSociosQuery(), cancellationToken);
@@ -39,7 +37,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         public async Task<IActionResult> CrearSocio([FromBody] CrearSocioCommand command, CancellationToken cancellationToken)
         {
             var id = await _mediator.Send(command, cancellationToken);
@@ -49,7 +46,6 @@ namespace EstudioContable.API.Controllers
         public record ActualizarSocioRequest(string Nombre, string Apellido, string Dni, string Telefono);
 
         [HttpPut("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> ActualizarSocio(long id, [FromBody] ActualizarSocioRequest request, CancellationToken cancellationToken)
         {
             var command = new ActualizarSocioCommand(id, request.Nombre, request.Apellido, request.Dni, request.Telefono);
@@ -58,7 +54,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> EliminarSocio(long id, CancellationToken cancellationToken)
         {
             var socio = await _context.Socios.FindAsync(new object[] { id }, cancellationToken);

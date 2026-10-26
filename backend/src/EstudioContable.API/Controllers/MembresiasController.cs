@@ -19,7 +19,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpPost("{id}/cobrar")]
-        [AllowAnonymous]
         public async Task<IActionResult> Cobrar(long id, [FromBody] CobrarMembresiaCommand command, CancellationToken cancellationToken)
         {
             if (id != command.MembresiaId)
@@ -39,7 +38,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpPost("asignar-y-cobrar")]
-        [AllowAnonymous]
         public async Task<IActionResult> AsignarYCobrar([FromBody] AsignarYCobrarMembresiaCommand command, CancellationToken cancellationToken)
         {
             try

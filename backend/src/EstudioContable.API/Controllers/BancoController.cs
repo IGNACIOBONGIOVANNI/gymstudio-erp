@@ -10,7 +10,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/banco")]
-    [Authorize]
     public class BancoController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -24,7 +23,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene el Libro Banco del cliente.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Get([FromQuery] string clienteId, CancellationToken cancellationToken)
         {
             var query = new ObtenerLibroBancoQuery(clienteId);
@@ -36,7 +34,6 @@ namespace EstudioContable.API.Controllers
         /// Registra un nuevo movimiento bancario.
         /// </summary>
         [HttpPost]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Post([FromBody] CrearMovimientoBancoCommand command, CancellationToken cancellationToken)
         {
             var id = await _mediator.Send(command, cancellationToken);
@@ -47,7 +44,6 @@ namespace EstudioContable.API.Controllers
         /// Edita un movimiento de banco existente.
         /// </summary>
         [HttpPut("{id}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Put(int id, [FromBody] EditarMovimientoBancoCommand command, CancellationToken cancellationToken)
         {
             var commandWithId = command with { Id = id };
@@ -59,7 +55,6 @@ namespace EstudioContable.API.Controllers
         /// Elimina un movimiento de banco.
         /// </summary>
         [HttpDelete("{id}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var command = new EliminarMovimientoBancoCommand(id); 

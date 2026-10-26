@@ -8,7 +8,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/reportes")]
-    [AllowAnonymous] // Temporal para probar
     public class ReportesController : ControllerBase
     {
         private readonly IAppDbContext _context;

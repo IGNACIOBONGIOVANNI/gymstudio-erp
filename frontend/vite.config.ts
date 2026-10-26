@@ -14,7 +14,8 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:5122',
+        // En Docker el backend no está en localhost sino en el servicio "backend".
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:5122',
         changeOrigin: true,
         secure: false,
       },

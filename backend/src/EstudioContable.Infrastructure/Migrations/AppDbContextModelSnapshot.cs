@@ -934,14 +934,19 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<bool>("EsPrincipal")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("FechaCreacion")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NombreCompleto")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -950,12 +955,19 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<int>("Rol")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTimeOffset?>("UltimoLogin")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("Usuario", "contabilidad");
                 });

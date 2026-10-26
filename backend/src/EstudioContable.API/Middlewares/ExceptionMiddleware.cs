@@ -35,6 +35,11 @@ namespace EstudioContable.API.Middlewares
                 _logger.LogWarning(ex, "Unbalanced journal entry");
                 await HandleExceptionAsync(context, ex, HttpStatusCode.UnprocessableEntity);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized");
+                await HandleExceptionAsync(context, ex, HttpStatusCode.Unauthorized);
+            }
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning(ex, "Domain validation error");
@@ -64,6 +69,7 @@ namespace EstudioContable.API.Middlewares
                 {
                     HttpStatusCode.BadRequest => "Error de Validación",
                     HttpStatusCode.NotFound => "Recurso no encontrado",
+                    HttpStatusCode.Unauthorized => "No autenticado",
                     HttpStatusCode.UnprocessableEntity => "Asiento desbalanceado",
                     _ => "Error Interno del Servidor"
                 },

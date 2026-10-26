@@ -21,7 +21,6 @@ namespace EstudioContable.API.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetBalance([FromQuery] System.DateOnly? fechaInicio, [FromQuery] System.DateOnly? fechaFin, CancellationToken cancellationToken)
         {
             var queryLineas = _context.LineasAsiento

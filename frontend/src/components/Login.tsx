@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Lock, Mail, Loader2 } from 'lucide-react';
-import { autenticarUsuario } from '../features/usuarios/usuariosStorage';
 
 export function Login() {
   const { login } = useAuth();
@@ -16,44 +15,22 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      // 1. Validar primero contra usuariosStorage (LocalStorage de Usuarios)
-      const resLocal = autenticarUsuario(email, password);
-      if (resLocal.success && resLocal.usuario) {
-        const u = resLocal.usuario;
-        login(`token-${u.id}-${Date.now()}`, u.rol, u.nombre, u.email);
-        return;
-      }
-
-      // Si la cuenta está inactiva, rechazar de inmediato con el mensaje requerido
-      if (resLocal.error && resLocal.error.includes('inactiva')) {
-        setError(resLocal.error);
-        return;
-      }
-
-      // 2. Si no valida por almacenamiento local, intentar con el backend como fallback
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5122';
-      
       const res = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        login(data.token, data.rol, data.nombre, email);
-      } else {
-        setError(resLocal.error || 'Credenciales incorrectas');
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setError(data?.detail || 'Credenciales incorrectas');
+        return;
       }
-    } catch (err) {
-      // Si el backend no responde o da error de red, usamos el resultado de la validación local
-      const resLocal = autenticarUsuario(email, password);
-      if (resLocal.success && resLocal.usuario) {
-        const u = resLocal.usuario;
-        login(`token-${u.id}-${Date.now()}`, u.rol, u.nombre, u.email);
-      } else {
-        setError(resLocal.error || 'Credenciales incorrectas');
-      }
+
+      login(data.token, data.rol, data.nombre, data.email);
+    } catch {
+      setError('No se pudo conectar con el servidor. Verificá que el backend esté levantado.');
     } finally {
       setIsLoading(false);
     }

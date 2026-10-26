@@ -10,7 +10,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/caja")]
-    [Authorize]
     public class CajaController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -24,7 +23,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene el Libro Caja del cliente.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Get([FromQuery] string clienteId, CancellationToken cancellationToken)
         {
             var query = new ObtenerLibroCajaQuery(clienteId);
@@ -36,7 +34,6 @@ namespace EstudioContable.API.Controllers
         /// Registra un nuevo movimiento de caja.
         /// </summary>
         [HttpPost]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Post([FromBody] CrearMovimientoCajaCommand command, CancellationToken cancellationToken)
         {
             var id = await _mediator.Send(command, cancellationToken);
@@ -47,7 +44,6 @@ namespace EstudioContable.API.Controllers
         /// Edita un movimiento de caja existente.
         /// </summary>
         [HttpPut("{id}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Put(int id, [FromBody] EditarMovimientoCajaCommand command, CancellationToken cancellationToken)
         {
             // Le asignamos el ID de la URL al comando
@@ -60,7 +56,6 @@ namespace EstudioContable.API.Controllers
         /// Elimina un movimiento de caja.
         /// </summary>
         [HttpDelete("{id}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var command = new EliminarMovimientoCajaCommand(id); 

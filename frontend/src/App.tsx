@@ -39,13 +39,8 @@ function AppContent() {
   const [tabStock, setTabStock] = useState<'libro' | 'productos'>('libro');
   const [showReporteModal, setShowReporteModal] = useState(false);
 
-  const esJefe = Boolean(
-    user?.rol &&
-      (user.rol === 'Jefe' ||
-        user.rol === 'Jefe / Administrador' ||
-        user.rol.toLowerCase().includes('jefe') ||
-        user.rol.toLowerCase().includes('admin'))
-  );
+  // La API es la que realmente controla los permisos; esto sólo oculta menús.
+  const esJefe = user?.rol === 'Administrador';
 
   useEffect(() => {
     if (!esJefe && (modulo === 'usuarios' || modulo === 'configuracion')) {

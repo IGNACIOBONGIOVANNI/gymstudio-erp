@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import toast from 'react-hot-toast';
+import { SESION_EXPIRADA, STORAGE_KEY_SESION, tokenVencido } from '../api/authFetch';
 
 interface User {
   nombre: string;
@@ -16,26 +18,46 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+function leerSesionGuardada(): User | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SESION);
+    if (!raw) return null;
+    const user = JSON.parse(raw) as User;
+    // Una sesión con token vencido (o de la versión anterior, sin JWT) se descarta.
+    if (!user.token || tokenVencido(user.token)) {
+      localStorage.removeItem(STORAGE_KEY_SESION);
+      return null;
     }
-  }, []);
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(leerSesionGuardada);
 
   const login = (token: string, rol: string, nombre: string, email?: string) => {
     const newUser: User = { token, rol, nombre, email };
     setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    localStorage.setItem(STORAGE_KEY_SESION, JSON.stringify(newUser));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem(STORAGE_KEY_SESION);
   };
+
+  // El interceptor de fetch avisa cuando la API responde 401.
+  useEffect(() => {
+    const alExpirar = () => {
+      if (!localStorage.getItem(STORAGE_KEY_SESION)) return;
+      logout();
+      toast.error('Tu sesión expiró. Iniciá sesión nuevamente.');
+    };
+    window.addEventListener(SESION_EXPIRADA, alExpirar);
+    return () => window.removeEventListener(SESION_EXPIRADA, alExpirar);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

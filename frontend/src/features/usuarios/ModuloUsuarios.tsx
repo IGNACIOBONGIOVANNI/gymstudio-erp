@@ -1,15 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
-import { 
-  Users, Search, Plus, Edit2, Trash2, ShieldCheck, 
-  CheckCircle2, RotateCcw, Clock, AlertTriangle 
+import {
+  Users, Search, Plus, Edit2, Trash2, ShieldCheck,
+  CheckCircle2, Clock, AlertTriangle
 } from 'lucide-react';
 import type { Usuario, RolUsuario } from './types';
-import { 
-  obtenerUsuarios, 
-  cambiarEstadoUsuario, 
-  eliminarUsuario, 
-  restablecerUsuariosPorDefecto 
-} from './usuariosStorage';
+import { obtenerUsuarios, cambiarEstadoUsuario, eliminarUsuario } from './usuariosApi';
 import { ModalUsuario } from './ModalUsuario';
 import toast from 'react-hot-toast';
 
@@ -24,8 +19,12 @@ export default function ModuloUsuarios() {
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState<Usuario | null>(null);
 
-  const cargarUsuarios = () => {
-    setUsuarios(obtenerUsuarios());
+  const cargarUsuarios = async () => {
+    try {
+      setUsuarios(await obtenerUsuarios());
+    } catch (error: any) {
+      toast.error(error?.message || 'No se pudieron cargar los usuarios');
+    }
   };
 
   useEffect(() => {
@@ -58,15 +57,15 @@ export default function ModuloUsuarios() {
     return { total, activos, jefes, contadores };
   }, [usuarios]);
 
-  const handleToggleEstado = (usuario: Usuario) => {
+  const handleToggleEstado = async (usuario: Usuario) => {
     if (usuario.esPrincipal && usuario.estado === 'Activo') {
       toast.error('No se puede desactivar al Administrador Principal');
       return;
     }
 
     try {
-      cambiarEstadoUsuario(usuario.id);
-      cargarUsuarios();
+      await cambiarEstadoUsuario(usuario);
+      await cargarUsuarios();
       const nuevoEstado = usuario.estado === 'Activo' ? 'Inactivo' : 'Activo';
       toast.success(`Usuario ${usuario.nombre} ahora está ${nuevoEstado}`);
     } catch (error: any) {
@@ -74,24 +73,16 @@ export default function ModuloUsuarios() {
     }
   };
 
-  const confirmarEliminar = () => {
+  const confirmarEliminar = async () => {
     if (!usuarioAEliminar) return;
 
-    const res = eliminarUsuario(usuarioAEliminar.id);
-    if (res.success) {
-      toast.success(res.message);
-      cargarUsuarios();
+    try {
+      await eliminarUsuario(usuarioAEliminar.id);
+      toast.success('Usuario eliminado exitosamente');
+      await cargarUsuarios();
       setUsuarioAEliminar(null);
-    } else {
-      toast.error(res.message);
-    }
-  };
-
-  const handleRestablecer = () => {
-    if (window.confirm('¿Deseás restablecer el listado de usuarios a los valores iniciales de prueba?')) {
-      const iniciales = restablecerUsuariosPorDefecto();
-      setUsuarios(iniciales);
-      toast.success('Usuarios restablecidos por defecto');
+    } catch (error: any) {
+      toast.error(error?.message || 'Error al eliminar el usuario');
     }
   };
 
@@ -110,7 +101,7 @@ export default function ModuloUsuarios() {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Encabezado de la Sección */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
@@ -130,15 +121,6 @@ export default function ModuloUsuarios() {
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            onClick={handleRestablecer}
-            title="Restablecer usuarios predeterminados de la demo"
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-colors"
-          >
-            <RotateCcw className="h-4 w-4" />
-            <span className="hidden sm:inline">Restablecer Demo</span>
-          </button>
-          
           <button
             onClick={() => {
               setUsuarioEditando(null);
@@ -424,7 +406,7 @@ export default function ModuloUsuarios() {
             <h3 className="text-center text-lg font-bold text-slate-900">
               ¿Eliminar usuario?
             </h3>
-            
+
             <p className="mt-2 text-center text-sm text-slate-600">
               Estás por eliminar la cuenta de{' '}
               <strong className="text-slate-900">{usuarioAEliminar.nombre}</strong> (

@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
 using EstudioContable.Application.Asientos.Commands.ConfirmarAsiento;
 using EstudioContable.Application.Asientos.Commands.CrearAsiento; // <-- Agregamos la ruta al comando de creación
+using EstudioContable.API.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/asientos")]
-    [Authorize] // requiere estar autenticado; los endpoints afinan el rol individualmente
     public class AsientosController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -24,7 +23,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene un listado de asientos contables.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Get([FromQuery] long? clienteId, CancellationToken cancellationToken)
         {
             var query = new EstudioContable.Application.Asientos.Queries.ObtenerAsientos.ObtenerAsientosQuery(clienteId);
@@ -36,7 +34,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene el Libro Mayor agrupando saldos por cuenta contable.
         /// </summary>
         [HttpGet("mayor")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> GetMayor([FromQuery] long clienteId, CancellationToken cancellationToken)
         {
             var query = new EstudioContable.Application.Asientos.Queries.ObtenerSaldosMayor.ObtenerSaldosMayorQuery(clienteId);
@@ -48,7 +45,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene un asiento contable específico por su Id (incluyendo sus líneas).
         /// </summary>
         [HttpGet("{id:long}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> GetById(long id, CancellationToken cancellationToken)
         {
             var query = new EstudioContable.Application.Asientos.Queries.ObtenerAsientoPorId.ObtenerAsientoPorIdQuery(id);
@@ -64,10 +60,11 @@ namespace EstudioContable.API.Controllers
         /// Crea un nuevo asiento contable desde cero.
         /// </summary>
         [HttpPost]
-        [AllowAnonymous] // <-- Permite probarlo en Swagger sin tener que hacer un login previo
+        [Authorize(Roles = Roles.Gestion)]
         public async Task<IActionResult> Crear([FromBody] CrearAsientoCommand command, CancellationToken cancellationToken)
         {
-            var resultado = await _mediator.Send(command, cancellationToken);
+            // El creador es siempre el usuario autenticado, nunca el que mande el cliente.
+            var resultado = await _mediator.Send(command with { UsuarioCreadorId = TokenService.ObtenerUsuarioId(User) }, cancellationToken);
             return Ok(resultado);
         }
 
@@ -80,14 +77,13 @@ namespace EstudioContable.API.Controllers
         /// <response code="404">El asiento no existe.</response>
         /// <response code="422">El asiento no está balanceado (Debe != Haber).</response>
         [HttpPost("{id:long}/confirmar")]
-        [AllowAnonymous] // Temporal para probar sin JWT
+        [Authorize(Roles = Roles.Gestion)]
         [ProducesResponseType(typeof(ConfirmarAsientoResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<ConfirmarAsientoResult>> Confirmar(long id, CancellationToken cancellationToken)
         {
-            // Hardcodeado temporalmente para pruebas en Swagger sin autenticación JWT
-            var usuarioId = 1L;
+            var usuarioId = TokenService.ObtenerUsuarioId(User);
 
             var command = new ConfirmarAsientoCommand(id, usuarioId);
             var resultado = await _mediator.Send(command, cancellationToken);
@@ -102,7 +98,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene la Factura (comprobante) asociada a un Asiento Contable
         /// </summary>
         [HttpGet("{id:long}/factura")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetFacturaByAsientoId(long id, [FromServices] EstudioContable.Application.Interfaces.IAppDbContext context, CancellationToken cancellationToken)
         {
             var factura = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
@@ -160,21 +155,11 @@ namespace EstudioContable.API.Controllers
             });
         }
 
-        private long ObtenerUsuarioIdAutenticado()
-        {
-            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(claim) || !long.TryParse(claim, out var usuarioId))
-                throw new UnauthorizedAccessException("El token no contiene un identificador de usuario válido.");
-
-            return usuarioId;
-        }
-
         /// <summary>
         /// Elimina un asiento contable.
         /// </summary>
         [HttpDelete("{id:long}")]
-        [AllowAnonymous] // Temporal para probar sin JWT
+        [Authorize(Roles = Roles.Gestion)]
         public async Task<IActionResult> Eliminar(long id, CancellationToken cancellationToken)
         {
             var command = new EstudioContable.Application.Asientos.Commands.EliminarAsiento.EliminarAsientoCommand(id);

@@ -1,4 +1,5 @@
 using EstudioContable.Application.Cuentas.Commands.CrearCuenta;
+using EstudioContable.API.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/cuentas")]
-    [Authorize]
     public class CuentasController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -23,7 +23,7 @@ namespace EstudioContable.API.Controllers
         /// Registra una nueva cuenta contable.
         /// </summary>
         [HttpPost]
-        [AllowAnonymous] // Permitir pruebas en Swagger sin token
+        [Authorize(Roles = Roles.Gestion)]
         public async Task<IActionResult> Crear([FromBody] CrearCuentaCommand command, CancellationToken cancellationToken)
         {
             var resultado = await _mediator.Send(command, cancellationToken);

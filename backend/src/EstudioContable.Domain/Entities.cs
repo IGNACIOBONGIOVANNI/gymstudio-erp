@@ -13,7 +13,9 @@ namespace EstudioContable.Domain.Entities
     {
         Administrador,
         Contador,
-        Cliente
+        Cliente,
+        // Se persiste como entero: los valores nuevos van siempre al final.
+        Recepcion
     }
 
     public enum TipoContribuyente
@@ -82,27 +84,79 @@ namespace EstudioContable.Domain.Entities
         public RolUsuario Rol { get; private set; }
         public long? ClienteId { get; private set; }
         public Cliente? Cliente { get; private set; }
+        public string? Telefono { get; private set; }
         public bool Activo { get; private set; } = true;
+
+        // El administrador principal no puede eliminarse, desactivarse ni perder
+        // el rol de Administrador: garantiza que siempre quede alguien con acceso total.
+        public bool EsPrincipal { get; private set; }
         public DateTimeOffset? UltimoLogin { get; private set; }
         public DateTimeOffset FechaCreacion { get; private set; } = DateTimeOffset.UtcNow;
 
         protected Usuario() { }
 
-        public Usuario(string nombreCompleto, string email, string passwordHash, RolUsuario rol, long? clienteId = null)
+        public Usuario(string nombreCompleto, string email, string passwordHash, RolUsuario rol,
+            long? clienteId = null, string? telefono = null, bool esPrincipal = false)
         {
             if (rol == RolUsuario.Cliente && clienteId is null)
                 throw new InvalidOperationException("Un usuario con rol Cliente debe estar vinculado a un Cliente.");
             if (rol != RolUsuario.Cliente && clienteId is not null)
                 throw new InvalidOperationException("Sólo los usuarios con rol Cliente pueden vincularse a un Cliente.");
+            if (esPrincipal && rol != RolUsuario.Administrador)
+                throw new InvalidOperationException("El usuario principal debe ser Administrador.");
 
-            NombreCompleto = nombreCompleto;
-            Email = email;
-            PasswordHash = passwordHash;
+            AsignarDatos(nombreCompleto, email, telefono);
+            CambiarPassword(passwordHash);
             Rol = rol;
             ClienteId = clienteId;
+            EsPrincipal = esPrincipal;
+        }
+
+        public void ActualizarDatos(string nombreCompleto, string email, RolUsuario rol, string? telefono)
+        {
+            if (EsPrincipal && rol != RolUsuario.Administrador)
+                throw new InvalidOperationException("El administrador principal no puede cambiar de rol.");
+            if (rol == RolUsuario.Cliente && ClienteId is null)
+                throw new InvalidOperationException("Un usuario con rol Cliente debe estar vinculado a un Cliente.");
+
+            AsignarDatos(nombreCompleto, email, telefono);
+            Rol = rol;
+        }
+
+        public void CambiarPassword(string passwordHash)
+        {
+            if (string.IsNullOrWhiteSpace(passwordHash))
+                throw new ArgumentException("El hash de la contraseña es obligatorio.", nameof(passwordHash));
+            PasswordHash = passwordHash;
+        }
+
+        public void Activar() => Activo = true;
+
+        public void Desactivar()
+        {
+            if (EsPrincipal)
+                throw new InvalidOperationException("El administrador principal no puede desactivarse.");
+            Activo = false;
         }
 
         public void RegistrarLogin() => UltimoLogin = DateTimeOffset.UtcNow;
+
+        /// <summary>Normaliza el email (minúsculas, sin espacios) para compararlo y guardarlo.</summary>
+        public static string NormalizarEmail(string email) => (email ?? string.Empty).Trim().ToLowerInvariant();
+
+        private void AsignarDatos(string nombreCompleto, string email, string? telefono)
+        {
+            if (string.IsNullOrWhiteSpace(nombreCompleto))
+                throw new ArgumentException("El nombre es obligatorio.", nameof(nombreCompleto));
+
+            var emailNormalizado = NormalizarEmail(email);
+            if (emailNormalizado.Length < 3 || !emailNormalizado.Contains('@'))
+                throw new ArgumentException("El email no es válido.", nameof(email));
+
+            NombreCompleto = nombreCompleto.Trim();
+            Email = emailNormalizado;
+            Telefono = string.IsNullOrWhiteSpace(telefono) ? null : telefono.Trim();
+        }
     }
 
     public class CuentaContable

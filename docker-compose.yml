@@ -50,6 +50,8 @@ services:
     volumes:
       - ./frontend:/app # Bind mount to allow hot reload
       - /app/node_modules # Exclude node_modules from host to prevent OS incompatibility
+    environment:
+      - VITE_PROXY_TARGET=http://backend:5122 # el proxy de Vite apunta al contenedor del backend
     depends_on:
       - backend
     restart: unless-stopped

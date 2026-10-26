@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, User, Mail, Shield, Lock, Phone, CheckCircle2 } from 'lucide-react';
 import type { Usuario, RolUsuario, EstadoUsuario } from './types';
-import { guardarUsuario } from './usuariosStorage';
+import { guardarUsuario } from './usuariosApi';
 import toast from 'react-hot-toast';
 
 interface ModalUsuarioProps {
@@ -39,7 +39,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
     }
   }, [usuarioAEditar]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!nombre.trim()) {
@@ -59,7 +59,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
     try {
       setIsSubmitting(true);
-      guardarUsuario({
+      await guardarUsuario({
         id: usuarioAEditar?.id,
         nombre,
         email,
@@ -86,7 +86,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
       <div className="w-[95%] max-w-lg mx-auto rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        
+
         {/* Encabezado */}
         <div className="bg-slate-900 px-6 py-4 flex items-center justify-between text-white">
           <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          
+
           {/* Nombre */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">

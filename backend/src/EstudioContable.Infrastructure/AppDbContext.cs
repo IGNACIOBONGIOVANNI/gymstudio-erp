@@ -17,6 +17,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<AsientoContable> AsientosContables => Set<AsientoContable>();
         public DbSet<LineaAsiento> LineasAsiento => Set<LineaAsiento>();
         public DbSet<CuentaContable> CuentasContables => Set<CuentaContable>();
+        public DbSet<Usuario> Usuarios => Set<Usuario>();
         public DbSet<FacturaVenta> FacturasVenta => Set<FacturaVenta>();
         public DbSet<FacturaCompra> FacturasCompra => Set<FacturaCompra>();
         public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();

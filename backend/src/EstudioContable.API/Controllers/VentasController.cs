@@ -12,7 +12,6 @@ namespace EstudioContable.API.Controllers
 {
     [ApiController]
     [Route("api/ventas")]
-    [Authorize]
     public class VentasController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -26,7 +25,6 @@ namespace EstudioContable.API.Controllers
         /// Obtiene el Libro Venta con todas las facturas de venta de un cliente.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Get([FromQuery] long? clienteId, CancellationToken cancellationToken)
         {
             var query = new ObtenerLibroVentaQuery(clienteId);
@@ -38,7 +36,6 @@ namespace EstudioContable.API.Controllers
         /// Exporta el Libro Venta a un archivo Excel.
         /// </summary>
         [HttpGet("export")]
-        [AllowAnonymous] // Temporal para desarrollo local sin JWT
         public async Task<IActionResult> Exportar([FromQuery] long? clienteId, CancellationToken cancellationToken)
         {
             var fileBytes = await _mediator.Send(new ExportarLibroVentaQuery(clienteId), cancellationToken);
@@ -49,7 +46,6 @@ namespace EstudioContable.API.Controllers
         /// Importa facturas de venta desde un archivo Excel masivamente.
         /// </summary>
         [HttpPost("import")]
-        [AllowAnonymous] // Temporal para desarrollo local sin JWT
         public async Task<IActionResult> Importar([FromQuery] long? clienteId, IFormFile file, CancellationToken cancellationToken)
         {
             if (file == null || file.Length == 0)
@@ -65,7 +61,6 @@ namespace EstudioContable.API.Controllers
         /// Crea una factura de venta manual.
         /// </summary>
         [HttpPost]
-        [AllowAnonymous] // Temporal para probar sin JWT
         public async Task<IActionResult> Post([FromBody] CrearFacturaVentaCommand command, CancellationToken cancellationToken)
         {
             var id = await _mediator.Send(command, cancellationToken);
