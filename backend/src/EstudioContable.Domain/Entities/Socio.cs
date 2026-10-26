@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace EstudioContable.Domain.Entities
@@ -22,29 +23,40 @@ namespace EstudioContable.Domain.Entities
 
         protected Socio() { } // EF Core
 
-        public Socio(string nombre, string apellido, string dni, string telefono, DateTime fechaAlta, bool activo = true)
+        public Socio(string nombre, string apellido, string dni, string? telefono, DateTime fechaAlta, bool activo = true)
         {
-            if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre es requerido.");
-            if (string.IsNullOrWhiteSpace(apellido)) throw new ArgumentException("El apellido es requerido.");
-
-            Nombre = nombre;
-            Apellido = apellido;
-            Dni = dni;
-            Telefono = telefono;
+            AsignarDatos(nombre, apellido, dni, telefono);
             FechaAlta = fechaAlta;
             Activo = activo;
             Estado = "Vencido";
         }
 
-        public void ActualizarDatos(string nombre, string apellido, string dni, string telefono)
+        public void ActualizarDatos(string nombre, string apellido, string dni, string? telefono)
+            => AsignarDatos(nombre, apellido, dni, telefono);
+
+        /// <summary>"30.111.222" -> "30111222"</summary>
+        public static string NormalizarDni(string? dni)
+            => new string((dni ?? string.Empty).Where(c => !char.IsWhiteSpace(c) && c != '.').ToArray());
+
+        private void AsignarDatos(string nombre, string apellido, string dni, string? telefono)
         {
             if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre es requerido.");
             if (string.IsNullOrWhiteSpace(apellido)) throw new ArgumentException("El apellido es requerido.");
+            if (nombre.Trim().Length > 100 || apellido.Trim().Length > 100)
+                throw new ArgumentException("El nombre y el apellido no pueden superar los 100 caracteres.");
 
-            Nombre = nombre;
-            Apellido = apellido;
-            Dni = dni;
-            Telefono = telefono;
+            var dniNormalizado = NormalizarDni(dni);
+            if (dniNormalizado.Length is < 7 or > 8 || !dniNormalizado.All(char.IsDigit))
+                throw new ArgumentException("El DNI debe tener 7 u 8 números (los puntos son opcionales).");
+
+            var tel = (telefono ?? string.Empty).Trim();
+            if (tel.Length > 30)
+                throw new ArgumentException("El teléfono no puede superar los 30 caracteres.");
+
+            Nombre = nombre.Trim();
+            Apellido = apellido.Trim();
+            Dni = dniNormalizado;
+            Telefono = tel;
         }
 
         /// <summary>

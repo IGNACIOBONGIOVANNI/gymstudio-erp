@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -8,6 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace EstudioContable.API.Middlewares
 {
+    /// <summary>
+    /// Traduce las excepciones a respuestas HTTP con un mensaje en castellano que el
+    /// frontend puede mostrar tal cual. Nunca expone detalles internos en un 500.
+    /// </summary>
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
@@ -28,77 +33,88 @@ namespace EstudioContable.API.Middlewares
             catch (EstudioContable.Application.Common.Exceptions.NotFoundException ex)
             {
                 _logger.LogWarning(ex, "Resource not found");
-                await HandleExceptionAsync(context, ex, HttpStatusCode.NotFound);
+                await Responder(context, HttpStatusCode.NotFound, "Recurso no encontrado", ex.Message);
             }
             catch (EstudioContable.Domain.Exceptions.AsientoDesbalanceadoException ex)
             {
                 _logger.LogWarning(ex, "Unbalanced journal entry");
-                await HandleExceptionAsync(context, ex, HttpStatusCode.UnprocessableEntity);
+                await Responder(context, HttpStatusCode.UnprocessableEntity, "Asiento desbalanceado", ex.Message);
             }
-            catch (Exception ex) when (ObtenerErrorDeRegla(ex) is Npgsql.PostgresException pg)
+            catch (FluentValidation.ValidationException ex)
             {
-                // Un trigger o un CHECK de PostgreSQL rechazó la operación: es una regla
-                // de negocio, no un error del servidor. Se informa el mensaje de la base.
+                _logger.LogWarning(ex, "Validation error");
+                var detalle = string.Join(" ", ex.Errors.Select(e => e.ErrorMessage).Distinct());
+                await Responder(context, HttpStatusCode.BadRequest, "Error de Validación", detalle);
+            }
+            catch (Exception ex) when (ObtenerErrorDeBase(ex) is Npgsql.PostgresException pg)
+            {
+                // Un trigger, un CHECK o una clave foránea de PostgreSQL rechazó la operación:
+                // es una regla de negocio, no un error del servidor.
                 _logger.LogWarning(ex, "Database rule violation {SqlState}", pg.SqlState);
-                await HandleExceptionAsync(context, new InvalidOperationException(pg.MessageText), HttpStatusCode.BadRequest);
+                await Responder(context, HttpStatusCode.BadRequest, "Error de Validación", TraducirErrorDeBase(pg));
             }
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning(ex, "Unauthorized");
-                await HandleExceptionAsync(context, ex, HttpStatusCode.Unauthorized);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Domain validation error");
-                await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest);
+                await Responder(context, HttpStatusCode.Unauthorized, "No autenticado", ex.Message);
             }
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Argument validation error");
-                await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest);
+                await Responder(context, HttpStatusCode.BadRequest, "Error de Validación", SinNombreDeParametro(ex));
+            }
+            catch (InvalidOperationException ex) when (ex.InnerException == null)
+            {
+                // Reglas de negocio del dominio (ej. "stock insuficiente", "ya está anulada").
+                _logger.LogWarning(ex, "Domain validation error");
+                await Responder(context, HttpStatusCode.BadRequest, "Error de Validación", ex.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception");
-                await HandleExceptionAsync(context, ex, HttpStatusCode.InternalServerError);
+                await Responder(context, HttpStatusCode.InternalServerError, "Error Interno del Servidor",
+                    "Ocurrió un error inesperado. Si el problema persiste, revisá que la base de datos esté disponible.");
             }
         }
 
         /// <summary>
-        /// Devuelve la PostgresException si el error es una violación de regla de la base:
-        /// RAISE EXCEPTION de un trigger (P0001) o restricciones de integridad (clase 23).
+        /// PostgresException si el error es una regla de la base: RAISE EXCEPTION de un
+        /// trigger (P0001), integridad (clase 23) o un número fuera de rango (22003).
         /// </summary>
-        private static Npgsql.PostgresException? ObtenerErrorDeRegla(Exception ex)
+        private static Npgsql.PostgresException? ObtenerErrorDeBase(Exception ex)
         {
             for (var actual = ex; actual != null; actual = actual.InnerException)
             {
-                if (actual is Npgsql.PostgresException pg && (pg.SqlState == "P0001" || pg.SqlState.StartsWith("23")))
+                if (actual is Npgsql.PostgresException pg
+                    && (pg.SqlState == "P0001" || pg.SqlState == "22003" || pg.SqlState.StartsWith("23")))
                     return pg;
             }
             return null;
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception, HttpStatusCode statusCode)
+        private static string TraducirErrorDeBase(Npgsql.PostgresException pg) => pg.SqlState switch
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)statusCode;
+            // Mensajes propios de los triggers: ya están en castellano.
+            "P0001" => pg.MessageText,
+            "22003" => "Uno de los importes es demasiado grande.",
+            "23503" when pg.MessageText.StartsWith("update or delete")
+                => "No se puede eliminar porque hay otros registros que lo usan (facturas, movimientos o membresías).",
+            "23503" => "Uno de los datos hace referencia a un registro que no existe (por ejemplo, una cuenta o un producto).",
+            "23505" => "Ya existe un registro con esos datos.",
+            "23514" => $"Los datos no cumplen una regla de la base de datos ({pg.ConstraintName}).",
+            _ => "La base de datos rechazó la operación."
+        };
 
-            var problemDetails = new ProblemDetails
-            {
-                Status = (int)statusCode,
-                Title = statusCode switch
-                {
-                    HttpStatusCode.BadRequest => "Error de Validación",
-                    HttpStatusCode.NotFound => "Recurso no encontrado",
-                    HttpStatusCode.Unauthorized => "No autenticado",
-                    HttpStatusCode.UnprocessableEntity => "Asiento desbalanceado",
-                    _ => "Error Interno del Servidor"
-                },
-                Detail = exception.Message
-            };
+        // "El nombre es obligatorio. (Parameter 'nombre')" -> "El nombre es obligatorio."
+        private static string SinNombreDeParametro(ArgumentException ex)
+            => ex.ParamName == null ? ex.Message : ex.Message.Replace($" (Parameter '{ex.ParamName}')", "");
 
-            var json = JsonSerializer.Serialize(problemDetails);
-            return context.Response.WriteAsync(json);
+        private static Task Responder(HttpContext context, HttpStatusCode status, string titulo, string detalle)
+        {
+            context.Response.ContentType = "application/problem+json";
+            context.Response.StatusCode = (int)status;
+            var problema = new ProblemDetails { Status = (int)status, Title = titulo, Detail = detalle };
+            return context.Response.WriteAsync(JsonSerializer.Serialize(problema));
         }
     }
 }

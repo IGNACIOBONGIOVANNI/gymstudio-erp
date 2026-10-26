@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Gimnasio.Planes.Commands;
@@ -51,6 +52,12 @@ namespace EstudioContable.API.Controllers
         {
             var plan = await _context.Planes.FindAsync(new object[] { id }, cancellationToken);
             if (plan == null) return NotFound();
+
+            // Las membresías se borrarían en cascada junto con el historial de cobros.
+            var enUso = await _context.Membresias.AnyAsync(m => m.PlanId == id, cancellationToken)
+                || await _context.Socios.AnyAsync(s => s.PlanActualId == id, cancellationToken);
+            if (enUso)
+                throw new System.InvalidOperationException($"El plan \"{plan.Nombre}\" tiene membresías registradas y no se puede eliminar.");
 
             _context.Planes.Remove(plan);
             await _context.SaveChangesAsync(cancellationToken);

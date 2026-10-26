@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Gimnasio.Socios.Commands;
@@ -43,7 +44,7 @@ namespace EstudioContable.API.Controllers
             return Ok(new { Id = id });
         }
 
-        public record ActualizarSocioRequest(string Nombre, string Apellido, string Dni, string Telefono);
+        public record ActualizarSocioRequest(string Nombre, string Apellido, string Dni, string? Telefono);
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarSocio(long id, [FromBody] ActualizarSocioRequest request, CancellationToken cancellationToken)
@@ -58,6 +59,12 @@ namespace EstudioContable.API.Controllers
         {
             var socio = await _context.Socios.FindAsync(new object[] { id }, cancellationToken);
             if (socio == null) return NotFound();
+
+            // Sus membresías se borrarían en cascada y las facturas quedarían sin socio.
+            var tieneHistorial = await _context.Membresias.AnyAsync(m => m.SocioId == id, cancellationToken)
+                || await _context.Facturas.AnyAsync(f => f.SocioId == id, cancellationToken);
+            if (tieneHistorial)
+                throw new System.InvalidOperationException($"{socio.Apellido} {socio.Nombre} tiene cuotas cobradas o facturas registradas y no se puede eliminar.");
 
             _context.Socios.Remove(socio);
             await _context.SaveChangesAsync(cancellationToken);

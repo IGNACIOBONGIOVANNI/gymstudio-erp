@@ -13,6 +13,7 @@ namespace EstudioContable.Application.Interfaces
         DbSet<LineaAsiento> LineasAsiento { get; }
         DbSet<CuentaContable> CuentasContables { get; }
         DbSet<Usuario> Usuarios { get; }
+        DbSet<Cliente> Clientes { get; }
         DbSet<FacturaVenta> FacturasVenta { get; }
         DbSet<FacturaCompra> FacturasCompra { get; }
         DbSet<MovimientoCaja> MovimientosCaja { get; }

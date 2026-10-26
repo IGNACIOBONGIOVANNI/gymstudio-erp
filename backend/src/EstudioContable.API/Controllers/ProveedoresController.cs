@@ -1,9 +1,12 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using EstudioContable.Application.Comercial;
+using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using EstudioContable.Domain.Entities;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Linq;
 
 namespace EstudioContable.API.Controllers
 {
@@ -11,8 +14,9 @@ namespace EstudioContable.API.Controllers
     [Route("api/[controller]")]
     public class ProveedoresController : ControllerBase
     {
-        private readonly EstudioContable.Application.Interfaces.IAppDbContext _context;
-        public ProveedoresController(EstudioContable.Application.Interfaces.IAppDbContext context)
+        private readonly IAppDbContext _context;
+
+        public ProveedoresController(IAppDbContext context)
         {
             _context = context;
         }
@@ -20,45 +24,73 @@ namespace EstudioContable.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var proveedores = await _context.Proveedores
-                .Where(p => p.Activo)
+            var lista = await _context.Proveedores
+                .Where(x => x.Activo)
+                .OrderBy(x => x.RazonSocial)
                 .ToListAsync(cancellationToken);
-            return Ok(proveedores);
+            return Ok(lista);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Proveedor proveedor, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create([FromBody] DatosComerciales datos, CancellationToken cancellationToken)
         {
-            _context.Proveedores.Add(proveedor);
+            var validados = datos.Validar();
+            await ValidarCuitNoRepetidoAsync(validados.Cuit, idExcluido: null, cancellationToken);
+
+            var entidad = new Proveedor();
+            Aplicar(entidad, validados);
+            _context.Proveedores.Add(entidad);
             await _context.SaveChangesAsync(cancellationToken);
-            return Ok(proveedor);
+            return Ok(entidad);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(long id, [FromBody] Proveedor proveedor, CancellationToken cancellationToken)
+        public async Task<IActionResult> Update(long id, [FromBody] DatosComerciales datos, CancellationToken cancellationToken)
         {
-            var dbProveedor = await _context.Proveedores.FindAsync(new object[] { id }, cancellationToken);
-            if (dbProveedor == null) return NotFound();
+            var entidad = await _context.Proveedores.FirstOrDefaultAsync(x => x.Id == id && x.Activo, cancellationToken);
+            if (entidad == null) return NotFound();
 
-            dbProveedor.RazonSocial = proveedor.RazonSocial;
-            dbProveedor.Direccion = proveedor.Direccion;
-            dbProveedor.Localidad = proveedor.Localidad;
-            dbProveedor.Cuit = proveedor.Cuit;
-            dbProveedor.CondicionIva = proveedor.CondicionIva;
+            var validados = datos.Validar();
+            await ValidarCuitNoRepetidoAsync(validados.Cuit, idExcluido: id, cancellationToken);
 
+            Aplicar(entidad, validados);
             await _context.SaveChangesAsync(cancellationToken);
-            return Ok(dbProveedor);
+            return Ok(entidad);
         }
 
+        /// <summary>Baja lógica: el registro queda para las facturas que ya lo usan.</summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
         {
-            var dbProveedor = await _context.Proveedores.FindAsync(new object[] { id }, cancellationToken);
-            if (dbProveedor == null) return NotFound();
+            var entidad = await _context.Proveedores.FirstOrDefaultAsync(x => x.Id == id && x.Activo, cancellationToken);
+            if (entidad == null) return NotFound();
 
-            dbProveedor.Activo = false;
+            entidad.Activo = false;
             await _context.SaveChangesAsync(cancellationToken);
             return NoContent();
+        }
+
+        private static void Aplicar(Proveedor entidad, DatosComercialesValidados datos)
+        {
+            entidad.RazonSocial = datos.RazonSocial;
+            entidad.Direccion = datos.Direccion;
+            entidad.Localidad = datos.Localidad;
+            entidad.Cuit = datos.Cuit;
+            entidad.CondicionIva = datos.CondicionIva;
+        }
+
+        private async Task ValidarCuitNoRepetidoAsync(string cuit, long? idExcluido, CancellationToken cancellationToken)
+        {
+            // Se compara sin guiones: hay registros viejos guardados como "20111111112".
+            var normalizado = EstudioContable.Domain.Cuit.Normalizar(cuit);
+            var existentes = await _context.Proveedores
+                .Where(x => x.Activo && x.Id != idExcluido)
+                .Select(x => new { x.Cuit, x.RazonSocial })
+                .ToListAsync(cancellationToken);
+
+            var repetido = existentes.FirstOrDefault(x => EstudioContable.Domain.Cuit.Normalizar(x.Cuit) == normalizado);
+            if (repetido != null)
+                throw new InvalidOperationException($"Ya existe un proveedor con el CUIT {cuit}: {repetido.RazonSocial}.");
         }
     }
 }

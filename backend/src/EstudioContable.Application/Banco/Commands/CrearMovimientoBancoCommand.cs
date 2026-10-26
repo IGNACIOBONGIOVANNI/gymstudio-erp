@@ -9,6 +9,7 @@ namespace EstudioContable.Application.Banco.Commands
         DateTime Fecha,
         string Detalle,
         TipoMovimientoBanco TipoMovimiento,
-        decimal Importe
+        decimal Importe,
+        long? CuentaContrapartidaId = null
     ) : IRequest<long>;
 }

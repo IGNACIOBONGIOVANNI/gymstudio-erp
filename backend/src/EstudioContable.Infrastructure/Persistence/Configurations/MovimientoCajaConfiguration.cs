@@ -37,6 +37,14 @@ namespace EstudioContable.Infrastructure.Persistence.Configurations
                    .WithMany()
                    .HasForeignKey(x => x.FacturaId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            // Asiento que registra un movimiento manual en la contabilidad.
+            builder.HasOne<AsientoContable>()
+                   .WithMany()
+                   .HasForeignKey(x => x.AsientoContableId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Ignore(x => x.EsIngreso);
         }
     }
 }

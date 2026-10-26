@@ -17,14 +17,16 @@ namespace EstudioContable.Application.Gimnasio.Socios.Commands
 
         public async Task<long> Handle(CrearSocioCommand request, CancellationToken cancellationToken)
         {
+            await DniUnico.ValidarAsync(_context, request.Dni, idExcluido: null, cancellationToken);
+
             var socio = new Socio(
-                request.Nombre, 
-                request.Apellido, 
-                request.Dni, 
-                request.Telefono, 
+                request.Nombre,
+                request.Apellido,
+                request.Dni,
+                request.Telefono,
                 System.DateTime.UtcNow
             );
-            
+
             _context.Socios.Add(socio);
             await _context.SaveChangesAsync(cancellationToken);
 

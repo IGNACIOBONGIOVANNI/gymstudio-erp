@@ -16,6 +16,8 @@ namespace EstudioContable.Application.Common
         public const long DeudoresPorVentas = 103;
         public const long Ventas = 104;
         public const long IvaCreditoFiscal = 105;
+        public const long OtrosIngresos = 106;
+        public const long GastosGenerales = 107;
         public const long IvaDebitoFiscal = 201;
         public const long Proveedores = 202;
         public const long Compras = 501;

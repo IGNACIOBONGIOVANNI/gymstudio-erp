@@ -24,13 +24,13 @@ namespace EstudioContable.Domain.Entities
         {
             if (string.IsNullOrWhiteSpace(nombre))
                 throw new ArgumentException("El nombre no puede estar vacío.", nameof(nombre));
-            
+
             if (precioUnitario < 0)
                 throw new ArgumentException("El precio unitario no puede ser negativo.", nameof(precioUnitario));
-            
+
             if (precioVenta < 0)
                 throw new ArgumentException("El precio de venta no puede ser negativo.", nameof(precioVenta));
-            
+
             if (stockInicial < 0)
                 throw new ArgumentException("El stock inicial no puede ser negativo.", nameof(stockInicial));
 
@@ -48,8 +48,13 @@ namespace EstudioContable.Domain.Entities
 
         public void ActualizarDatos(string nombre, decimal precioUnitario, decimal precioVenta, string? marca, string? sabor, decimal? calorias, decimal? proteinas, decimal? carbohidratos, decimal? grasas)
         {
-            if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("Nombre inválido");
-            Nombre = nombre;
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ArgumentException("El nombre no puede estar vacío.", nameof(nombre));
+            if (precioUnitario < 0)
+                throw new ArgumentException("El precio unitario no puede ser negativo.", nameof(precioUnitario));
+            if (precioVenta < 0)
+                throw new ArgumentException("El precio de venta no puede ser negativo.", nameof(precioVenta));
+            Nombre = nombre.Trim();
             PrecioUnitario = precioUnitario;
             PrecioVenta = precioVenta;
             Marca = marca;
@@ -65,7 +70,7 @@ namespace EstudioContable.Domain.Entities
             var nuevoStock = StockActual + cantidad;
             if (nuevoStock < 0)
                 throw new InvalidOperationException($"Stock insuficiente. El stock actual es {StockActual} y se intentó descontar {-cantidad}.");
-            
+
             StockActual = nuevoStock;
         }
     }

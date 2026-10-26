@@ -18,6 +18,10 @@ namespace EstudioContable.Application.Services
         private const string Compra = "Compra";
         private const string ContadoCaja = "ContadoCaja";
         private const string TransferenciaBanco = "TransferenciaBanco";
+        private const string CuentaCorriente = "CuentaCorriente";
+        private const decimal ImporteMaximo = 999_999_999_999.99m;
+        private static readonly string[] CondicionesDePago = { ContadoCaja, TransferenciaBanco, CuentaCorriente };
+        private static readonly string[] TiposDeComprobante = { "A", "B", "C" };
 
         private readonly IAppDbContext _context;
 
@@ -30,7 +34,7 @@ namespace EstudioContable.Application.Services
         {
             ValidarYNormalizarImportes(factura);
 
-            await EnTransaccionAsync(async () =>
+            await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 _context.Facturas.Add(factura);
                 await _context.SaveChangesAsync(cancellationToken); // genera factura.Id
@@ -47,7 +51,7 @@ namespace EstudioContable.Application.Services
             if (factura.Anulada)
                 throw new InvalidOperationException($"La factura N° {factura.Id} ya está anulada.");
 
-            await EnTransaccionAsync(async () =>
+            await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 await RevertirEfectosAsync(factura, $"Anulación factura N° {factura.Id}", cancellationToken);
 
@@ -65,7 +69,7 @@ namespace EstudioContable.Application.Services
 
             ValidarYNormalizarImportes(datosNuevos);
 
-            await EnTransaccionAsync(async () =>
+            await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 await RevertirEfectosAsync(factura, $"Modificación factura N° {factura.Id}", cancellationToken);
 
@@ -100,7 +104,7 @@ namespace EstudioContable.Application.Services
             // 1. Asiento de partida doble
             var asiento = new AsientoContable(
                 PlanDeCuentas.ClienteIdPorDefecto,
-                await SiguienteNumeroAsientoAsync(cancellationToken),
+                await OperacionesContables.SiguienteNumeroAsientoAsync(_context, cancellationToken),
                 DateOnly.FromDateTime(factura.Fecha),
                 detalle,
                 PlanDeCuentas.UsuarioSistemaId);
@@ -153,23 +157,7 @@ namespace EstudioContable.Application.Services
             // 1. Contraasiento del asiento vigente
             if (factura.AsientoContableId is long asientoId)
             {
-                var original = await _context.AsientosContables
-                    .Include(a => a.Lineas)
-                    .FirstOrDefaultAsync(a => a.Id == asientoId, cancellationToken);
-
-                var yaRevertido = await _context.AsientosContables
-                    .AnyAsync(a => a.AsientoRevertidoId == asientoId, cancellationToken);
-
-                if (original != null && original.Estado == EstadoAsiento.Confirmado && !yaRevertido)
-                {
-                    var reverso = original.CrearContraasiento(
-                        await SiguienteNumeroAsientoAsync(cancellationToken),
-                        DateOnly.FromDateTime(DateTime.UtcNow),
-                        PlanDeCuentas.UsuarioSistemaId);
-
-                    reverso.Confirmar(PlanDeCuentas.UsuarioSistemaId);
-                    _context.AsientosContables.Add(reverso);
-                }
+                await OperacionesContables.RevertirAsientoAsync(_context, asientoId, cancellationToken);
                 // AsientoContableId se conserva: la factura anulada sigue apuntando
                 // a su asiento original, y el contraasiento apunta a ese mismo asiento.
             }
@@ -229,6 +217,24 @@ namespace EstudioContable.Application.Services
             if (factura.TipoOperacion != Venta && factura.TipoOperacion != Compra)
                 throw new ArgumentException($"Tipo de operación inválido: '{factura.TipoOperacion}'. Debe ser '{Venta}' o '{Compra}'.");
 
+            if (factura.Fecha.Year < 2000 || factura.Fecha.Year > 2100)
+                throw new ArgumentException("La fecha de la factura es obligatoria y debe ser válida.");
+
+            if (!CondicionesDePago.Contains(factura.CondicionPago))
+                throw new ArgumentException("Condición de pago inválida: debe ser contado (caja), transferencia (banco) o cuenta corriente.");
+
+            if (!TiposDeComprobante.Contains(factura.TipoComprobante?.Trim().ToUpperInvariant()))
+                throw new ArgumentException("Tipo de comprobante inválido: debe ser A, B o C.");
+            factura.TipoComprobante = factura.TipoComprobante!.Trim().ToUpperInvariant();
+
+            factura.Cliente = (factura.Cliente ?? string.Empty).Trim();
+            if (factura.Cliente.Length == 0)
+                throw new ArgumentException(factura.TipoOperacion == Compra
+                    ? "Indicá el proveedor de la factura."
+                    : "Indicá el cliente de la factura (o \"Consumidor Final\").");
+            if (factura.Cliente.Length > 200)
+                throw new ArgumentException("El nombre del cliente o proveedor no puede superar los 200 caracteres.");
+
             if (factura.Items.Count == 0)
                 throw new ArgumentException("La factura debe tener al menos un ítem.");
 
@@ -258,6 +264,8 @@ namespace EstudioContable.Application.Services
 
             if (factura.Total <= 0)
                 throw new ArgumentException("El total de la factura debe ser mayor a cero.");
+            if (factura.Total > ImporteMaximo)
+                throw new ArgumentException("El total de la factura es demasiado grande.");
         }
 
         private async Task<Factura> CargarFacturaAsync(long facturaId, CancellationToken cancellationToken)
@@ -266,39 +274,6 @@ namespace EstudioContable.Application.Services
                 .Include(f => f.Items)
                 .FirstOrDefaultAsync(f => f.Id == facturaId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Factura), facturaId);
-        }
-
-        private async Task<long> SiguienteNumeroAsientoAsync(CancellationToken cancellationToken)
-        {
-            // Los asientos agregados en este contexto y aún no guardados también cuentan.
-            var maxGuardado = await _context.AsientosContables
-                .Where(a => a.ClienteId == PlanDeCuentas.ClienteIdPorDefecto)
-                .MaxAsync(a => (long?)a.NumeroAsiento, cancellationToken) ?? 0;
-
-            var maxPendiente = _context.AsientosContables.Local
-                .Where(a => a.ClienteId == PlanDeCuentas.ClienteIdPorDefecto)
-                .Select(a => a.NumeroAsiento)
-                .DefaultIfEmpty(0)
-                .Max();
-
-            return Math.Max(maxGuardado, maxPendiente) + 1;
-        }
-
-        /// <summary>
-        /// Ejecuta la acción en una transacción, salvo que el llamador ya haya abierto
-        /// una (ej. el cobro de membresías), en cuyo caso participa de esa.
-        /// </summary>
-        private async Task EnTransaccionAsync(Func<Task> accion, CancellationToken cancellationToken)
-        {
-            if (_context.Database.CurrentTransaction != null)
-            {
-                await accion();
-                return;
-            }
-
-            await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            await accion();
-            await transaction.CommitAsync(cancellationToken);
         }
     }
 }

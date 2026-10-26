@@ -32,7 +32,8 @@ namespace EstudioContable.Application.Caja.Queries.ObtenerLibroCaja
                 x.Fecha,
                 x.Detalle,
                 x.TipoMovimiento == TipoMovimientoCaja.Ingreso ? x.Importe : null,
-                x.TipoMovimiento == TipoMovimientoCaja.Egreso ? x.Importe : null
+                x.TipoMovimiento == TipoMovimientoCaja.Egreso ? x.Importe : null,
+                x.FacturaId
             )).ToList();
 
             var saldoAnterior = 0m;

@@ -1,41 +1,35 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using EstudioContable.Application.Interfaces;
-using EstudioContable.Domain.Enums;
+using EstudioContable.Application.Services;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace EstudioContable.Application.Banco.Commands
 {
     public class EditarMovimientoBancoCommandHandler : IRequestHandler<EditarMovimientoBancoCommand, Unit>
     {
-        private readonly IAppDbContext _context;
+        private readonly ITesoreriaService _tesoreria;
 
-        public EditarMovimientoBancoCommandHandler(IAppDbContext context)
+        public EditarMovimientoBancoCommandHandler(ITesoreriaService tesoreria)
         {
-            _context = context;
+            _tesoreria = tesoreria;
         }
 
         public async Task<Unit> Handle(EditarMovimientoBancoCommand request, CancellationToken cancellationToken)
         {
-            var movimiento = await _context.MovimientosBanco.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
-            
-            if (movimiento == null)
-                throw new Exception("El movimiento de banco no existe");
+            var esIngreso = request.Ingreso is > 0;
+            var esEgreso = request.Egreso is > 0;
+            if (esIngreso == esEgreso)
+                throw new ArgumentException("Indicá un importe mayor a cero como ingreso o como egreso (no los dos).");
 
-            var tipoMovimiento = request.Ingreso.HasValue && request.Ingreso.Value > 0
-                ? TipoMovimientoBanco.Ingreso
-                : TipoMovimientoBanco.Egreso;
+            var datos = new DatosMovimientoTesoreria(
+                request.Fecha,
+                request.Detalle,
+                esIngreso,
+                esIngreso ? request.Ingreso!.Value : request.Egreso!.Value,
+                request.CuentaContrapartidaId);
 
-            var importe = request.Ingreso.HasValue && request.Ingreso.Value > 0
-                ? request.Ingreso.Value
-                : (request.Egreso ?? 0);
-
-            movimiento.Actualizar(request.Fecha, request.Detalle, tipoMovimiento, importe);
-
-            await _context.SaveChangesAsync(cancellationToken);
-
+            await _tesoreria.EditarAsync(LibroTesoreria.Banco, request.Id, datos, cancellationToken);
             return Unit.Value;
         }
     }

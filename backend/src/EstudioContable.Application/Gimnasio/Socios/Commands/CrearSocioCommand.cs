@@ -7,6 +7,6 @@ namespace EstudioContable.Application.Gimnasio.Socios.Commands
         string Nombre,
         string Apellido,
         string Dni,
-        string Telefono
+        string? Telefono
     ) : IRequest<long>;
 }

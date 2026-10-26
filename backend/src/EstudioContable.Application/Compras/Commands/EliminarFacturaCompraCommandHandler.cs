@@ -1,3 +1,4 @@
+using EstudioContable.Application.Common.Exceptions;
 using System;
 using System.Linq;
 using System.Threading;
@@ -22,7 +23,7 @@ namespace EstudioContable.Application.Compras.Commands
             var factura = await _context.FacturasCompra.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (factura == null)
-                throw new Exception("La factura de compra no existe");
+                throw new NotFoundException("Factura de compra", request.Id);
 
             var movimientosCaja = await _context.MovimientosCaja
                 .Where(m => m.FacturaId == request.Id)

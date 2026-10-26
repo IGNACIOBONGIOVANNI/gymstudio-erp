@@ -23,9 +23,9 @@ namespace EstudioContable.API.Controllers
         /// Obtiene el Libro Caja del cliente.
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] string clienteId, CancellationToken cancellationToken)
+        public async Task<IActionResult> Get([FromQuery] string? clienteId, CancellationToken cancellationToken)
         {
-            var query = new ObtenerLibroCajaQuery(clienteId);
+            var query = new ObtenerLibroCajaQuery(string.IsNullOrWhiteSpace(clienteId) ? "1" : clienteId);
             var resultado = await _mediator.Send(query, cancellationToken);
             return Ok(resultado);
         }
@@ -58,7 +58,7 @@ namespace EstudioContable.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var command = new EliminarMovimientoCajaCommand(id); 
+            var command = new EliminarMovimientoCajaCommand(id);
             await _mediator.Send(command, cancellationToken);
             return Ok(new { message = "Movimiento eliminado correctamente" });
         }

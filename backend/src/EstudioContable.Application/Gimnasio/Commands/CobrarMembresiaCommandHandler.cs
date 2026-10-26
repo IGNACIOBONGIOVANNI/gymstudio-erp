@@ -1,4 +1,5 @@
-﻿using System;
+using EstudioContable.Application.Common.Exceptions;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Interfaces;
@@ -34,17 +35,17 @@ namespace EstudioContable.Application.Gimnasio.Commands
                     .FirstOrDefaultAsync(m => m.Id == request.MembresiaId, cancellationToken);
 
                 if (membresia == null)
-                    throw new Exception($"Membresía con ID {request.MembresiaId} no encontrada.");
+                    throw new NotFoundException("Membresía", request.MembresiaId);
 
                 if (membresia.EstaPagada)
-                    throw new Exception("La membresía ya se encuentra pagada.");
+                    throw new InvalidOperationException("La membresía ya se encuentra pagada.");
 
                 // 1. Logica de Gimnasio
                 membresia.MarcarComoPagada();
                 membresia.Socio.RenovarPlan(membresia.Plan.Id, membresia.Plan.DuracionMeses);
 
                 var descripcionItem = $"Cuota Membresía - {membresia.Plan.Nombre}";
-                var condicionPagoString = (request.MetodoPago?.ToLower() == "banco") ? "TransferenciaBanco" : "ContadoCaja";
+                var condicionPagoString = MetodoPago.ACondicionDePago(request.MetodoPago);
 
                 // 2. Lógica contable: factura genérica, igual que el módulo de facturación
                 var factura = new Factura
@@ -69,7 +70,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                         }
                     }
                 };
-                
+
                 // 3. Asiento, movimiento de caja/banco y vínculos: los genera el servicio
                 // de facturación (participa de esta misma transacción).
                 await _facturacionService.CrearFacturaAsync(factura, cancellationToken);

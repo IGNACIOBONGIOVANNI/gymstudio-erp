@@ -1,34 +1,34 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using EstudioContable.Application.Interfaces;
-using EstudioContable.Domain.Entities;
+using EstudioContable.Application.Services;
+using EstudioContable.Domain.Enums;
 using MediatR;
 
 namespace EstudioContable.Application.Banco.Commands
 {
     public class CrearMovimientoBancoCommandHandler : IRequestHandler<CrearMovimientoBancoCommand, long>
     {
-        private readonly IAppDbContext _context;
+        private readonly ITesoreriaService _tesoreria;
 
-        public CrearMovimientoBancoCommandHandler(IAppDbContext context)
+        public CrearMovimientoBancoCommandHandler(ITesoreriaService tesoreria)
         {
-            _context = context;
+            _tesoreria = tesoreria;
         }
 
-        public async Task<long> Handle(CrearMovimientoBancoCommand request, CancellationToken cancellationToken)
+        public Task<long> Handle(CrearMovimientoBancoCommand request, CancellationToken cancellationToken)
         {
-            var movimiento = new MovimientoBanco(
-                request.ClienteId,
+            if (!Enum.IsDefined(request.TipoMovimiento))
+                throw new ArgumentException("El tipo de movimiento debe ser Ingreso o Egreso.");
+
+            var datos = new DatosMovimientoTesoreria(
                 request.Fecha,
                 request.Detalle,
-                request.TipoMovimiento,
-                request.Importe
-            );
+                request.TipoMovimiento == TipoMovimientoBanco.Ingreso,
+                request.Importe,
+                request.CuentaContrapartidaId);
 
-            _context.MovimientosBanco.Add(movimiento);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            return movimiento.Id;
+            return _tesoreria.CrearAsync(LibroTesoreria.Banco, datos, cancellationToken);
         }
     }
 }

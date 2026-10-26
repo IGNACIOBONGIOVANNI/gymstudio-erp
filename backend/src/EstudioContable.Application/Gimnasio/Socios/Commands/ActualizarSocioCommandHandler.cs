@@ -20,6 +20,8 @@ namespace EstudioContable.Application.Gimnasio.Socios.Commands
             var socio = await _context.Socios.FindAsync(new object[] { request.Id }, cancellationToken);
             if (socio == null) return false;
 
+            await DniUnico.ValidarAsync(_context, request.Dni, idExcluido: request.Id, cancellationToken);
+
             socio.ActualizarDatos(request.Nombre, request.Apellido, request.Dni, request.Telefono);
             await _context.SaveChangesAsync(cancellationToken);
 

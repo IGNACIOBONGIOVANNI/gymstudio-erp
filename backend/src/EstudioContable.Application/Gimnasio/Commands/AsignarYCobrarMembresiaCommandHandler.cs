@@ -1,3 +1,4 @@
+using EstudioContable.Application.Common.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,15 +23,17 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
         public async Task<long> Handle(AsignarYCobrarMembresiaCommand request, CancellationToken cancellationToken)
         {
+            MetodoPago.ACondicionDePago(request.MetodoPago); // valida antes de tocar nada
+
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
             try
             {
                 var socio = await _context.Socios.FirstOrDefaultAsync(s => s.Id == request.SocioId, cancellationToken);
-                if (socio == null) throw new Exception($"Socio {request.SocioId} no encontrado.");
+                if (socio == null) throw new NotFoundException("Socio", request.SocioId);
 
                 var plan = await _context.Planes.FirstOrDefaultAsync(p => p.Id == request.PlanId, cancellationToken);
-                if (plan == null) throw new Exception($"Plan {request.PlanId} no encontrado.");
+                if (plan == null) throw new NotFoundException("Plan", request.PlanId);
 
                 // El período se calcula una sola vez: antes se tomaba la hora actual dos
                 // veces y el vencimiento podía quedar microsegundos antes del inicio.
@@ -48,7 +51,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 await _context.SaveChangesAsync(cancellationToken); // Genera membresia.Id
 
                 // 2. Facturar Cuota a través del Servicio (Esto delega Diario y Caja a Contabilidad)
-                var condicionPagoString = (request.MetodoPago?.ToLower() == "banco") ? "TransferenciaBanco" : "ContadoCaja";
+                var condicionPagoString = MetodoPago.ACondicionDePago(request.MetodoPago);
 
                 var factura = new Factura
                 {

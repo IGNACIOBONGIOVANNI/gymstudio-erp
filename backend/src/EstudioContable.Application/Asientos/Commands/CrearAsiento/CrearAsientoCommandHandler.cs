@@ -11,15 +11,20 @@ namespace EstudioContable.Application.Asientos.Commands.CrearAsiento
     {
         private readonly IAsientoRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly EstudioContable.Application.Interfaces.IAppDbContext _context;
 
-        public CrearAsientoCommandHandler(IAsientoRepository repository, IUnitOfWork unitOfWork)
+        public CrearAsientoCommandHandler(IAsientoRepository repository, IUnitOfWork unitOfWork, EstudioContable.Application.Interfaces.IAppDbContext context)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<CrearAsientoResult> Handle(CrearAsientoCommand request, CancellationToken cancellationToken)
         {
+            if (!await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(_context.Clientes, c => c.Id == request.ClienteId, cancellationToken))
+                throw new EstudioContable.Application.Common.Exceptions.NotFoundException("Cliente", request.ClienteId);
+
             long numeroAsiento = await _repository.ObtenerMaximoNumeroAsientoAsync(request.ClienteId, cancellationToken) + 1;
 
             var asiento = new AsientoContable(

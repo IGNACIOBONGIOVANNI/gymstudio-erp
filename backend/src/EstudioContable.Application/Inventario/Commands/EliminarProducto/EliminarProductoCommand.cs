@@ -27,6 +27,13 @@ namespace EstudioContable.Application.Inventario.Commands.EliminarProducto
             var producto = await _context.Productos.FindAsync(new object[] { request.Id }, cancellationToken);
             if (producto == null) return false;
 
+            // Las líneas de facturas viejas (FacturaDetalles) se borrarían en cascada:
+            // un producto con historial de ventas o compras no se elimina.
+            var tieneHistorial = await _context.FacturaItems.AnyAsync(i => i.ProductoId == producto.Id, cancellationToken)
+                || await _context.FacturaDetalles.AnyAsync(d => d.ProductoId == producto.Id, cancellationToken);
+            if (tieneHistorial)
+                throw new System.InvalidOperationException($"El producto \"{producto.Nombre}\" tiene ventas o compras registradas y no se puede eliminar.");
+
             var movimientos = await _context.MovimientosStock.Where(m => m.ProductoId == producto.Id).ToListAsync(cancellationToken);
             _context.MovimientosStock.RemoveRange(movimientos);
 

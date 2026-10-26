@@ -29,9 +29,11 @@ namespace EstudioContable.Application.Banco.Queries.ObtenerLibroBanco
 
             var movimientosDto = movimientosDb.Select(x => new MovimientoBancoDto(
                 x.Id,
+                x.Fecha,
                 x.Detalle,
                 x.TipoMovimiento == TipoMovimientoBanco.Ingreso ? x.Importe : null,
-                x.TipoMovimiento == TipoMovimientoBanco.Egreso ? x.Importe : null
+                x.TipoMovimiento == TipoMovimientoBanco.Egreso ? x.Importe : null,
+                x.FacturaId
             )).ToList();
 
             var saldoAnterior = 0m;

@@ -27,8 +27,46 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .AddInterceptors(services.GetRequiredService<AuditoriaConnectionInterceptor>()));
 
-builder.Services.AddControllers().AddJsonOptions(x =>
-    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddControllers()
+    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles)
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Datos con formato inválido (letras en un número, fecha mal escrita, campo
+        // faltante): respuesta en castellano con el nombre del campo, en lugar del
+        // mensaje técnico de System.Text.Json.
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var conError = context.ModelState.Where(e => e.Value?.Errors.Count > 0).ToList();
+
+            // "$" = el cuerpo no es un JSON válido; "$.campo" = un campo con tipo incorrecto.
+            var jsonRoto = conError.Any(e => e.Key == "$");
+            var camposJson = conError.Where(e => e.Key.StartsWith("$.")).Select(e => e.Key[2..]);
+            // Parámetros de la URL con valor inválido (ej. ?fechaInicio=ayer).
+            var parametros = conError
+                .Where(e => !e.Key.StartsWith("$") && e.Key.Length > 0
+                            && !e.Value!.Errors.Any(err => err.ErrorMessage.Contains("required")))
+                .Select(e => e.Key);
+            var invalidos = camposJson.Concat(parametros).Distinct().ToList();
+
+            string detalle;
+            if (jsonRoto)
+                detalle = "Los datos enviados no tienen un formato válido.";
+            else if (invalidos.Count > 0)
+                detalle = $"Hay datos con formato inválido en: {string.Join(", ", invalidos)}. Revisá que los números y las fechas estén bien escritos.";
+            else
+                detalle = $"Faltan datos obligatorios: {string.Join(", ", conError.Select(e => e.Key).Where(k => k.Length > 0))}.";
+
+            return new BadRequestObjectResult(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Error de Validación",
+                Detail = detalle
+            });
+        };
+
+        // Respuestas NotFound() sin cuerpo: título en castellano para mostrar en pantalla.
+        options.ClientErrorMapping[StatusCodes.Status404NotFound].Title = "No se encontró el registro solicitado.";
+    });
 
 // CORS: sólo los orígenes del frontend configurados en "Cors:OrigenesPermitidos".
 var origenesPermitidos = builder.Configuration.GetSection("Cors:OrigenesPermitidos").Get<string[]>()
@@ -109,10 +147,24 @@ builder.Services.AddScoped<IAsientoRepository, AsientoRepository>();
 builder.Services.AddScoped<ICuentaRepository, CuentaRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IFacturacionService, EstudioContable.Application.Services.FacturacionService>();
+builder.Services.AddScoped<EstudioContable.Application.Services.ITesoreriaService, EstudioContable.Application.Services.TesoreriaService>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
 // Registro de MediatR (apuntando al Assembly de la capa Application)
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(EstudioContable.Application.Asientos.Commands.CrearAsiento.CrearAsientoCommand).Assembly));
+var assemblyAplicacion = typeof(EstudioContable.Application.Asientos.Commands.CrearAsiento.CrearAsientoCommand).Assembly;
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(assemblyAplicacion);
+    // Corre los validadores de FluentValidation antes de cada handler.
+    cfg.AddOpenBehavior(typeof(EstudioContable.Application.Common.Behaviors.ValidationBehavior<,>));
+});
+
+// Registra todos los validadores (AbstractValidator<T>) de la capa Application.
+foreach (var tipo in assemblyAplicacion.GetTypes().Where(t => t is { IsAbstract: false, IsGenericTypeDefinition: false }))
+{
+    foreach (var interfaz in tipo.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(FluentValidation.IValidator<>)))
+        builder.Services.AddScoped(interfaz, tipo);
+}
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

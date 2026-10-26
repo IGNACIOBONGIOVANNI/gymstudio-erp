@@ -1,3 +1,4 @@
+using EstudioContable.Application.Common.Exceptions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace EstudioContable.Application.Compras.Commands
                 {
                     var producto = await _context.Productos.FindAsync(new object[] { item.ProductoId }, cancellationToken);
                     if (producto == null)
-                        throw new Exception($"El producto con ID {item.ProductoId} no existe.");
+                        throw new NotFoundException("Producto", item.ProductoId);
 
                     factura.AgregarDetalle(producto, item.Cantidad);
                 }

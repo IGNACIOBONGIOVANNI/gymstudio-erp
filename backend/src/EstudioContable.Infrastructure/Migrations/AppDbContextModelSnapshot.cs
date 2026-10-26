@@ -335,6 +335,24 @@ namespace EstudioContable.Infrastructure.Migrations
                         },
                         new
                         {
+                            Id = 106L,
+                            Activa = true,
+                            ClienteId = 1L,
+                            Codigo = "4.1.2.01",
+                            Naturaleza = 3,
+                            Nombre = "Otros Ingresos"
+                        },
+                        new
+                        {
+                            Id = 107L,
+                            Activa = true,
+                            ClienteId = 1L,
+                            Codigo = "5.2.1.01",
+                            Naturaleza = 3,
+                            Nombre = "Gastos Generales"
+                        },
+                        new
+                        {
                             Id = 201L,
                             Activa = true,
                             ClienteId = 1L,
@@ -734,6 +752,9 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("AsientoContableId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ClienteId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -757,6 +778,8 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AsientoContableId");
 
                     b.HasIndex("FacturaId");
 
@@ -774,6 +797,9 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("AsientoContableId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ClienteId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -797,6 +823,8 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AsientoContableId");
 
                     b.HasIndex("FacturaId");
 
@@ -1259,6 +1287,11 @@ namespace EstudioContable.Infrastructure.Migrations
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoBanco", b =>
                 {
+                    b.HasOne("EstudioContable.Domain.Entities.AsientoContable", null)
+                        .WithMany()
+                        .HasForeignKey("AsientoContableId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EstudioContable.Domain.Entities.Factura", null)
                         .WithMany()
                         .HasForeignKey("FacturaId")
@@ -1267,6 +1300,11 @@ namespace EstudioContable.Infrastructure.Migrations
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoCaja", b =>
                 {
+                    b.HasOne("EstudioContable.Domain.Entities.AsientoContable", null)
+                        .WithMany()
+                        .HasForeignKey("AsientoContableId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EstudioContable.Domain.Entities.Factura", null)
                         .WithMany()
                         .HasForeignKey("FacturaId")

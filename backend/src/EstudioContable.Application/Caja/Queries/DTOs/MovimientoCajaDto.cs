@@ -5,6 +5,7 @@ namespace EstudioContable.Application.Caja.Queries.DTOs
         System.DateTimeOffset Fecha,
         string Detalle,
         decimal? Ingreso,
-        decimal? Egreso
+        decimal? Egreso,
+        long? FacturaId
     );
 }

@@ -19,6 +19,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<LineaAsiento> LineasAsiento => Set<LineaAsiento>();
         public DbSet<CuentaContable> CuentasContables => Set<CuentaContable>();
         public DbSet<Usuario> Usuarios => Set<Usuario>();
+        public DbSet<Cliente> Clientes => Set<Cliente>();
         public DbSet<FacturaVenta> FacturasVenta => Set<FacturaVenta>();
         public DbSet<FacturaCompra> FacturasCompra => Set<FacturaCompra>();
         public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
@@ -71,6 +72,9 @@ namespace EstudioContable.Infrastructure.Persistence
                 t.HasCheckConstraint("CK_Productos_StockNoNegativo", "\"StockActual\" >= 0"));
 
             // Integridad de importes también a nivel base de datos (además del dominio).
+            // La tabla se llama "Cliente" desde la migración inicial; el DbSet Clientes no la renombra.
+            modelBuilder.Entity<Cliente>().ToTable("Cliente");
+
             // Integridad referencial que faltaba: la factura apunta a su asiento y el
             // ítem a su producto. Restrict: no se puede borrar algo referenciado.
             modelBuilder.Entity<Factura>()
@@ -158,6 +162,9 @@ namespace EstudioContable.Infrastructure.Persistence
                 new { Id = 103L, ClienteId = 1L, Codigo = "1.1.2.01", Nombre = "Deudores por Ventas", Naturaleza = NaturalezaCuenta.Activo, Activa = true },
                 new { Id = 104L, ClienteId = 1L, Codigo = "4.1.1.01", Nombre = "Ventas", Naturaleza = NaturalezaCuenta.Resultado, Activa = true },
                 new { Id = 105L, ClienteId = 1L, Codigo = "1.1.2.02", Nombre = "IVA Crédito Fiscal", Naturaleza = NaturalezaCuenta.Activo, Activa = true },
+                // Contrapartidas de los movimientos manuales de Caja y Banco.
+                new { Id = 106L, ClienteId = 1L, Codigo = "4.1.2.01", Nombre = "Otros Ingresos", Naturaleza = NaturalezaCuenta.Resultado, Activa = true },
+                new { Id = 107L, ClienteId = 1L, Codigo = "5.2.1.01", Nombre = "Gastos Generales", Naturaleza = NaturalezaCuenta.Resultado, Activa = true },
                 new { Id = 201L, ClienteId = 1L, Codigo = "2.1.1.01", Nombre = "IVA Débito Fiscal", Naturaleza = NaturalezaCuenta.Pasivo, Activa = true },
                 new { Id = 202L, ClienteId = 1L, Codigo = "2.1.1.02", Nombre = "Proveedores", Naturaleza = NaturalezaCuenta.Pasivo, Activa = true },
                 new { Id = 501L, ClienteId = 1L, Codigo = "5.1.1.01", Nombre = "Compras", Naturaleza = NaturalezaCuenta.Resultado, Activa = true }

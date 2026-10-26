@@ -8,6 +8,7 @@ namespace EstudioContable.Application.Banco.Commands
         DateTime Fecha,
         string Detalle,
         decimal? Ingreso,
-        decimal? Egreso
+        decimal? Egreso,
+        long? CuentaContrapartidaId = null
     ) : IRequest<Unit>;
 }

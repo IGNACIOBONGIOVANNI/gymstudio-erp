@@ -9,8 +9,7 @@ namespace EstudioContable.Application.Asientos.Commands.CrearAsiento
             RuleFor(c => c.ClienteId)
                 .GreaterThan(0).WithMessage("El Id del cliente es requerido y debe ser mayor a 0.");
 
-            RuleFor(c => c.NumeroAsiento)
-                .GreaterThan(0).WithMessage("El número de asiento es requerido y debe ser mayor a 0.");
+            // El número de asiento lo asigna el sistema: no se valida lo que mande el cliente.
 
             RuleFor(c => c.Descripcion)
                 .NotEmpty().WithMessage("La descripción es requerida.");

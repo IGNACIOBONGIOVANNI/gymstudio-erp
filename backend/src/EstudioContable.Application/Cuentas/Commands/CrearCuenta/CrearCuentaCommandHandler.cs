@@ -1,3 +1,5 @@
+using System.Linq;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Common.Interfaces;
@@ -20,6 +22,11 @@ namespace EstudioContable.Application.Cuentas.Commands.CrearCuenta
 
         public async Task<CrearCuentaResult> Handle(CrearCuentaCommand request, CancellationToken cancellationToken)
         {
+            var existentes = await _repository.ObtenerTodasAsync(request.ClienteId, cancellationToken);
+            var repetida = existentes.FirstOrDefault(c => string.Equals(c.Codigo, request.Codigo?.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (repetida != null)
+                throw new InvalidOperationException($"Ya existe la cuenta {repetida.Codigo} - {repetida.Nombre}.");
+
             var cuenta = new CuentaContable(
                 request.ClienteId,
                 request.Codigo,
