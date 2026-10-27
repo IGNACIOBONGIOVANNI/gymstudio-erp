@@ -4,6 +4,7 @@ import { Loader2, Plus, X, Pencil } from "lucide-react";
 import { useCrearMovimientoCaja } from "../hooks/useCrearMovimientoCaja";
 // 🔥 Asegurate de tener este hook creado para actualizar (te dejo el código más abajo por las dudas)
 import { useEditarMovimientoCaja } from "../hooks/useEditarMovimientoCaja";
+import { hoyLocal } from "../../../utils/formatters";
 
 interface MovimientoCajaFormProps {
   clienteId: string;
@@ -12,7 +13,7 @@ interface MovimientoCajaFormProps {
 }
 
 export function MovimientoCajaForm({ clienteId, onClose, movimientoAEditar }: MovimientoCajaFormProps) {
-  const [fecha, setFecha] = useState("");
+  const [fecha, setFecha] = useState(hoyLocal);
   const [detalle, setDetalle] = useState("");
   const [tipoMovimiento, setTipoMovimiento] = useState(1);
   const [importe, setImporte] = useState("");
@@ -47,7 +48,7 @@ export function MovimientoCajaForm({ clienteId, onClose, movimientoAEditar }: Mo
   }, [movimientoAEditar]);
 
   const handleLimpiar = () => {
-    setFecha("");
+    setFecha(hoyLocal());
     setDetalle("");
     setTipoMovimiento(1);
     setImporte("");

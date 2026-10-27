@@ -4,6 +4,7 @@ import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useCrearFactura } from "../hooks/useCrearFactura";
 import { useProductos } from "../../../hooks/useProductos";
 import { obtenerConfiguracion } from "../../configuracion/configuracionStorage";
+import { hoyLocal } from "../../../utils/formatters";
 
 interface FacturaItem {
   id: string;
@@ -34,7 +35,7 @@ const ITEM_VACIO = (): FacturaItem => ({
 
 export function Facturacion() {
   const [tipoOperacion, setTipoOperacion] = useState<'Venta' | 'Compra'>('Venta');
-  const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
+  const [fecha, setFecha] = useState(hoyLocal);
   const [tipoComprobante, setTipoComprobante] = useState("A");
 
   // ESTADOS DE CLIENTES Y PROVEEDORES
@@ -131,7 +132,7 @@ export function Facturacion() {
 
   const handleLimpiar = () => {
     setTipoOperacion("Venta");
-    setFecha(new Date().toISOString().slice(0, 10));
+    setFecha(hoyLocal());
     setTipoComprobante("A");
     setClienteId("");
     setProveedorId("");
@@ -142,7 +143,8 @@ export function Facturacion() {
     setItems([ITEM_VACIO()]);
   };
 
-  // Cálculos
+  // Cálculos (la factura C no discrimina IVA)
+  const alicuotaAplicada = (tipoComprobante === "A" || tipoComprobante === "B") ? porcentajeIva : 0;
   const subtotalGeneral = items.reduce((acc, item) => acc + (item.cantidad * item.precioUnitario), 0);
   const iva = (tipoComprobante === "A" || tipoComprobante === "B") ? subtotalGeneral * (porcentajeIva / 100) : 0;
   const total = subtotalGeneral + iva;
@@ -354,19 +356,33 @@ export function Facturacion() {
       )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200">
-        <table className="w-full min-w-[640px] border-collapse bg-white">
+        <table className="w-full min-w-[820px] border-collapse bg-white">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500">
+              <th className="px-3 py-2 w-20">Cant.</th>
               <th className="px-3 py-2">Descripción</th>
-              <th className="px-3 py-2 w-24">Cantidad</th>
-              <th className="px-3 py-2 w-32 text-right">Precio Unit.</th>
-              <th className="px-3 py-2 w-32 text-right">Subtotal</th>
+              <th className="px-3 py-2 w-32 text-right">P. Unitario</th>
+              <th className="px-3 py-2 w-28 text-right">Subtotal</th>
+              <th className="px-3 py-2 w-28 text-right">IVA {String(alicuotaAplicada).replace(".", ",")}%</th>
+              <th className="px-3 py-2 w-28 text-right">Total</th>
               <th className="w-10 px-2 py-2" />
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
+                <td className="p-2">
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={item.cantidad || ""}
+                    onChange={(e) => handleChangeItem(item.id, "cantidad", parseFloat(e.target.value))}
+                    disabled={enviando}
+                    required
+                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+                  />
+                </td>
                 <td className="p-2">
                   {/* Texto libre: si coincide con un producto, mueve stock y toma su precio;
                       si no (un servicio, un gasto), se factura sólo como concepto. */}
@@ -399,18 +415,6 @@ export function Facturacion() {
                 <td className="p-2">
                   <input
                     type="number"
-                    min="1"
-                    step="1"
-                    value={item.cantidad || ""}
-                    onChange={(e) => handleChangeItem(item.id, "cantidad", parseFloat(e.target.value))}
-                    disabled={enviando}
-                    required
-                    className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
-                  />
-                </td>
-                <td className="p-2">
-                  <input
-                    type="number"
                     min="0"
                     step="0.01"
                     value={item.precioUnitario || ""}
@@ -420,8 +424,14 @@ export function Facturacion() {
                     className="w-full text-right rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                 </td>
-                <td className="p-2 text-right text-sm font-medium text-slate-900">
+                <td className="p-2 text-right text-sm font-medium text-slate-900 tabular-nums">
                   {currencyFormatter.format((item.cantidad || 0) * (item.precioUnitario || 0))}
+                </td>
+                <td className="p-2 text-right text-sm text-slate-600 tabular-nums">
+                  {currencyFormatter.format((item.cantidad || 0) * (item.precioUnitario || 0) * alicuotaAplicada / 100)}
+                </td>
+                <td className="p-2 text-right text-sm font-semibold text-slate-900 tabular-nums">
+                  {currencyFormatter.format((item.cantidad || 0) * (item.precioUnitario || 0) * (1 + alicuotaAplicada / 100))}
                 </td>
                 <td className="p-2 text-center">
                   <button

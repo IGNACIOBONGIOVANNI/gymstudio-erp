@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { mensajeDeError } from "../../api/errores";
 import { avisarSiCajaNegativa } from "../../api/avisoCaja";
+import { hoyLocal } from "../../utils/formatters";
 
 interface TransferenciaModalProps {
   origen: "Caja" | "Banco";
@@ -16,7 +17,7 @@ interface TransferenciaModalProps {
  */
 export function TransferenciaModal({ origen, onClose }: TransferenciaModalProps) {
   const destino = origen === "Caja" ? "Banco" : "Caja";
-  const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
+  const [fecha, setFecha] = useState(hoyLocal);
   const [importe, setImporte] = useState("");
   const [detalle, setDetalle] = useState("");
   const queryClient = useQueryClient();

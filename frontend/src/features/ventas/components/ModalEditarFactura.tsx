@@ -181,9 +181,9 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-slate-500 text-left">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Descripción</th>
                   <th className="px-3 py-2 font-medium w-24">Cant.</th>
-                  <th className="px-3 py-2 font-medium w-32 text-right">Precio</th>
+                  <th className="px-3 py-2 font-medium">Descripción</th>
+                  <th className="px-3 py-2 font-medium w-32 text-right">P. Unitario</th>
                   <th className="px-3 py-2 font-medium w-32 text-right">Subtotal</th>
                   <th className="w-10 px-2 py-2"></th>
                 </tr>
@@ -191,8 +191,8 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
               <tbody className="divide-y divide-slate-100">
                 {items.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/50">
-                    <td className="p-2"><input type="text" value={item.descripcion} onChange={(e) => handleChangeItem(item.id!, "descripcion", e.target.value)} required className="w-full rounded border-slate-300 px-2 py-1 focus:ring-blue-500" /></td>
                     <td className="p-2"><input type="number" min="1" value={item.cantidad || ""} onChange={(e) => handleChangeItem(item.id!, "cantidad", parseFloat(e.target.value))} required className="w-full rounded border-slate-300 px-2 py-1 focus:ring-blue-500" /></td>
+                    <td className="p-2"><input type="text" value={item.descripcion} onChange={(e) => handleChangeItem(item.id!, "descripcion", e.target.value)} required className="w-full rounded border-slate-300 px-2 py-1 focus:ring-blue-500" /></td>
                     <td className="p-2"><input type="number" min="0" step="0.01" value={item.precioUnitario || ""} onChange={(e) => handleChangeItem(item.id!, "precioUnitario", parseFloat(e.target.value))} required className="w-full rounded border-slate-300 px-2 py-1 text-right focus:ring-blue-500" /></td>
                     <td className="p-2 text-right font-medium text-slate-800">{formatARS((item.cantidad || 0) * (item.precioUnitario || 0))}</td>
                     <td className="p-2 text-center"><button type="button" onClick={() => handleEliminarItem(item.id!)} disabled={items.length === 1} className="text-slate-400 hover:text-red-500 disabled:opacity-50"><Trash2 className="h-4 w-4" /></button></td>

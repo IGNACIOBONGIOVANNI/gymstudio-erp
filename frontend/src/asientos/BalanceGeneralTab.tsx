@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
 } from 'recharts';
 import { TrendingUp, Wallet, Activity } from 'lucide-react';
+import { BotonPDF } from '../components/reportes/BotonPDF';
 
 interface BalanceItem {
   name: string;
@@ -25,6 +26,23 @@ export function BalanceGeneralTab() {
   const [data, setData] = useState<BalanceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [periodo, setPeriodo] = useState('historico');
+
+  // Período elegido como fechas aaaa-mm-dd (undefined = histórico).
+  const rango = (() => {
+    if (periodo === 'historico') return undefined;
+    const hoy = new Date();
+    let inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    let fin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    if (periodo === 'mes_anterior') {
+      inicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+      fin = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+    } else if (periodo === 'este_ano') {
+      inicio = new Date(hoy.getFullYear(), 0, 1);
+      fin = new Date(hoy.getFullYear(), 11, 31);
+    }
+    const f = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return { desde: f(inicio), hasta: f(fin) };
+  })();
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -104,6 +122,8 @@ export function BalanceGeneralTab() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
         <p className="text-sm text-slate-500">Situación patrimonial según los asientos confirmados.</p>
+        <div className="flex flex-wrap items-center gap-2">
+        <BotonPDF tipo="balance" desde={rango?.desde} hasta={rango?.hasta} />
         <select
           value={periodo}
           onChange={(e) => setPeriodo(e.target.value)}
@@ -114,6 +134,7 @@ export function BalanceGeneralTab() {
           <option value="mes_anterior">Mes Anterior</option>
           <option value="este_ano">Este Año</option>
         </select>
+        </div>
       </div>
 
       {/* --- Fila 1: Tarjetas Resumen (Kpis) --- */}

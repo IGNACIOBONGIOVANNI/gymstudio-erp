@@ -16,6 +16,7 @@ export function useEliminarAsiento() {
       queryClient.invalidateQueries({ queryKey: ["libro-banco"] });
       queryClient.invalidateQueries({ queryKey: ["productos"] });
       queryClient.invalidateQueries({ queryKey: ["movimientosStock"] });
+      toast.success("Asiento anulado: ya no suma en el Mayor ni en el Balance");
     },
     onError: (error) => {
       toast.error(error.message || "Ocurrió un error inesperado al anular el asiento.");

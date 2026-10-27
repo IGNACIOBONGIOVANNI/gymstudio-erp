@@ -3,6 +3,7 @@ import { X, User, Mail, Shield, Lock, Phone, CheckCircle2 } from 'lucide-react';
 import type { Usuario, RolUsuario, EstadoUsuario } from './types';
 import { guardarUsuario } from './usuariosApi';
 import toast from 'react-hot-toast';
+import { obtenerConfiguracion } from '../configuracion/configuracionStorage';
 
 interface ModalUsuarioProps {
   usuarioAEditar?: Usuario | null;
@@ -54,6 +55,12 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
     if (!esEdicion && !password.trim()) {
       toast.error('Ingresá una contraseña inicial para el usuario');
+      return;
+    }
+    // Configuración > Seguridad: contraseñas seguras (8+ caracteres con letras y números).
+    const clave = password.trim();
+    if (clave && obtenerConfiguracion().exigirPasswordSegura && !(clave.length >= 8 && /[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(clave) && /\d/.test(clave))) {
+      toast.error('La contraseña debe tener al menos 8 caracteres, con letras y números (se exige en Configuración > Seguridad)');
       return;
     }
 

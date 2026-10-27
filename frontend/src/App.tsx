@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
-import { Toaster } from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
@@ -84,7 +84,7 @@ const MENU: Grupo[] = [
     titulo: 'Stock',
     vistas: [
       { id: 'productos', titulo: 'Productos', icono: <Package className={icono} /> },
-      { id: 'stock', titulo: 'Movimientos de stock', icono: <History className={icono} /> },
+      { id: 'stock', titulo: 'Libro Stock', icono: <History className={icono} /> },
     ],
   },
   {
@@ -119,6 +119,29 @@ const ETIQUETA_ROL: Record<string, string> = {
 function AppContent() {
   const { user, logout } = useAuth()
   const { data: cuentas = [] } = useCuentas(Boolean(user))
+
+  // Cierre de sesión por inactividad, según Configuración > Seguridad (0 = sin límite).
+  // Los minutos se leen en cada reinicio: un cambio en la Configuración aplica enseguida.
+  useEffect(() => {
+    if (!user) return
+    let temporizador: number | undefined
+    const reiniciar = () => {
+      window.clearTimeout(temporizador)
+      const minutos = Number(obtenerConfiguracion().tiempoInactividadMinutos) || 0
+      if (minutos <= 0) return
+      temporizador = window.setTimeout(() => {
+        toast(`Sesión cerrada por ${minutos} minutos sin actividad`, { icon: '🔒', duration: 6000 })
+        logout()
+      }, minutos * 60_000)
+    }
+    const eventos = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'] as const
+    eventos.forEach((e) => window.addEventListener(e, reiniciar, { passive: true }))
+    reiniciar()
+    return () => {
+      window.clearTimeout(temporizador)
+      eventos.forEach((e) => window.removeEventListener(e, reiniciar))
+    }
+  }, [user, logout])
   const rol = user?.rol as Rol | undefined
 
   // Menú filtrado según el rol del usuario.

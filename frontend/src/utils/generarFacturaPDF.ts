@@ -153,7 +153,13 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
   lineaReceptor('Domicilio:', receptor.domicilio, 14, y + 12, 88);
   lineaReceptor('Condición de venta:', CONDICION_DE_VENTA[factura.condicionPago ?? ''] ?? '-', 105, y + 12, 92);
 
-  // 3. Detalle: precios sin IVA (el IVA se discrimina abajo en A y B; la C no lo discrimina).
+  // Alícuota de la factura (la más cercana a IVA / Subtotal).
+  const subtotal = factura.subtotal ?? factura.total;
+  const iva = factura.iva ?? 0;
+  const tasa = subtotal > 0 && iva > 0 ? [10.5, 21, 27].reduce((m, a) => (Math.abs(a - (iva / subtotal) * 100) < Math.abs(m - (iva / subtotal) * 100) ? a : m), 21) : 0;
+  const etiquetaTasa = `${String(tasa).replace('.', ',')}%`;
+
+  // 3. Detalle como la hoja FACTURA: en A y B, IVA y total de cada renglón (la C no discrimina IVA).
   const items = factura.items?.length ? factura.items
     : [{ descripcion: 'Concepto facturado', cantidad: 1, precioUnitario: factura.subtotal ?? factura.total, subtotal: factura.subtotal ?? factura.total }];
   autoTable(doc, {
@@ -161,20 +167,24 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
     startY: 91,
     margin: { left: 10, right: 10, top: 15, bottom: 30 },
     styles: { font: 'helvetica', fontSize: 9, textColor: 0, lineColor: 150, lineWidth: 0.15, cellPadding: 1.8 },
-    head: [['Cant.', 'Descripción', { content: 'Precio unit.', styles: { halign: 'right' } }, { content: 'Subtotal', styles: { halign: 'right' } }]],
+    head: [['Cant.', 'Descripción', { content: 'P. Unitario', styles: { halign: 'right' } }, { content: 'Subtotal', styles: { halign: 'right' } },
+      ...(letra === 'C' ? [] : [{ content: `IVA ${etiquetaTasa}`, styles: { halign: 'right' as const } }, { content: 'Total', styles: { halign: 'right' as const } }])]],
     body: items.map(i => [
       { content: String(i.cantidad), styles: { halign: 'center' } },
       i.descripcion || 'Concepto',
       { content: importe(i.precioUnitario), styles: { halign: 'right' } },
       { content: importe(i.subtotal), styles: { halign: 'right' } },
+      ...(letra === 'C' ? [] : [
+        { content: importe(i.subtotal * tasa / 100), styles: { halign: 'right' as const } },
+        { content: importe(i.subtotal * (1 + tasa / 100)), styles: { halign: 'right' as const } },
+      ]),
     ]),
-    columnStyles: { 0: { cellWidth: 16 }, 2: { cellWidth: 32 }, 3: { cellWidth: 32 } },
+    columnStyles: letra === 'C'
+      ? { 0: { cellWidth: 16 }, 2: { cellWidth: 32 }, 3: { cellWidth: 32 } }
+      : { 0: { cellWidth: 14 }, 2: { cellWidth: 26 }, 3: { cellWidth: 26 }, 4: { cellWidth: 24 }, 5: { cellWidth: 26 } },
   });
 
   // 4. Totales
-  const subtotal = factura.subtotal ?? factura.total;
-  const iva = factura.iva ?? 0;
-  const tasa = subtotal > 0 && iva > 0 ? [10.5, 21, 27].reduce((m, a) => (Math.abs(a - (iva / subtotal) * 100) < Math.abs(m - (iva / subtotal) * 100) ? a : m), 21) : 0;
   const filas: [string, string][] = letra === 'C'
     ? []
     : [['Importe neto gravado', pesos(subtotal)], [`IVA ${String(tasa).replace('.', ',')} %`, pesos(iva)]];

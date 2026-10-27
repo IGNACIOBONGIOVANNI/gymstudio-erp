@@ -89,7 +89,7 @@ export function SociosGym() {
       ),
     }),
     columnHelper.accessor("dni", {
-      header: "DNI / Telnono",
+      header: "DNI / Teléfono",
       cell: (info) => (
         <div className="text-slate-600">
           <div>{info.getValue()}</div>

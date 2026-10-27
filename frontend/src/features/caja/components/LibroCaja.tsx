@@ -5,6 +5,7 @@ import { useLibroCaja } from "../hooks/useLibroCaja";
 import { formatearFechaLocal } from "../../../utils/formatters";
 import { MovimientoCajaForm } from "./MovimientoCajaForm";
 import { useEliminarMovimientoCaja } from "../hooks/useEliminarMovimientoCaja";
+import { BotonPDF } from "../../../components/reportes/BotonPDF";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -104,6 +105,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
+          <BotonPDF tipo="caja" fecha={fechaFiltro} />
         <button
           onClick={() => setIsTransferenciaOpen(true)}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 min-h-[40px] text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 shrink-0"
@@ -158,7 +160,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                               className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
                               title="Generado por una factura: se corrige editando o anulando la factura"
                             >
-                              Factura N° {mov.facturaId}
+                              Factura
                             </span>
                           ) : (
                             <>
@@ -192,6 +194,13 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                     ))
                   )}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-slate-300 bg-slate-50 font-bold text-slate-900">
+                    <td className="p-3 px-4" colSpan={2}>Totales</td>
+                    <td className="p-3 px-4 text-right tabular-nums">{currencyFormatter.format(totalIngresos)}</td>
+                    <td />
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
@@ -223,7 +232,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-              <h3 className="text-sm font-bold text-slate-800">Egresos (Compras y Otros)</h3>
+              <h3 className="text-sm font-bold text-slate-800">Egresos (Compras)</h3>
             </div>
             <div className="overflow-x-auto w-full">
               <table className="w-full text-sm">
@@ -254,7 +263,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                               className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
                               title="Generado por una factura: se corrige editando o anulando la factura"
                             >
-                              Factura N° {mov.facturaId}
+                              Factura
                             </span>
                           ) : (
                             <>
@@ -288,6 +297,13 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
                     ))
                   )}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-slate-300 bg-slate-50 font-bold text-slate-900">
+                    <td className="p-3 px-4" colSpan={2}>Totales</td>
+                    <td className="p-3 px-4 text-right tabular-nums">{currencyFormatter.format(totalEgresos)}</td>
+                    <td />
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>

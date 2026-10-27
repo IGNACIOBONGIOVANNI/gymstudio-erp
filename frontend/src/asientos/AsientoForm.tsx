@@ -10,6 +10,7 @@ import { useBalanceAsiento } from "./useBalanceAsiento";
 import { BalanceIndicator } from "./BalanceIndicator";
 import { LineaAsientoRow } from "./LineaAsientoRow";
 import { crearAsiento, confirmarAsiento, ApiError } from "./asientosApi";
+import { hoyLocal } from "../utils/formatters";
 
 interface AsientoFormProps {
   clienteId: string;
@@ -34,7 +35,7 @@ export function AsientoForm({ clienteId, cuentas, onConfirmado }: AsientoFormPro
     resolver: zodResolver(asientoFormSchema),
     mode: "onBlur",
     defaultValues: {
-      fecha: new Date().toISOString().slice(0, 10),
+      fecha: hoyLocal(),
       descripcion: "",
       lineas: [LINEA_VACIA, LINEA_VACIA],
     },
@@ -72,7 +73,7 @@ export function AsientoForm({ clienteId, cuentas, onConfirmado }: AsientoFormPro
       toast.success("¡Asiento guardado y balanceado con éxito!");
       
       reset({
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: hoyLocal(),
         descripcion: "",
         lineas: [LINEA_VACIA, LINEA_VACIA],
       });
@@ -91,7 +92,7 @@ export function AsientoForm({ clienteId, cuentas, onConfirmado }: AsientoFormPro
 
   const handleLimpiar = () => {
     reset({
-      fecha: new Date().toISOString().slice(0, 10),
+      fecha: hoyLocal(),
       descripcion: "",
       lineas: [LINEA_VACIA, LINEA_VACIA],
     });

@@ -232,6 +232,8 @@ namespace EstudioContable.Application.Services
                     throw new NotFoundException(nameof(Producto), item.ProductoId!.Value);
 
                 producto.ActualizarStock(esSalida ? -item.Cantidad : item.Cantidad);
+                if (factura.TipoOperacion == Venta && esSalida)
+                    producto.CompletarPrecioVenta(item.PrecioUnitario);
 
                 _context.MovimientosStock.Add(new MovimientoStock(
                     producto.Id,

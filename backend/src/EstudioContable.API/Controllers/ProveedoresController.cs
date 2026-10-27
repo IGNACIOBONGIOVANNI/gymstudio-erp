@@ -37,9 +37,17 @@ namespace EstudioContable.API.Controllers
             var validados = datos.Validar();
             await ValidarCuitNoRepetidoAsync(validados.Cuit, idExcluido: null, cancellationToken);
 
-            var entidad = new Proveedor();
+            // Si ya existió y se dio de baja, se reactiva el mismo registro (conserva su
+            // historial de facturas) en lugar de crear un duplicado con el mismo CUIT.
+            var normalizado = EstudioContable.Domain.Cuit.Normalizar(validados.Cuit);
+            var dadoDeBaja = (await _context.Proveedores.Where(x => !x.Activo).ToListAsync(cancellationToken))
+                .FirstOrDefault(x => EstudioContable.Domain.Cuit.Normalizar(x.Cuit) == normalizado);
+
+            var entidad = dadoDeBaja ?? new Proveedor();
             Aplicar(entidad, validados);
-            _context.Proveedores.Add(entidad);
+            entidad.Activo = true;
+            if (dadoDeBaja == null)
+                _context.Proveedores.Add(entidad);
             await _context.SaveChangesAsync(cancellationToken);
             return Ok(entidad);
         }

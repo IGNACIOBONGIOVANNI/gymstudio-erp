@@ -384,26 +384,12 @@ export default function ModuloConfiguracion() {
                 Reglas Contables y Facturación Automatizada
               </h3>
               <p className="text-xs text-slate-500">
-                Define cómo el motor de partida doble y el subsistema de facturación interactúan entre sí.
+                Alícuota que propone el formulario de facturación y reglas contables del sistema.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Moneda Principal del Sistema
-                </label>
-                <select
-                  value={config.monedaPrincipal}
-                  onChange={(e) => handleChange('monedaPrincipal', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                >
-                  <option value="ARS - Peso Argentino ($)">ARS - Peso Argentino ($)</option>
-                  <option value="USD - Dólar Estadounidense (u$s)">USD - Dólar Estadounidense (u$s)</option>
-                </select>
-              </div>
-
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Alícuota General de IVA Predeterminada
@@ -420,79 +406,19 @@ export default function ModuloConfiguracion() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Mes de Cierre de Ejercicio Económico
-                </label>
-                <select
-                  value={config.mesCierreEjercicio}
-                  onChange={(e) => handleChange('mesCierreEjercicio', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                >
-                  <option value="Diciembre">Diciembre (Año Calendario)</option>
-                  <option value="Marzo">Marzo</option>
-                  <option value="Junio">Junio</option>
-                  <option value="Septiembre">Septiembre</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
-                  Método de Valuación de Inventario (Stock)
-                </label>
-                <select
-                  value={config.metodoCosteoInventario}
-                  onChange={(e) => handleChange('metodoCosteoInventario', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                >
-                  <option value="PPP">PPP - Precio Promedio Ponderado (Recomendado)</option>
-                  <option value="FIFO">PEPS / FIFO - Primero entrado, primero salido</option>
-                </select>
-              </div>
-
             </div>
 
-            {/* Opciones Tipo Switch */}
-            <div className="pt-4 border-t border-slate-100 space-y-4">
-              <div className="flex items-start justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Numeración Correlativa Automática de Asientos
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Genera automáticamente los identificadores (#0001, #0002, etc.) en orden cronológico en el Libro Diario.
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
-                  <input
-                    type="checkbox"
-                    checked={config.numeracionAutomaticaAsientos}
-                    onChange={(e) => handleChange('numeracionAutomaticaAsientos', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-start justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">
-                    Generación Automática de Asientos desde Facturación
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Al confirmar una factura de venta o compra, imputa inmediatamente las cuentas de Caja/Banco, IVA y Resultado.
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
-                  <input
-                    type="checkbox"
-                    checked={config.asientosAutomaticosFacturacion}
-                    onChange={(e) => handleChange('asientosAutomaticosFacturacion', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
+            {/* Reglas que el sistema aplica siempre (no se configuran). */}
+            <div className="pt-4 border-t border-slate-100">
+              <h4 className="text-sm font-bold text-slate-900 mb-2">Cómo registra el sistema</h4>
+              <ul className="space-y-1.5 text-xs text-slate-600 list-disc pl-5">
+                <li>Moneda: pesos argentinos (ARS).</li>
+                <li>Los asientos se numeran solos, en orden correlativo, en el Libro Diario.</li>
+                <li>Cada factura genera su asiento al emitirse: Compras + IVA Crédito Fiscal a Caja/Banco/Proveedores, y Caja/Banco/Deudores a Ventas + IVA Débito Fiscal.</li>
+                <li>Las ventas se numeran por tipo de comprobante y punto de venta; las compras llevan el número del proveedor.</li>
+                <li>Anular o editar una factura deja su asiento como Anulado: el IVA Crédito Fiscal nunca va al Haber ni el Débito Fiscal al Debe.</li>
+                <li>Las compras de productos nuevos los dan de alta en el Libro Stock; las ventas descuentan stock.</li>
+              </ul>
             </div>
 
           </div>
@@ -503,10 +429,10 @@ export default function ModuloConfiguracion() {
           <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-sm space-y-6">
             <div>
               <h3 className="text-base font-bold text-slate-900 mb-1">
-                Políticas de Sesión y Modo Demostración
+                Políticas de Sesión y Contraseñas
               </h3>
               <p className="text-xs text-slate-500">
-                Control de caducidad de credenciales y ajustes especiales para presentaciones del sistema.
+                Cierre automático de la sesión por inactividad y exigencia de contraseñas seguras al crear usuarios.
               </p>
             </div>
 
@@ -535,7 +461,7 @@ export default function ModuloConfiguracion() {
                     Exigir Contraseñas Seguras
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Requiere que las claves de los operadores contengan al menos 8 caracteres y números.
+                    Al crear o cambiar la clave de un usuario, exige al menos 8 caracteres con letras y números.
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
@@ -549,30 +475,6 @@ export default function ModuloConfiguracion() {
                 </label>
               </div>
 
-              <div className="flex items-start justify-between gap-4 p-4 rounded-xl bg-indigo-50/50 border border-indigo-200/80">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-indigo-900">
-                      Modo Demostración / Presentación Académica
-                    </h4>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">
-                      ACTIVO
-                    </span>
-                  </div>
-                  <p className="text-xs text-indigo-700 mt-0.5">
-                    Permite restablecer datos rápidamente y habilita comprobantes de prueba sin interactuar con los servidores web de producción de AFIP.
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
-                  <input
-                    type="checkbox"
-                    checked={config.modoDemostracion}
-                    onChange={(e) => handleChange('modoDemostracion', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
-              </div>
             </div>
 
           </div>

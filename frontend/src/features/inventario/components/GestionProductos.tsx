@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { useProductos, useMutacionesProducto } from "../../../hooks/useProductos";
 import type { ProductoDto } from "../../../api/productosApi";
 
+const moneda = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
+
 export function GestionProductos() {
   const { data: productos = [], isLoading } = useProductos();
   const { crearMutation, actualizarMutation, eliminarMutation } = useMutacionesProducto();
@@ -58,7 +60,8 @@ export function GestionProductos() {
       toast.promise(eliminarMutation.mutateAsync(id), {
         loading: "Eliminando...",
         success: "Producto eliminado",
-        error: "Error al eliminar producto",
+        // El backend explica el motivo (por ejemplo, que el producto ya tiene facturas).
+        error: (e) => (e instanceof Error && e.message) || "Error al eliminar producto",
       });
     }
   };
@@ -157,15 +160,15 @@ export function GestionProductos() {
                     {p.marca && <span className="font-semibold">{p.marca}</span>}
                     {p.sabor && <span> - {p.sabor}</span>}
                   </td>
-                  <td className="px-4 py-3 text-right text-slate-600">${p.precioUnitario}</td>
-                  <td className="px-4 py-3 text-right font-medium text-slate-900">${p.precioVenta}</td>
+                  <td className="px-4 py-3 text-right text-slate-600 tabular-nums">{moneda.format(p.precioUnitario)}</td>
+                  <td className="px-4 py-3 text-right font-medium text-slate-900 tabular-nums">{p.precioVenta ? moneda.format(p.precioVenta) : "-"}</td>
                   <td className="px-4 py-3 text-right font-bold text-emerald-600">{p.stockActual}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center gap-2">
-                      <button onClick={() => handleOpenEditar(p)} className="text-slate-400 hover:text-blue-600">
+                      <button onClick={() => handleOpenEditar(p)} title="Editar producto" className="text-slate-400 hover:text-blue-600">
                         <Edit2 className="h-4 w-4" />
                       </button>
-                      <button onClick={() => handleDelete(p.id)} className="text-slate-400 hover:text-rose-600">
+                      <button onClick={() => handleDelete(p.id)} title="Eliminar producto" className="text-slate-400 hover:text-rose-600">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>

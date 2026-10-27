@@ -5,6 +5,7 @@ import { useLibroBanco } from "../hooks/useLibroBanco";
 import { formatearFechaLocal } from "../../../utils/formatters";
 import { MovimientoBancoForm } from "./MovimientoBancoForm";
 import { useEliminarMovimientoBanco } from "../hooks/useEliminarMovimientoBanco";
+import { BotonPDF } from "../../../components/reportes/BotonPDF";
 
 const currencyFormatter = new Intl.NumberFormat("es-AR", {
   style: "currency",
@@ -63,6 +64,15 @@ export function LibroBanco({ clienteId = "1" }: LibroBancoProps) {
   const saldoAnterior = Number(resumen?.saldoAnterior) || 0;
   const saldoActual = saldoAnterior + totalIngresos - totalEgresos;
 
+  // Orden cronológico y saldo corrido desde el saldo anterior.
+  const ordenados = [...listaFiltrada].sort((a: any, b: any) =>
+    String(a.fecha).localeCompare(String(b.fecha)) || (Number(a.id) || 0) - (Number(b.id) || 0));
+  let acumulado = saldoAnterior;
+  const conSaldo = ordenados.map((mov: any) => {
+    acumulado += (Number(mov.ingreso) || 0) - (Number(mov.egreso) || 0);
+    return { mov, saldo: acumulado };
+  });
+
   const handleEditClick = (movimiento: any) => {
     setMovimientoAEditar(movimiento);
     setIsFormOpen(true);
@@ -103,6 +113,7 @@ export function LibroBanco({ clienteId = "1" }: LibroBancoProps) {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
+          <BotonPDF tipo="banco" fecha={fechaFiltro} />
         <button
           onClick={() => setIsTransferenciaOpen(true)}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 min-h-[40px] text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 shrink-0"
@@ -120,62 +131,71 @@ export function LibroBanco({ clienteId = "1" }: LibroBancoProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Columna Izquierda: Ingresos */}
-        <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-              <h3 className="text-sm font-bold text-slate-800">Ingresos (Cobros y Transferencias)</h3>
-            </div>
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50/50">
-                  <tr className="border-b border-slate-200">
-                    <th className="h-10 px-4 text-left font-medium text-slate-500">Fecha</th>
-                    <th className="h-10 px-4 text-left font-medium text-slate-500">Detalle</th>
-                    <th className="h-10 px-4 text-right font-medium text-slate-500">Importe</th>
-                    <th className="h-10 px-4 w-20"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ingresos.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="p-4 text-center text-slate-500">Sin ingresos</td>
-                    </tr>
-                  ) : (
-                    ingresos.map((mov: any, idx: number) => (
-                      <tr key={`ing-${idx}`} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150">
-                        <td className="p-3 px-4 text-slate-500 whitespace-nowrap tabular-nums">{formatearFechaLocal(mov.fecha)}</td>
-                        <td className="p-3 px-4 text-slate-700">{mov.detalle}</td>
-                        <td className="p-3 px-4 text-right font-semibold text-slate-800 tabular-nums">
-                          {currencyFormatter.format(mov.ingreso)}
-                        </td>
-                        <td className="p-3 px-4 flex justify-end space-x-1">
-                          {mov.facturaId ? (
-                            <span
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
-                              title="Generado por una factura: se corrige editando o anulando la factura"
-                            >
-                              Factura N° {mov.facturaId}
-                            </span>
-                          ) : (
-                            <>
+      {/* Como la hoja "Libro Banco": una sola tabla en orden, con el saldo después de cada movimiento. */}
+      <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead className="bg-slate-50/50">
+              <tr className="border-b border-slate-200">
+                <th className="h-10 px-4 text-left font-medium text-slate-500">Fecha</th>
+                <th className="h-10 min-w-[260px] px-4 text-left font-medium text-slate-500">Detalle</th>
+                <th className="h-10 px-4 text-right font-medium text-slate-500 whitespace-nowrap">Depósito</th>
+                <th className="h-10 px-4 text-right font-medium text-slate-500 whitespace-nowrap">Cheque / Transf.</th>
+                <th className="h-10 px-4 text-right font-medium text-slate-500 whitespace-nowrap">Saldo</th>
+                <th className="h-10 px-4 w-28"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 bg-slate-50/40">
+                <td className="p-3 px-4" />
+                <td className="p-3 px-4 font-medium text-slate-600">Saldo anterior</td>
+                <td colSpan={2} />
+                <td className="p-3 px-4 text-right font-semibold tabular-nums text-slate-800">{currencyFormatter.format(saldoAnterior)}</td>
+                <td />
+              </tr>
+              {conSaldo.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-6 text-center text-slate-500">Sin movimientos</td>
+                </tr>
+              ) : conSaldo.map(({ mov, saldo }: any, idx: number) => (
+                <tr key={`ban-${mov.id ?? idx}`} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150">
+                  <td className="p-3 px-4 text-slate-500 whitespace-nowrap tabular-nums">{formatearFechaLocal(mov.fecha)}</td>
+                  <td className="p-3 px-4 text-slate-700">{mov.detalle}</td>
+                  <td className="p-3 px-4 text-right font-semibold text-slate-800 tabular-nums whitespace-nowrap">
+                    {mov.ingreso != null ? currencyFormatter.format(mov.ingreso) : ""}
+                  </td>
+                  <td className="p-3 px-4 text-right font-semibold text-slate-800 tabular-nums whitespace-nowrap">
+                    {mov.egreso != null ? currencyFormatter.format(mov.egreso) : ""}
+                  </td>
+                  <td className={`p-3 px-4 text-right font-semibold tabular-nums whitespace-nowrap ${saldo < 0 ? "text-red-600" : "text-slate-900"}`}>
+                    {currencyFormatter.format(saldo)}
+                  </td>
+                  <td className="p-3 px-4">
+                    <div className="flex justify-end gap-1">
+                      {mov.facturaId ? (
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
+                          title="Generado por una factura: se corrige editando o anulando la factura"
+                        >
+                          Factura
+                        </span>
+                      ) : (
+                        <>
                           {mov.esTransferencia ? (
                             <span
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-indigo-50 text-indigo-700 border-indigo-200 whitespace-nowrap"
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-300 whitespace-nowrap"
                               title="Transferencia entre Caja y Banco: no se edita; si hay un error, eliminala y cargala de nuevo"
                             >
                               Transferencia
                             </span>
                           ) : (
                             <button
-                            onClick={() => handleEditClick(mov)}
-                            className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            title="Editar movimiento"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
+                              onClick={() => handleEditClick(mov)}
+                              className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              title="Editar movimiento"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
                           )}
                           <button
                             onClick={() => setMovimientoToDelete(mov.id || mov.Id)}
@@ -184,114 +204,25 @@ export function LibroBanco({ clienteId = "1" }: LibroBancoProps) {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-bold text-slate-900">Resumen de Banco</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Saldo anterior:</span>
-                <span className="font-semibold text-slate-800 tabular-nums">{currencyFormatter.format(saldoAnterior)}</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Total Ingresos:</span>
-                <span className="font-semibold text-green-600 tabular-nums">{currencyFormatter.format(totalIngresos)}</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-600">
-                <span>Total Egresos:</span>
-                <span className="font-semibold text-red-600 tabular-nums">-{currencyFormatter.format(totalEgresos)}</span>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                <span className="font-bold text-slate-900 text-base">Saldo actual:</span>
-                <span className="font-bold text-slate-900 text-lg tabular-nums">{currencyFormatter.format(saldoActual)}</span>
-              </div>
-            </div>
-          </div>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-slate-300 bg-slate-50 font-bold text-slate-900">
+                <td className="p-3 px-4" />
+                <td className="p-3 px-4">TOTALES / SALDO</td>
+                <td className="p-3 px-4 text-right tabular-nums">{currencyFormatter.format(totalIngresos)}</td>
+                <td className="p-3 px-4 text-right tabular-nums">{currencyFormatter.format(totalEgresos)}</td>
+                <td className={`p-3 px-4 text-right tabular-nums ${saldoActual < 0 ? "text-red-600" : ""}`}>{currencyFormatter.format(saldoActual)}</td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
         </div>
-
-        {/* Columna Derecha: Egresos */}
-        <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-              <h3 className="text-sm font-bold text-slate-800">Egresos (Pagos e Impuestos)</h3>
-            </div>
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50/50">
-                  <tr className="border-b border-slate-200">
-                    <th className="h-10 px-4 text-left font-medium text-slate-500">Fecha</th>
-                    <th className="h-10 px-4 text-left font-medium text-slate-500">Detalle</th>
-                    <th className="h-10 px-4 text-right font-medium text-slate-500">Importe</th>
-                    <th className="h-10 px-4 w-20"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {egresos.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="p-4 text-center text-slate-500">Sin egresos</td>
-                    </tr>
-                  ) : (
-                    egresos.map((mov: any, idx: number) => (
-                      <tr key={`egr-${idx}`} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150">
-                        <td className="p-3 px-4 text-slate-500 whitespace-nowrap tabular-nums">{formatearFechaLocal(mov.fecha)}</td>
-                        <td className="p-3 px-4 text-slate-700">{mov.detalle}</td>
-                        <td className="p-3 px-4 text-right font-semibold text-slate-800 tabular-nums">
-                          {currencyFormatter.format(mov.egreso)}
-                        </td>
-                        <td className="p-3 px-4 flex justify-end space-x-1">
-                          {mov.facturaId ? (
-                            <span
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-500 border-slate-200 whitespace-nowrap"
-                              title="Generado por una factura: se corrige editando o anulando la factura"
-                            >
-                              Factura N° {mov.facturaId}
-                            </span>
-                          ) : (
-                            <>
-                          {mov.esTransferencia ? (
-                            <span
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-indigo-50 text-indigo-700 border-indigo-200 whitespace-nowrap"
-                              title="Transferencia entre Caja y Banco: no se edita; si hay un error, eliminala y cargala de nuevo"
-                            >
-                              Transferencia
-                            </span>
-                          ) : (
-                            <button
-                            onClick={() => handleEditClick(mov)}
-                            className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            title="Editar movimiento"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          )}
-                          <button
-                            onClick={() => setMovimientoToDelete(mov.id || mov.Id)}
-                            className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                            title="Eliminar movimiento"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       {/* Modal Eliminar */}
@@ -324,7 +255,7 @@ export function LibroBanco({ clienteId = "1" }: LibroBancoProps) {
       {isFormOpen && (
         <MovimientoBancoForm
           clienteId={clienteId}
-          movimientoAEditar={movimientoAEditar} // 🔥 Le pasamos el movimiento a editar al formulario
+          movimientoAEditar={movimientoAEditar}
           onClose={handleCloseForm}
         />
       )}

@@ -13,10 +13,6 @@ const TITULOS: Record<string, string> = {
   stock: 'Libro Stock',
 };
 
-// Filas de título dentro de una tabla (asiento, cuenta): negrita, sin fondo.
-const filaTitulo = (texto: string, columnas: number): RowInput =>
-  [{ content: texto, colSpan: columnas, styles: { fontStyle: 'bold', lineColor: 0, lineWidth: { top: 0.3, bottom: 0.1, left: 0.15, right: 0.15 } } }];
-
 const derecha = { halign: 'right' as const };
 
 export function generarReportePDF(datosParam: any, tipoParam: string, desde?: string, hasta?: string) {
@@ -61,26 +57,36 @@ function libroDiario(doc: jsPDF, asientos: any[], base: any) {
   const body: RowInput[] = [];
   let debe = 0, haber = 0;
   asientos.forEach(a => {
-    const numero = String(a.numeroAsiento ?? '').padStart(4, '0');
-    body.push(filaTitulo(`Asiento N° ${numero}  -  ${fecha(a.fecha)}  -  ${a.descripcion ?? ''}`, 3));
-    (a.lineas ?? []).forEach((l: any) => {
-      // Convención del Diario: las cuentas acreedoras van sangradas y precedidas de "a".
-      const cuenta = `${l.codigoCuenta ? l.codigoCuenta + '  ' : ''}${l.nombreCuenta}`;
+    // Primero las cuentas al Debe y después las del Haber (sangradas), como en el libro.
+    const lineas = [...(a.lineas ?? [])].sort((x: any, y: any) => (y.debe > 0 ? 1 : 0) - (x.debe > 0 ? 1 : 0));
+    lineas.forEach((l: any, i: number) => {
       body.push([
-        l.haber > 0 ? `        a ${cuenta}` : cuenta,
-        { content: l.debe > 0 ? importe(l.debe) : '', styles: derecha },
-        { content: l.haber > 0 ? importe(l.haber) : '', styles: derecha },
+        { content: i === 0 ? fecha(a.fecha) : '', styles: { lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: l.haber > 0 ? `        ${l.nombreCuenta}` : l.nombreCuenta, styles: { lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: l.debe > 0 ? importe(l.debe) : '', styles: { ...derecha, lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: l.haber > 0 ? importe(l.haber) : '', styles: { ...derecha, lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
       ]);
     });
+    // Leyenda del asiento debajo de sus cuentas.
+    body.push([
+      { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+      { content: `As. N° ${String(a.numeroAsiento ?? '').padStart(4, '0')} - ${a.descripcion ?? ''}`,
+        styles: { fontStyle: 'italic', fontSize: 7.5, lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+      { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+      { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+    ]);
     debe += a.totalDebe ?? 0;
     haber += a.totalHaber ?? 0;
   });
   autoTable(doc, {
     ...base,
-    head: [['Cuenta', { content: 'Debe', styles: derecha }, { content: 'Haber', styles: derecha }]],
+    head: [['Fecha', 'Detalle', { content: 'Debe (D)', styles: derecha }, { content: 'Haber (H)', styles: derecha }]],
     body,
-    foot: [[`Totales del período (${asientos.length} asientos)`, { content: importe(debe), styles: derecha }, { content: importe(haber), styles: derecha }]],
-    columnStyles: { 1: { cellWidth: 32 }, 2: { cellWidth: 32 } },
+    foot: [
+      ['', `TOTALES (${asientos.length} asientos)`, { content: importe(debe), styles: derecha }, { content: importe(haber), styles: derecha }],
+      ['', 'Diferencia (Debe - Haber)', { content: importe(debe - haber), colSpan: 2, styles: derecha }],
+    ],
+    columnStyles: { 0: { cellWidth: 20 }, 2: { cellWidth: 32 }, 3: { cellWidth: 32 } },
   });
 }
 
@@ -225,25 +231,30 @@ function libroStock(doc: jsPDF, productos: any[], base: any) {
   let y = base.startY;
   productos.forEach(p => {
     if (y > 245) { doc.addPage(); y = base.startY; }
+    const costo = { content: importe(p.precioUnitario), styles: derecha };
+    const venta = { content: p.precioVenta ? importe(p.precioVenta) : '-', styles: derecha };
     autoTable(doc, {
       ...base,
       startY: y,
       head: [
-        [{ content: `Producto: ${p.producto}          Costo unitario: ${importe(p.precioUnitario)}          Precio de venta: ${p.precioVenta ? importe(p.precioVenta) : '-'}`, colSpan: 5 }],
-        ['Fecha', 'Detalle', { content: 'Ingreso', styles: derecha }, { content: 'Salida', styles: derecha }, { content: 'Saldo', styles: derecha }],
+        [{ content: `Producto: ${p.producto}`, colSpan: 7 }],
+        ['Fecha', 'Detalle', { content: 'Ingreso', styles: derecha }, { content: 'Salida', styles: derecha },
+          { content: 'Saldo', styles: derecha }, { content: 'P. Unitario', styles: derecha }, { content: 'Precio venta', styles: derecha }],
       ],
       body: [
-        ...(p.saldoAnterior ? [['', 'Saldo anterior', '', '', { content: String(p.saldoAnterior), styles: derecha }]] : []),
+        ...(p.saldoAnterior ? [['', 'Saldo anterior', '', '', { content: String(p.saldoAnterior), styles: derecha }, '', '']] : []),
         ...(p.movimientos ?? []).map((m: any) => [
           fecha(m.fecha), m.detalle,
           { content: m.ingreso ? String(m.ingreso) : '', styles: derecha },
           { content: m.salida ? String(m.salida) : '', styles: derecha },
           { content: String(m.saldo), styles: derecha },
+          costo, venta,
         ]),
       ],
-      foot: [[{ content: 'Stock final', colSpan: 4 }, { content: String(p.saldoFinal), styles: derecha }]],
+      foot: [[{ content: 'Stock final', colSpan: 4 }, { content: String(p.saldoFinal), styles: derecha }, '', '']],
       showFoot: 'lastPage',
-      columnStyles: { 0: { cellWidth: 19 }, 2: { cellWidth: 17 }, 3: { cellWidth: 17 }, 4: { cellWidth: 17 } },
+      styles: { ...(base.styles ?? {}), fontSize: 7.5 },
+      columnStyles: { 0: { cellWidth: 17 }, 2: { cellWidth: 14 }, 3: { cellWidth: 14 }, 4: { cellWidth: 14 }, 5: { cellWidth: 22 }, 6: { cellWidth: 22 } },
     });
     y = (doc as any).lastAutoTable.finalY + 7;
   });
@@ -258,7 +269,29 @@ function libroTesoreria(doc: jsPDF, datos: any, tipo: string, base: any) {
   const egresos = movimientos.reduce((s, m) => s + (m.egreso ?? 0), 0);
   const saldoFinal = datos?.saldoFinal ?? saldoInicial + ingresos - egresos;
 
-  autoTable(doc, {
+  if (tipo === 'caja') {
+    const ingresosLista = movimientos.filter(m => m.ingreso);
+    const egresosLista = movimientos.filter(m => m.egreso);
+    const filas = Math.max(ingresosLista.length, egresosLista.length, 1);
+    const separador = { lineWidth: { left: 0.35, top: 0.15, bottom: 0.15, right: 0.15 }, lineColor: 0 };
+    autoTable(doc, {
+      ...base,
+      head: [[{ content: 'Ingresos (Ventas)', colSpan: 2 }, { content: 'Egresos (Compras)', colSpan: 2, styles: separador }]],
+      body: Array.from({ length: filas }, (_, i) => {
+        const ing = ingresosLista[i], egr = egresosLista[i];
+        return [
+          ing ? `${fecha(ing.fecha)}  ${ing.descripcion ?? ''}` : '',
+          { content: ing ? importe(ing.ingreso) : '', styles: derecha },
+          { content: egr ? `${fecha(egr.fecha)}  ${egr.descripcion ?? ''}` : '', styles: separador },
+          { content: egr ? importe(egr.egreso) : '', styles: derecha },
+        ];
+      }),
+      foot: [['Totales', { content: importe(ingresos), styles: derecha },
+        { content: 'Totales', styles: separador }, { content: importe(egresos), styles: derecha }]],
+      styles: { ...(base.styles ?? {}), fontSize: 7.5 },
+      columnStyles: { 1: { cellWidth: 24 }, 3: { cellWidth: 24 } },
+    });
+  } else autoTable(doc, {
     ...base,
     head: [['Fecha', 'Concepto',
       { content: tipo === 'banco' ? 'Depósito' : 'Ingreso', styles: derecha },

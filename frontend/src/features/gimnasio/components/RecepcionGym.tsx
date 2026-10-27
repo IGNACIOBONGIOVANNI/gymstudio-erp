@@ -15,7 +15,7 @@ interface SocioDto {
   dni: string;
   telefono: string;
   planId?: string;
-  planNombre?: string;
+  planActualNombre?: string;
   fechaVencimiento?: string | null;
   activo: boolean;
 }
@@ -104,7 +104,7 @@ export function RecepcionGym() {
         header: "DNI",
         cell: (info) => <span className="text-slate-600">{info.getValue()}</span>,
       }),
-      columnHelper.accessor("planNombre", {
+      columnHelper.accessor("planActualNombre", {
         header: "Plan Actual",
         cell: (info) => (
           <span className="text-slate-600">
@@ -125,8 +125,15 @@ export function RecepcionGym() {
         header: "Estado",
         cell: (info) => {
           const fecha = info.row.original.fechaVencimiento;
+          // Un socio que todavía no pagó ninguna cuota no está vencido: no tiene plan.
+          if (!fecha) {
+            return (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-slate-100 text-slate-600 border-slate-200">
+                Sin plan
+              </span>
+            );
+          }
           const alDia = isAlDia(fecha);
-          // 🔥 Ejecutamos el cálculo de días para este socio
           const diasRestantes = calcularDiasRestantes(fecha);
 
           return (

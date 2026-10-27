@@ -13,6 +13,8 @@ import type { AsientoDto } from "./asientosApi";
 import { formatearFechaLocal } from "../utils/formatters";
 import toast from 'react-hot-toast';
 import { generarFacturaPDF } from '../utils/generarFacturaPDF';
+import { DiarioPlanilla } from './DiarioPlanilla';
+import { BotonPDF } from '../components/reportes/BotonPDF';
 
 const columnHelper = createColumnHelper<AsientoDto>();
 
@@ -150,6 +152,8 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
   ], [eliminarMutation]);
 
   const [fechaFiltro, setFechaFiltro] = useState<string>("");
+  // "planilla": formato de libro (Fecha | Detalle | Debe | Haber). "asientos": uno por fila, con acciones.
+  const [vista, setVista] = useState<"planilla" | "asientos">("planilla");
 
   const asientosFiltrados = useMemo(() => {
     if (!asientos) return [];
@@ -251,8 +255,25 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
             )}
           </div>
         </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="inline-flex rounded-lg border border-slate-300 p-0.5" role="group" aria-label="Vista del Libro Diario">
+            {([["planilla", "Formato planilla"], ["asientos", "Por asiento"]] as const).map(([valor, texto]) => (
+              <button
+                key={valor}
+                type="button"
+                onClick={() => setVista(valor)}
+                aria-pressed={vista === valor}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${vista === valor ? "bg-marca-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+              >
+                {texto}
+              </button>
+            ))}
+          </div>
+          <BotonPDF tipo="diario" fecha={fechaFiltro} />
+        </div>
       </div>
 
+      {vista === "planilla" ? <DiarioPlanilla asientos={asientosFiltrados} /> : (
       <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto w-full">
           <table className="w-full text-sm">
@@ -382,6 +403,7 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
           </table>
         </div>
       </div>
+      )}
       <div className="text-sm text-slate-500">
         Mostrando {asientosFiltrados.length} asiento{asientosFiltrados.length !== 1 && "s"}.
       </div>

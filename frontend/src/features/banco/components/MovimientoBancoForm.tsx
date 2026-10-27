@@ -4,6 +4,7 @@ import { Loader2, Plus, X, Pencil } from "lucide-react";
 import { useCrearMovimientoBanco } from "../hooks/useCrearMovimientoBanco";
 // 🔥 Asegurate de tener este hook creado para actualizar (te dejo el código más abajo)
 import { useEditarMovimientoBanco } from "../hooks/useEditarMovimientoBanco";
+import { hoyLocal } from "../../../utils/formatters";
 
 interface MovimientoBancoFormProps {
   clienteId: string;
@@ -12,7 +13,7 @@ interface MovimientoBancoFormProps {
 }
 
 export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: MovimientoBancoFormProps) {
-  const [fecha, setFecha] = useState("");
+  const [fecha, setFecha] = useState(hoyLocal);
   const [detalle, setDetalle] = useState("");
   const [tipoMovimiento, setTipoMovimiento] = useState(1);
   const [importe, setImporte] = useState("");
@@ -47,7 +48,7 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
   }, [movimientoAEditar]);
 
   const handleLimpiar = () => {
-    setFecha("");
+    setFecha(hoyLocal());
     setDetalle("");
     setTipoMovimiento(1);
     setImporte("");

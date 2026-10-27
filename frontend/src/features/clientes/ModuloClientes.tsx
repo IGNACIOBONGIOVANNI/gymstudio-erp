@@ -20,7 +20,7 @@ export default function ModuloClientes() {
   }, []);
 
   const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) return;
+    if (!window.confirm('¿Dar de baja este cliente?\n\nDeja de aparecer en las listas, pero sus facturas se conservan en los libros. Si lo volvés a cargar con el mismo CUIT, se reactiva.')) return;
 
     try {
       const res = await fetch(`/api/clientes/${id}`, {
@@ -28,7 +28,7 @@ export default function ModuloClientes() {
       });
       if (res.ok) {
         setClientes(clientes.filter(c => c.id !== id));
-        toast.success('Cliente eliminado exitosamente');
+        toast.success('Cliente dado de baja: sus facturas se conservan');
       } else {
         toast.error(await mensajeDeError(res, 'Error al eliminar el cliente'));
       }
@@ -61,8 +61,8 @@ export default function ModuloClientes() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="min-w-full divide-y divide-slate-200">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">ID</th>
@@ -88,7 +88,7 @@ export default function ModuloClientes() {
                     <button onClick={() => handleEditar(c)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-indigo-600" title="Editar">
                       <Edit2 className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleEliminar(c.id)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600" title="Eliminar">
+                    <button onClick={() => handleEliminar(c.id)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600" title="Dar de baja">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

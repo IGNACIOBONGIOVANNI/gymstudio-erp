@@ -20,7 +20,7 @@ export default function ModuloProveedores() {
   }, []);
 
   const handleEliminar = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este proveedor?')) return;
+    if (!window.confirm('¿Dar de baja este proveedor?\n\nDeja de aparecer en las listas, pero sus facturas se conservan en los libros. Si lo volvés a cargar con el mismo CUIT, se reactiva.')) return;
 
     try {
       const res = await fetch(`/api/proveedores/${id}`, {
@@ -28,7 +28,7 @@ export default function ModuloProveedores() {
       });
       if (res.ok) {
         setproveedores(proveedores.filter(c => c.id !== id));
-        toast.success('proveedor eliminado exitosamente');
+        toast.success('Proveedor dado de baja: sus facturas se conservan');
       } else {
         toast.error(await mensajeDeError(res, 'Error al eliminar el proveedor'));
       }
@@ -61,8 +61,8 @@ export default function ModuloProveedores() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="min-w-full divide-y divide-slate-200">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500">ID</th>
@@ -88,7 +88,7 @@ export default function ModuloProveedores() {
                     <button onClick={() => handleEditar(c)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-indigo-600" title="Editar">
                       <Edit2 className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleEliminar(c.id)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600" title="Eliminar">
+                    <button onClick={() => handleEliminar(c.id)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600" title="Dar de baja">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

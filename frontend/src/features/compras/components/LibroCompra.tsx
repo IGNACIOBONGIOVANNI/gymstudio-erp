@@ -13,6 +13,7 @@ import { ModalEditarFactura } from "../../ventas/components/ModalEditarFactura";
 import { formatearFechaLocal } from "../../../utils/formatters";
 import { generarFacturaPDF } from "../../../utils/generarFacturaPDF";
 import { formatearCuit } from "../../../utils/pdfComun";
+import { BotonPDF } from "../../../components/reportes/BotonPDF";
 
 const columnHelper = createColumnHelper<FacturaDto>();
 
@@ -48,7 +49,7 @@ export function LibroCompra() {
       cell: (info) => <span className="tabular-nums whitespace-nowrap">{info.getValue() || "s/n"}</span>,
     }),
     columnHelper.accessor("cliente", {
-      header: "Proveedor",
+      header: "Nombre",
       cell: (info) => info.getValue() || "-",
     }),
     columnHelper.accessor("cuit", {
@@ -247,6 +248,7 @@ export function LibroCompra() {
             )}
           </div>
         </div>
+        <BotonPDF tipo="compra" fecha={fechaFiltro} />
       </div>
 
       <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
@@ -258,7 +260,7 @@ export function LibroCompra() {
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="h-12 px-4 text-left align-middle font-medium text-slate-500"
+                      className="h-11 px-3 text-left align-middle font-medium text-slate-500 whitespace-nowrap"
                     >
                       {header.isPlaceholder
                         ? null
@@ -281,7 +283,7 @@ export function LibroCompra() {
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="p-4 align-middle text-slate-700">
+                      <td key={cell.id} className="px-3 py-2.5 align-middle text-slate-700">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -303,16 +305,16 @@ export function LibroCompra() {
             </tbody>
             <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-200">
               <tr>
-                <td colSpan={5} className="p-4 text-right text-slate-700">
-                  Totales:
+                <td colSpan={5} className="px-3 py-3 text-right text-slate-700">
+                  TOTALES
                 </td>
-                <td className="p-4 text-right text-slate-900 font-bold tabular-nums">
+                <td className="px-3 py-3 text-right text-slate-900 font-bold tabular-nums whitespace-nowrap">
                   {currencyFormatter.format(totales.neto)}
                 </td>
-                <td className="p-4 text-right text-slate-900 font-bold tabular-nums">
+                <td className="px-3 py-3 text-right text-slate-900 font-bold tabular-nums whitespace-nowrap">
                   {currencyFormatter.format(totales.iva)}
                 </td>
-                <td className="p-4 text-right text-slate-900 font-bold tabular-nums">
+                <td className="px-3 py-3 text-right text-slate-900 font-bold tabular-nums whitespace-nowrap">
                   {currencyFormatter.format(totales.total)}
                 </td>
                 <td colSpan={2}></td>

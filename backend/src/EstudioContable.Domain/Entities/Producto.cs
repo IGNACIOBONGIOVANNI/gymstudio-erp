@@ -73,5 +73,15 @@ namespace EstudioContable.Domain.Entities
 
             StockActual = nuevoStock;
         }
+
+        /// <summary>
+        /// Un producto dado de alta desde una compra no tiene precio de venta: lo toma
+        /// de su primera venta. Si ya tenía uno, no se modifica.
+        /// </summary>
+        public void CompletarPrecioVenta(decimal precio)
+        {
+            if (PrecioVenta == 0 && precio > 0)
+                PrecioVenta = precio;
+        }
     }
 }

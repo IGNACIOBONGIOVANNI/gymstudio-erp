@@ -166,6 +166,22 @@ public class FacturacionTests(ApiFixture api)
     }
 
     [Fact]
+    public async Task Un_cliente_dado_de_baja_se_reactiva_al_cargarlo_de_nuevo()
+    {
+        // La baja es lógica (sus facturas se conservan); volver a cargarlo con el mismo
+        // CUIT reactiva el mismo registro en lugar de crear un duplicado.
+        var jefe = await api.Jefe();
+        var datos = new { razonSocial = "Gimnasio Vecino SRL", direccion = "Calle 2", localidad = "Haedo", cuit = "30-71111111-1", condicionIva = "Responsable Inscripto" };
+        var id = (long)(await (await jefe.PostAsJsonAsync("/api/clientes", datos)).Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.DeleteAsync($"/api/clientes/{id}")).StatusCode);
+        var otraVez = await jefe.PostAsJsonAsync("/api/clientes", datos);
+
+        Assert.True(otraVez.IsSuccessStatusCode, await otraVez.Detalle());
+        Assert.Equal(id, (long)(await otraVez.Content.ReadFromJsonAsync<JsonObject>())!["id"]!);
+    }
+
+    [Fact]
     public async Task La_razon_social_se_completa_desde_el_cliente_elegido()
     {
         // Regresión: el formulario mandaba cliente vacío y ninguna factura se guardaba.

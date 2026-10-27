@@ -16,3 +16,10 @@ export function formatearFechaLocal(fechaDb: string | Date | null | undefined): 
   // Fallback de seguridad
   return new Date(dateStr).toLocaleDateString("es-AR");
 }
+
+/** Fecha de hoy en hora local como "aaaa-mm-dd" (para inputs de tipo date).
+ *  toISOString() usa UTC: después de las 21 h en Argentina devolvería el día siguiente. */
+export function hoyLocal(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
