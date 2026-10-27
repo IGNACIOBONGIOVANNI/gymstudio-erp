@@ -25,6 +25,29 @@ public class CuitTests
     [Fact]
     public void Formatear_agrega_los_guiones()
         => Assert.Equal("20-12345678-6", Cuit.Formatear(Cuit.Normalizar("20.12345678.6")));
+
+    [Theory]
+    [InlineData("45641666")]        // DNI de 8 dígitos
+    [InlineData("4.564.166")]       // DNI de 7 dígitos con puntos
+    [InlineData("20-12345678-6")]   // CUIT válido
+    public void Documento_valido_acepta_dni_o_cuit(string documento)
+        => Assert.True(Cuit.EsDocumentoValido(documento));
+
+    [Theory]
+    [InlineData("123456")]          // muy corto para DNI
+    [InlineData("123456789")]       // 9 dígitos: ni DNI ni CUIT
+    [InlineData("20-12345678-9")]   // CUIT con verificador incorrecto
+    [InlineData("")]
+    [InlineData(null)]
+    public void Documento_invalido_es_rechazado(string? documento)
+        => Assert.False(Cuit.EsDocumentoValido(documento));
+
+    [Fact]
+    public void Un_dni_se_guarda_sin_guiones_y_un_cuit_con_guiones()
+    {
+        Assert.Equal("45641666", Cuit.FormatearDocumento("45.641.666"));
+        Assert.Equal("20-12345678-6", Cuit.FormatearDocumento("20123456786"));
+    }
 }
 
 public class SocioTests

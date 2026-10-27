@@ -182,6 +182,19 @@ public class FacturacionTests(ApiFixture api)
     }
 
     [Fact]
+    public async Task Un_cliente_puede_cargarse_con_dni_en_lugar_de_cuit()
+    {
+        var jefe = await api.Jefe();
+        object Datos(string doc) => new { razonSocial = "Lionel Messi", direccion = "Balcarce 1828", localidad = "San Justo", cuit = doc, condicionIva = "Consumidor Final" };
+
+        var ok = await jefe.PostAsJsonAsync("/api/clientes", Datos("45.641.666"));
+        Assert.True(ok.IsSuccessStatusCode, await ok.Detalle());
+        Assert.Equal("45641666", (string)(await ok.Content.ReadFromJsonAsync<JsonObject>())!["cuit"]!);
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await jefe.PostAsJsonAsync("/api/clientes", Datos("123456"))).StatusCode);
+    }
+
+    [Fact]
     public async Task La_razon_social_se_completa_desde_el_cliente_elegido()
     {
         // Regresión: el formulario mandaba cliente vacío y ninguna factura se guardaba.

@@ -27,15 +27,15 @@ namespace EstudioContable.Application.Comercial
             var condicion = CondicionesIva.FirstOrDefault(c => string.Equals(c, CondicionIva?.Trim(), StringComparison.OrdinalIgnoreCase))
                 ?? throw new ArgumentException($"Condición frente al IVA inválida. Opciones: {string.Join(", ", CondicionesIva)}.");
 
-            if (!Domain.Cuit.EsValido(Cuit))
-                throw new ArgumentException("El CUIT no es válido: debe tener 11 dígitos y un dígito verificador correcto (ej. 20-12345678-6).");
+            if (!Domain.Cuit.EsDocumentoValido(Cuit))
+                throw new ArgumentException("El CUIT/DNI no es válido: un CUIT tiene 11 dígitos con dígito verificador correcto (ej. 20-12345678-6) y un DNI tiene 7 u 8 dígitos.");
 
             var direccion = (Direccion ?? string.Empty).Trim();
             var localidad = (Localidad ?? string.Empty).Trim();
             if (direccion.Length > 200 || localidad.Length > 100)
                 throw new ArgumentException("La dirección (máx. 200) o la localidad (máx. 100) son demasiado largas.");
 
-            return new DatosComercialesValidados(razonSocial, direccion, localidad, Domain.Cuit.Formatear(Domain.Cuit.Normalizar(Cuit)), condicion);
+            return new DatosComercialesValidados(razonSocial, direccion, localidad, Domain.Cuit.FormatearDocumento(Cuit), condicion);
         }
     }
 
