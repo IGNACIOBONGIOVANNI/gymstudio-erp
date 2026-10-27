@@ -100,6 +100,10 @@ namespace EstudioContable.API.Middlewares
             "23503" when pg.MessageText.StartsWith("update or delete")
                 => "No se puede eliminar porque hay otros registros que lo usan (facturas, movimientos o membresías).",
             "23503" => "Uno de los datos hace referencia a un registro que no existe (por ejemplo, una cuenta o un producto).",
+            "23505" when pg.ConstraintName == "UX_Facturas_NumeroVenta"
+                => "Otra venta tomó ese número de comprobante al mismo tiempo. Volvé a guardar.",
+            "23505" when pg.ConstraintName == "UX_Facturas_NumeroCompra"
+                => "Esa factura del proveedor ya está cargada.",
             "23505" => "Ya existe un registro con esos datos.",
             "23514" => $"Los datos no cumplen una regla de la base de datos ({pg.ConstraintName}).",
             _ => "La base de datos rechazó la operación."

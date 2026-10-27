@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { X, Loader2, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { generarReportePDF } from '../../utils/generarReportePDF';
+import { mensajeDeError } from '../../api/errores';
+
+const TODOS_LOS_LIBROS = ['diario', 'mayor', 'balance', 'venta', 'compra', 'caja', 'banco', 'stock'];
 
 interface Props {
   onClose: () => void;
@@ -15,117 +18,33 @@ export function ModalGenerarReporte({ onClose }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tipo) {
-      toast.error('Selecciona el tipo de libro');
+    if (desde && hasta && desde > hasta) {
+      toast.error('La fecha desde no puede ser posterior a la fecha hasta');
       return;
     }
 
+    const obtener = async (t: string) => {
+      const query = new URLSearchParams({ tipo: t });
+      if (desde) query.append('desde', desde);
+      if (hasta) query.append('hasta', hasta);
+      const res = await fetch(`/api/reportes/generar?${query.toString()}`);
+      if (!res.ok) throw new Error(await mensajeDeError(res, `No se pudo obtener el ${t}`));
+      return res.json();
+    };
+
     setIsSubmitting(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '';
-
-      const obtenerDatosDiario = async (filtroDesde?: string, filtroHasta?: string) => {
-        const queryParams = new URLSearchParams({ tipo: 'diario' });
-        if (filtroDesde) queryParams.append('desde', filtroDesde);
-        if (filtroHasta) queryParams.append('hasta', filtroHasta);
-
-        let asientosData: any[] = [];
-        try {
-          const res = await fetch(`${apiUrl}/api/reportes/generar?${queryParams.toString()}`);
-          if (res.ok) {
-            asientosData = await res.json();
-          }
-        } catch (e) {
-          console.error(e);
-        }
-
-        // Si el endpoint de reporte no trajo líneas completas, recurrimos a /api/asientos (el servicio completo de Libro Diario)
-        if (!asientosData || !asientosData.length || !asientosData[0]?.lineas || asientosData[0]?.lineas.length === 0) {
-          try {
-            const resAsientos = await fetch(`${apiUrl}/api/asientos`);
-            if (resAsientos.ok) {
-              let full = await resAsientos.json();
-              if (filtroDesde) full = full.filter((a: any) => a.fecha >= filtroDesde);
-              if (filtroHasta) full = full.filter((a: any) => a.fecha <= filtroHasta);
-              asientosData = full;
-            }
-          } catch (e) {
-            console.error(e);
-          }
-        }
-
-        return asientosData;
-      };
-
-      // 🔥 NUEVA LÓGICA: RECOPILAR TODOS LOS DATOS Y ARMAR UN SOLO PDF
       if (tipo === 'todos') {
-        const todosLosTipos = ['diario', 'mayor', 'balance', 'venta', 'compra', 'caja', 'banco'];
-        toast.loading('Recopilando datos de todos los reportes...', { id: 'lote-toast' });
-
-        const todosLosDatos = [];
-        let exitoCount = 0;
-
-        for (const t of todosLosTipos) {
-          if (t === 'diario') {
-            const datosDiario = await obtenerDatosDiario(desde, hasta);
-            todosLosDatos.push({ tipo: t, datos: datosDiario });
-            exitoCount++;
-            continue;
-          }
-
-          const queryParams = new URLSearchParams({ tipo: t });
-          if (desde) queryParams.append('desde', desde);
-          if (hasta) queryParams.append('hasta', hasta);
-
-          const response = await fetch(`${apiUrl}/api/reportes/generar?${queryParams.toString()}`);
-          if (response.ok) {
-            const datos = await response.json();
-            // Guardamos el tipo de libro junto con sus datos
-            todosLosDatos.push({ tipo: t, datos: datos });
-            exitoCount++;
-          }
-        }
-
-        toast.dismiss('lote-toast');
-
-        if (exitoCount > 0) {
-          // Mandamos el mega-array al generador de PDF
-          generarReportePDF(todosLosDatos, 'todos', desde, hasta);
-          toast.success('Reporte consolidado generado exitosamente');
-          onClose();
-        } else {
-          toast.error('Error al generar los reportes en lote');
-        }
-
+        const todos = [];
+        for (const t of TODOS_LOS_LIBROS) todos.push({ tipo: t, datos: await obtener(t) });
+        generarReportePDF(todos, 'todos', desde, hasta);
       } else {
-        // Lógica individual original
-        if (tipo === 'diario') {
-          const datos = await obtenerDatosDiario(desde, hasta);
-          generarReportePDF(datos, tipo, desde, hasta);
-          toast.success('Reporte generado exitosamente');
-          onClose();
-        } else {
-          const queryParams = new URLSearchParams({ tipo });
-          if (desde) queryParams.append('desde', desde);
-          if (hasta) queryParams.append('hasta', hasta);
-
-          const response = await fetch(`${apiUrl}/api/reportes/generar?${queryParams.toString()}`);
-
-          if (response.ok) {
-            const datos = await response.json();
-            generarReportePDF(datos, tipo, desde, hasta);
-            toast.success('Reporte generado exitosamente');
-            onClose();
-          } else {
-            const errorData = await response.json().catch(() => ({}));
-            toast.error(errorData.detail || errorData.Mensaje || 'Error al generar el reporte');
-          }
-        }
+        generarReportePDF(await obtener(tipo), tipo, desde, hasta);
       }
+      toast.success('Reporte generado');
+      onClose();
     } catch (error) {
-      toast.dismiss('lote-toast');
-      toast.error('Ocurrió un problema de red');
-      console.error(error);
+      toast.error(error instanceof Error ? error.message : 'No se pudo generar el reporte');
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +57,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
         {/* Header */}
         <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+            <div className="p-2 bg-white/10 rounded-lg text-white">
               <FileText className="w-5 h-5" />
             </div>
             <h3 className="text-lg font-bold text-white">Generar Reporte (PDF)</h3>
@@ -164,15 +83,15 @@ export function ModalGenerarReporte({ onClose }: Props) {
                 className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-shadow"
                 required
               >
-                {/* 🔥 NUEVA OPCIÓN AGREGADA */}
-                <option value="todos" className="font-bold text-indigo-600">* TODOS LOS REPORTES</option>
+                <option value="todos">Todos los libros (un solo PDF)</option>
                 <option value="diario">Libro Diario</option>
                 <option value="mayor">Libro Mayor</option>
-                <option value="balance">Balance General</option>
-                <option value="venta">Libro de Ventas</option>
-                <option value="compra">Libro de Compras</option>
+                <option value="balance">Balance de Sumas y Saldos</option>
+                <option value="venta">Libro IVA Ventas</option>
+                <option value="compra">Libro IVA Compras</option>
                 <option value="caja">Libro Caja</option>
                 <option value="banco">Libro Banco</option>
+                <option value="stock">Libro Stock</option>
               </select>
             </div>
 

@@ -15,5 +15,9 @@ namespace EstudioContable.Domain.Entities
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
         public decimal Subtotal { get; set; }
+
+        // Sólo en compras: si el ítem no es un producto existente, se da de alta en el
+        // inventario con el nombre de la descripción. No se guarda en la base.
+        public bool AgregarAlInventario { get; set; }
     }
 }

@@ -30,7 +30,7 @@ namespace EstudioContable.Application.Services
     /// <summary>
     /// Movimientos manuales de Caja y Banco. Cada uno genera su asiento (Caja/Banco contra
     /// la cuenta de contrapartida elegida), así el Libro Caja coincide siempre con el
-    /// Mayor y el Balance. Editar o eliminar registra un contraasiento, igual que con las
+    /// Mayor y el Balance. Editar o eliminar anula su asiento, igual que con las
     /// facturas. Los movimientos que generó una factura sólo se corrigen desde la factura.
     /// </summary>
     public class TesoreriaService : ITesoreriaService
@@ -124,7 +124,7 @@ namespace EstudioContable.Application.Services
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 if (movimiento.AsientoContableId is long asientoId)
-                    await OperacionesContables.RevertirAsientoAsync(_context, asientoId, cancellationToken);
+                    await OperacionesContables.AnularAsientoAsync(_context, asientoId, cancellationToken);
 
                 movimiento.ActualizarDatos(datos.Fecha, datos.Detalle, datos.EsIngreso, datos.Importe);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -142,7 +142,7 @@ namespace EstudioContable.Application.Services
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 if (movimiento.AsientoContableId is long asientoId)
-                    await OperacionesContables.RevertirAsientoAsync(_context, asientoId, cancellationToken);
+                    await OperacionesContables.AnularAsientoAsync(_context, asientoId, cancellationToken);
 
                 Quitar(movimiento);
                 if (contraparte != null)

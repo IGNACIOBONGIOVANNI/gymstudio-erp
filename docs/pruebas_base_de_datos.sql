@@ -176,6 +176,33 @@ BEGIN
     END IF;
 END $$;
 
+-- 12. Dos ventas no pueden tener el mismo número de comprobante (índice único parcial)
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO contabilidad."Facturas" ("Fecha", "TipoOperacion", "CondicionPago", "TipoComprobante", "Cliente",
+                                             "Subtotal", "Iva", "Total", "Anulada", "PuntoVenta", "NumeroComprobante")
+        VALUES (now(), 'Venta', 'ContadoCaja', 'B', 'Prueba', 100, 0, 100, false, 9999, 1),
+               (now(), 'Venta', 'ContadoCaja', 'B', 'Prueba', 100, 0, 100, false, 9999, 1);
+        RAISE NOTICE 'FALLA 12: se aceptaron dos ventas B 9999-00000001';
+    EXCEPTION WHEN unique_violation THEN
+        RAISE NOTICE 'OK 12: número de venta repetido rechazado -> %', SQLERRM;
+    END;
+END $$;
+
+-- 13. El número de comprobante tiene que estar en el rango de AFIP (CHECK)
+DO $$
+BEGIN
+    BEGIN
+        INSERT INTO contabilidad."Facturas" ("Fecha", "TipoOperacion", "CondicionPago", "TipoComprobante", "Cliente",
+                                             "Subtotal", "Iva", "Total", "Anulada", "PuntoVenta", "NumeroComprobante")
+        VALUES (now(), 'Compra', 'ContadoCaja', 'A', 'Prueba', 100, 0, 100, false, 1, 123456789);
+        RAISE NOTICE 'FALLA 13: se aceptó un número de comprobante de 9 dígitos';
+    EXCEPTION WHEN check_violation THEN
+        RAISE NOTICE 'OK 13: número fuera de rango rechazado -> %', SQLERRM;
+    END;
+END $$;
+
 -- Consultas de ejemplo para mostrar en la defensa
 SELECT codigo, nombre, total_debe, total_haber, saldo FROM contabilidad.v_libro_mayor WHERE cliente_id = 1 ORDER BY codigo;
 SELECT codigo, nombre, naturaleza, total_debe, total_haber, saldo_natural FROM contabilidad.fn_sumas_y_saldos(1) WHERE saldo_natural <> 0;

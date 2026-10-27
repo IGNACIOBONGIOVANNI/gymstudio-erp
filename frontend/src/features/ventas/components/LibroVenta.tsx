@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Loader2, Pencil, Ban, Search } from "lucide-react";
+import { Loader2, Pencil, Ban, Search, FileText } from "lucide-react";
 import {
   createColumnHelper,
   flexRender,
@@ -11,6 +11,8 @@ import type { FacturaDto } from "../../../api/facturacionApi";
 import { useAnularFactura } from "../hooks/useAnularFactura";
 import { ModalEditarFactura } from "./ModalEditarFactura";
 import { formatearFechaLocal } from "../../../utils/formatters";
+import { generarFacturaPDF } from "../../../utils/generarFacturaPDF";
+import { formatearCuit } from "../../../utils/pdfComun";
 
 const columnHelper = createColumnHelper<FacturaDto>();
 
@@ -47,15 +49,15 @@ export function LibroVenta({ }: LibroVentaProps) {
     }),
     columnHelper.accessor("numeroFactura", {
       header: "N° de Fact.",
-      cell: (info) => info.getValue() || "-", 
+      cell: (info) => <span className="tabular-nums whitespace-nowrap">{info.getValue() || "s/n"}</span>,
     }),
     columnHelper.accessor("cliente", {
       header: "Nombre",
-      cell: (info) => info.getValue() || "-", 
+      cell: (info) => info.getValue() || "-",
     }),
     columnHelper.accessor("cuit", {
       header: "CUIT",
-      cell: (info) => info.getValue() || "-", 
+      cell: (info) => <span className="tabular-nums whitespace-nowrap">{formatearCuit(info.getValue()) || "-"}</span>,
     }),
     columnHelper.accessor("subtotal", {
       header: () => <div className="text-right">Neto</div>,
@@ -99,7 +101,7 @@ export function LibroVenta({ }: LibroVentaProps) {
         const val = info.getValue();
         let colorClass = "bg-slate-100 text-slate-700 border-slate-200";
         let text = val ? "Cuenta Corriente" : "-";
-        
+
         if (val === "ContadoCaja") {
           colorClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
           text = "Contado (Caja)";
@@ -107,7 +109,7 @@ export function LibroVenta({ }: LibroVentaProps) {
           colorClass = "bg-blue-50 text-blue-700 border-blue-200";
           text = "Transferencia (Banco)";
         }
-  
+
         return (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${colorClass}`}>
             {text}
@@ -119,13 +121,35 @@ export function LibroVenta({ }: LibroVentaProps) {
       id: "acciones",
       header: () => <div className="text-center">Acciones</div>,
       cell: (info) => info.row.original.anulada ? (
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center gap-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-50 text-red-700 border-red-200">
             Anulada
           </span>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              generarFacturaPDF(info.row.original as any);
+            }}
+            className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+            title="Ver o imprimir la factura en PDF"
+          >
+            <FileText className="h-4 w-4" />
+          </button>
         </div>
       ) : (
         <div className="flex justify-center items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              generarFacturaPDF(info.row.original as any);
+            }}
+            className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+            title="Ver o imprimir la factura en PDF"
+          >
+            <FileText className="h-4 w-4" />
+          </button>
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -155,7 +179,7 @@ export function LibroVenta({ }: LibroVentaProps) {
   ], [anularFactura]);
 
   const { data: facturas, isLoading, isError, error } = useObtenerFacturas();
-  
+
   const facturasFiltradas = useMemo(() => {
     let list = facturas?.filter(f => f.tipoOperacion === "Venta") || [];
     if (fechaFiltro) {
@@ -211,7 +235,7 @@ export function LibroVenta({ }: LibroVentaProps) {
             Filtrar por fecha:
           </label>
           <div className="flex items-center gap-2">
-            <input 
+            <input
               id="fechaFiltroVenta"
               type="date"
               value={fechaFiltro}
@@ -219,7 +243,7 @@ export function LibroVenta({ }: LibroVentaProps) {
               className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {fechaFiltro && (
-              <button 
+              <button
                 onClick={() => setFechaFiltro("")}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
               >
@@ -258,7 +282,7 @@ export function LibroVenta({ }: LibroVentaProps) {
                   <tr
                     key={row.id}
                     className={`border-b border-slate-100 hover:bg-slate-50/80 transition-colors duration-150 ${
-                      row.original.anulada ? "text-slate-400 line-through decoration-slate-300 bg-slate-50/50" : ""
+                      row.original.anulada ? "*:text-slate-400 *:line-through *:decoration-slate-400 bg-slate-50/50" : ""
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -302,7 +326,7 @@ export function LibroVenta({ }: LibroVentaProps) {
           </table>
         </div>
       </div>
-      
+
       {facturaAAnular !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity">
           <div className="w-[95%] max-w-md mx-auto rounded-xl bg-white p-6 shadow-xl">
@@ -313,7 +337,7 @@ export function LibroVenta({ }: LibroVentaProps) {
               Anular comprobante
             </h3>
             <p className="mt-2 text-center text-sm text-slate-500">
-              ¿Querés anular esta factura? Queda registrada como anulada y se generan un contraasiento y los movimientos inversos de caja/banco y stock. Esta acción no se puede deshacer.
+              ¿Querés anular esta factura? Queda registrada como anulada, su asiento se anula y se registran los movimientos inversos de caja/banco y stock. Esta acción no se puede deshacer.
             </p>
             <div className="mt-6 flex justify-center space-x-3">
               <button
@@ -335,12 +359,12 @@ export function LibroVenta({ }: LibroVentaProps) {
           </div>
         </div>
       )}
-    
+
       {/* Acá se renderiza el modal cuando facturaAEditar tiene datos */}
       {facturaAEditar && (
-        <ModalEditarFactura 
-          factura={facturaAEditar} 
-          onClose={() => setFacturaAEditar(null)} 
+        <ModalEditarFactura
+          factura={facturaAEditar}
+          onClose={() => setFacturaAEditar(null)}
         />
       )}
     </div>

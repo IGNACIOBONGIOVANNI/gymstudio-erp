@@ -1,6 +1,7 @@
 import { mensajeDeError } from '../../../api/errores';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { avisarSiCajaNegativa } from "../../../api/avisoCaja";
 
 // Tipamos lo que va a recibir (el id y los datos)
 interface EditarMovimientoCajaCommand {
@@ -34,6 +35,7 @@ export function useEditarMovimientoCaja() {
       queryClient.invalidateQueries({ queryKey: ['asientos'] });
       queryClient.invalidateQueries({ queryKey: ['mayor'] });
       toast.success('Movimiento actualizado exitosamente');
+      void avisarSiCajaNegativa();
     },
     onError: (error: any) => {
       toast.error(error?.message || 'Error al actualizar el movimiento');

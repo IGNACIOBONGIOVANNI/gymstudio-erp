@@ -36,6 +36,7 @@ namespace EstudioContable.Application.Services
 
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
+                await AsignarOValidarNumeroAsync(factura, idExcluido: null, cancellationToken);
                 _context.Facturas.Add(factura);
                 await _context.SaveChangesAsync(cancellationToken); // genera factura.Id
 
@@ -76,8 +77,19 @@ namespace EstudioContable.Application.Services
                 factura.Fecha = datosNuevos.Fecha;
                 factura.TipoOperacion = datosNuevos.TipoOperacion;
                 factura.CondicionPago = datosNuevos.CondicionPago;
+                // Una venta conserva su número salvo que cambie el tipo de comprobante;
+                // una compra toma el número que se haya corregido.
+                var cambiaNumeracion = datosNuevos.TipoOperacion == Compra
+                    || factura.TipoOperacion != datosNuevos.TipoOperacion
+                    || factura.TipoComprobante != datosNuevos.TipoComprobante;
                 factura.TipoComprobante = datosNuevos.TipoComprobante;
                 factura.Cliente = datosNuevos.Cliente;
+                if (cambiaNumeracion)
+                {
+                    factura.PuntoVenta = datosNuevos.PuntoVenta;
+                    factura.NumeroComprobante = datosNuevos.NumeroComprobante;
+                    await AsignarOValidarNumeroAsync(factura, idExcluido: factura.Id, cancellationToken);
+                }
                 factura.Subtotal = datosNuevos.Subtotal;
                 factura.Iva = datosNuevos.Iva;
                 factura.Total = datosNuevos.Total;
@@ -98,8 +110,11 @@ namespace EstudioContable.Application.Services
         /// </summary>
         private async Task AplicarEfectosAsync(Factura factura, CancellationToken cancellationToken)
         {
+            await VincularProductosAsync(factura, cancellationToken);
+
             var esVenta = factura.TipoOperacion == Venta;
-            var detalle = $"Factura de {factura.TipoOperacion} N° {factura.Id} - {factura.Cliente}";
+            // El asiento lleva el número del comprobante para cruzarlo con el Libro IVA.
+            var detalle = $"{factura.TipoOperacion} - Factura {factura.TipoComprobante} {factura.NumeroFormateado ?? $"N° {factura.Id}"} - {factura.Cliente}";
 
             // 1. Asiento de partida doble
             var asiento = new AsientoContable(
@@ -146,21 +161,16 @@ namespace EstudioContable.Application.Services
         }
 
         /// <summary>
-        /// Deshace los efectos del estado actual de la factura generando movimientos
-        /// inversos (nunca borrando): contraasiento, movimiento de tesorería opuesto
-        /// y devolución de stock.
+        /// Deshace los efectos del estado actual de la factura: anula su asiento,
+        /// registra el movimiento de tesorería opuesto y devuelve el stock.
         /// </summary>
         private async Task RevertirEfectosAsync(Factura factura, string motivo, CancellationToken cancellationToken)
         {
             var esVenta = factura.TipoOperacion == Venta;
 
-            // 1. Contraasiento del asiento vigente
+            // 1. El asiento vigente pasa a Anulado (la factura anulada sigue apuntándolo).
             if (factura.AsientoContableId is long asientoId)
-            {
-                await OperacionesContables.RevertirAsientoAsync(_context, asientoId, cancellationToken);
-                // AsientoContableId se conserva: la factura anulada sigue apuntando
-                // a su asiento original, y el contraasiento apunta a ese mismo asiento.
-            }
+                await OperacionesContables.AnularAsientoAsync(_context, asientoId, cancellationToken);
 
             // 2. Tesorería y 3. stock, en sentido opuesto al original y con fecha
             // de hoy (la devolución de fondos/mercadería ocurre al anular).
@@ -186,6 +196,31 @@ namespace EstudioContable.Application.Services
                 _context.MovimientosBanco.Add(new MovimientoBanco(clienteId, fecha, detalle, tipo, factura.Total, factura.Id));
             }
             // Cuenta corriente: no hay movimiento de fondos.
+        }
+
+        /// <summary>
+        /// Un ítem sin producto elegido se vincula al producto del inventario con ese
+        /// mismo nombre (sin distinguir mayúsculas). En una compra, si no existe y se
+        /// pidió, se da de alta: así la mercadería comprada entra al Libro Stock.
+        /// </summary>
+        private async Task VincularProductosAsync(Factura factura, CancellationToken cancellationToken)
+        {
+            foreach (var item in factura.Items.Where(i => i.ProductoId is null or 0))
+            {
+                var nombre = item.Descripcion.Trim();
+                var nombreBuscado = nombre.ToLower();
+                var existente = await _context.Productos
+                    .FirstOrDefaultAsync(p => p.Nombre.Trim().ToLower() == nombreBuscado, cancellationToken);
+
+                if (existente == null && factura.TipoOperacion == Compra && item.AgregarAlInventario)
+                {
+                    existente = new Producto(nombre, item.PrecioUnitario, precioVenta: 0);
+                    _context.Productos.Add(existente);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                item.ProductoId = existente?.Id;
+            }
         }
 
         private async Task RegistrarMovimientosStockAsync(Factura factura, bool esSalida, string detalle, DateTime fecha, CancellationToken cancellationToken)
@@ -254,6 +289,8 @@ namespace EstudioContable.Application.Services
 
             if (factura.Iva < 0)
                 throw new ArgumentException("El IVA no puede ser negativo.");
+            if (factura.TipoComprobante == "C" && factura.Iva != 0)
+                throw new ArgumentException("La factura C no discrimina IVA: el IVA debe ser 0.");
 
             if (Math.Abs(factura.Subtotal + factura.Iva - factura.Total) > 0.01m)
                 throw new ArgumentException($"El total ({factura.Total:N2}) no coincide con subtotal + IVA ({factura.Subtotal + factura.Iva:N2}).");
@@ -266,6 +303,52 @@ namespace EstudioContable.Application.Services
                 throw new ArgumentException("El total de la factura debe ser mayor a cero.");
             if (factura.Total > ImporteMaximo)
                 throw new ArgumentException("El total de la factura es demasiado grande.");
+        }
+
+        /// <summary>
+        /// Ventas: si no viene número, se asigna el siguiente correlativo del tipo y punto
+        /// de venta. Compras: el número de la factura del proveedor es obligatorio y no
+        /// puede cargarse dos veces la misma factura del mismo proveedor.
+        /// </summary>
+        private async Task AsignarOValidarNumeroAsync(Factura factura, long? idExcluido, CancellationToken cancellationToken)
+        {
+            if (factura.PuntoVenta is < 1 or > 99999)
+                throw new ArgumentException("El punto de venta debe ser un número entre 1 y 99999.");
+            if (factura.NumeroComprobante is < 1 or > 99999999)
+                throw new ArgumentException("El número de comprobante debe ser un número entre 1 y 99999999.");
+
+            if (factura.TipoOperacion == Venta)
+            {
+                factura.PuntoVenta ??= 1;
+                if (factura.NumeroComprobante == null)
+                {
+                    var ultimo = await _context.Facturas
+                        .Where(f => f.TipoOperacion == Venta && f.TipoComprobante == factura.TipoComprobante
+                                    && f.PuntoVenta == factura.PuntoVenta && f.Id != idExcluido)
+                        .MaxAsync(f => f.NumeroComprobante, cancellationToken);
+                    factura.NumeroComprobante = (ultimo ?? 0) + 1;
+                    return;
+                }
+
+                var repetida = await _context.Facturas.AnyAsync(f =>
+                    f.TipoOperacion == Venta && f.TipoComprobante == factura.TipoComprobante && f.PuntoVenta == factura.PuntoVenta
+                    && f.NumeroComprobante == factura.NumeroComprobante && f.Id != idExcluido, cancellationToken);
+                if (repetida)
+                    throw new InvalidOperationException($"Ya existe la factura de venta {factura.TipoComprobante} {factura.NumeroFormateado}.");
+                return;
+            }
+
+            if (factura.PuntoVenta == null || factura.NumeroComprobante == null)
+                throw new ArgumentException("Indicá el punto de venta y el número de la factura del proveedor (ej. 0003-00001234).");
+
+            var duplicada = await _context.Facturas.AnyAsync(f =>
+                f.TipoOperacion == Compra && !f.Anulada && f.Id != idExcluido
+                && f.TipoComprobante == factura.TipoComprobante && f.PuntoVenta == factura.PuntoVenta
+                && f.NumeroComprobante == factura.NumeroComprobante
+                && (factura.ProveedorId != null ? f.ProveedorId == factura.ProveedorId : f.Cliente == factura.Cliente), cancellationToken);
+            if (duplicada)
+                throw new InvalidOperationException(
+                    $"La factura {factura.TipoComprobante} {factura.NumeroFormateado} de {factura.Cliente} ya está cargada.");
         }
 
         private async Task<Factura> CargarFacturaAsync(long facturaId, CancellationToken cancellationToken)

@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useCrearFactura } from "../hooks/useCrearFactura";
 import { useProductos } from "../../../hooks/useProductos";
+import { obtenerConfiguracion } from "../../configuracion/configuracionStorage";
 
 interface FacturaItem {
   id: string;
@@ -10,9 +11,17 @@ interface FacturaItem {
   descripcion: string;
   cantidad: number;
   precioUnitario: number;
+  agregarAlInventario: boolean;
 }
 
+// "Martillo", "martillo " y "MARTILLO" son el mismo producto.
+const normalizar = (texto: string) => texto.trim().toLocaleLowerCase("es");
+
 const generarId = () => Math.random().toString(36).substr(2, 9);
+
+// La alícuota sugerida sale de la Configuración (21 % si no se cambió).
+const IVA_POR_DEFECTO = () => Number(obtenerConfiguracion().alicuotaIvaDefecto) || 21;
+const PUNTO_VENTA_PROPIO = () => Math.max(1, parseInt(obtenerConfiguracion().puntoVenta, 10) || 1);
 
 const ITEM_VACIO = (): FacturaItem => ({
   id: generarId(),
@@ -20,24 +29,28 @@ const ITEM_VACIO = (): FacturaItem => ({
   descripcion: "",
   cantidad: 1,
   precioUnitario: 0,
+  agregarAlInventario: true,
 });
 
 export function Facturacion() {
   const [tipoOperacion, setTipoOperacion] = useState<'Venta' | 'Compra'>('Venta');
   const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
   const [tipoComprobante, setTipoComprobante] = useState("A");
-  
+
   // ESTADOS DE CLIENTES Y PROVEEDORES
   const [clienteId, setClienteId] = useState<number | "">("");
   const [clientes, setClientes] = useState<any[]>([]);
   const [proveedorId, setProveedorId] = useState<number | "">("");
   const [proveedores, setProveedores] = useState<any[]>([]);
-  
+
   // ESTADOS NUEVOS
   const [condicionPago, setCondicionPago] = useState("ContadoCaja");
-  const [porcentajeIva, setPorcentajeIva] = useState<number>(21);
+  const [porcentajeIva, setPorcentajeIva] = useState<number>(IVA_POR_DEFECTO);
+  // Número de la factura del proveedor (sólo compras; las ventas se numeran solas).
+  const [puntoVentaCompra, setPuntoVentaCompra] = useState("");
+  const [numeroCompra, setNumeroCompra] = useState("");
   const [items, setItems] = useState<FacturaItem[]>([ITEM_VACIO()]);
-  
+
   const crearFacturaMutation = useCrearFactura();
   const enviando = crearFacturaMutation.isPending;
   const { data: productos = [], isLoading: cargandoProductos } = useProductos();
@@ -48,7 +61,7 @@ export function Facturacion() {
       .then(res => res.json())
       .then(data => setClientes(data))
       .catch(err => console.error(err));
-      
+
     fetch('/api/proveedores')
       .then(res => res.json())
       .then(data => setProveedores(data))
@@ -60,28 +73,31 @@ export function Facturacion() {
     if (tipoOperacion === 'Venta' && clienteId !== "") {
       const clienteObj = clientes.find(c => c.id === clienteId);
       const condicion = (clienteObj?.condicionIva || clienteObj?.condicionIVA || "").toLowerCase();
-      
+
       if (condicion.includes("inscripto") || condicion.includes("monotributo")) {
-        setTipoComprobante("A");
-        setPorcentajeIva(21); // Vuelve a 21% por defecto para Factura A
+        cambiarTipoComprobante("A");
       } else {
-        setTipoComprobante("B");
-        setPorcentajeIva(21); // Factura B discrimina internamente el IVA
+        cambiarTipoComprobante("B");
       }
-    } 
+    }
     else if (tipoOperacion === 'Compra' && proveedorId !== "") {
       const provObj = proveedores.find(p => p.id === proveedorId);
       const condicion = (provObj?.condicionIva || provObj?.condicionIVA || "").toLowerCase();
-      
+
       if (condicion.includes("inscripto")) {
-        setTipoComprobante("A");
-        setPorcentajeIva(21);
+        cambiarTipoComprobante("A");
       } else {
-        setTipoComprobante("C");
-        setPorcentajeIva(0); // La factura C no discrimina IVA
+        cambiarTipoComprobante("C");
       }
     }
   }, [tipoOperacion, clienteId, proveedorId, clientes, proveedores]);
+
+  // La factura C no discrimina IVA; al volver a A o B se repone la alícuota sugerida.
+  function cambiarTipoComprobante(tipo: string) {
+    setTipoComprobante(tipo);
+    if (tipo === "C") setPorcentajeIva(0);
+    else setPorcentajeIva(actual => (actual === 0 ? IVA_POR_DEFECTO() : actual));
+  }
 
   const handleAgregarItem = () => {
     setItems([...items, ITEM_VACIO()]);
@@ -97,12 +113,14 @@ export function Facturacion() {
     setItems(items.map((item) => {
       if (item.id === id) {
         if (field === "descripcion") {
-          const prod = productos.find(p => p.nombre === value);
-          return { 
-            ...item, 
-            descripcion: value as string, 
+          const prod = productos.find(p => normalizar(p.nombre) === normalizar(String(value)));
+          const precioSugerido = prod ? (tipoOperacion === 'Venta' ? prod.precioVenta : prod.precioUnitario) : 0;
+          return {
+            ...item,
+            descripcion: value as string,
             productoId: prod ? prod.id : 0,
-            precioUnitario: prod ? (tipoOperacion === 'Venta' ? prod.precioVenta : prod.precioUnitario) : item.precioUnitario 
+            // Si el producto no tiene precio cargado se respeta el que se escribió.
+            precioUnitario: precioSugerido > 0 ? precioSugerido : item.precioUnitario
           };
         }
         return { ...item, [field]: value };
@@ -117,8 +135,10 @@ export function Facturacion() {
     setTipoComprobante("A");
     setClienteId("");
     setProveedorId("");
-    setCondicionPago("ContadoCaja"); 
-    setPorcentajeIva(21);
+    setCondicionPago("ContadoCaja");
+    setPorcentajeIva(IVA_POR_DEFECTO());
+    setPuntoVentaCompra("");
+    setNumeroCompra("");
     setItems([ITEM_VACIO()]);
   };
 
@@ -145,23 +165,32 @@ export function Facturacion() {
     if (!tercero)
       return void toast.error(tipoOperacion === 'Venta' ? "Seleccioná el cliente" : "Seleccioná el proveedor");
 
+    const puntoVentaNum = Number(puntoVentaCompra);
+    const numeroNum = Number(numeroCompra);
+    if (tipoOperacion === 'Compra' && !(Number.isInteger(puntoVentaNum) && puntoVentaNum >= 1 && puntoVentaNum <= 99999
+        && Number.isInteger(numeroNum) && numeroNum >= 1 && numeroNum <= 99999999))
+      return void toast.error("Cargá el número de la factura del proveedor: punto de venta (1 a 99999) y número (1 a 99999999)");
+
     const subtotalItems = itemsCargados.reduce((acc, i) => acc + Number(i.cantidad) * Number(i.precioUnitario), 0);
-    const ivaItems = (tipoComprobante === "A" || tipoComprobante === "B") ? subtotalItems * (porcentajeIva / 100) : 0;
+    const ivaItems = (tipoComprobante === "A" || tipoComprobante === "B") ? Math.round(subtotalItems * porcentajeIva) / 100 : 0;
 
     const payload = {
-      fecha: new Date(fecha).toISOString(), 
+      fecha: new Date(fecha).toISOString(),
       tipoOperacion,
       tipoComprobante,
       cliente: tercero.razonSocial,
       clienteId: tipoOperacion === 'Venta' ? (clienteId === "" ? null : Number(clienteId)) : null,
       proveedorId: tipoOperacion === 'Compra' ? (proveedorId === "" ? null : Number(proveedorId)) : null,
       condicionPago,
+      puntoVenta: tipoOperacion === 'Compra' ? puntoVentaNum : PUNTO_VENTA_PROPIO(),
+      numeroComprobante: tipoOperacion === 'Compra' ? numeroNum : null,
       subtotal: Number(subtotalItems),
       iva: Number(ivaItems),
       total: Number(subtotalItems + ivaItems),
       items: itemsCargados.map(item => ({
         productoId: item.productoId,
-        descripcion: item.descripcion,
+        agregarAlInventario: tipoOperacion === 'Compra' && !item.productoId && item.agregarAlInventario,
+        descripcion: item.descripcion.trim(),
         cantidad: Number(item.cantidad),
         precioUnitario: Number(item.precioUnitario),
         subtotal: Number(item.cantidad) * Number(item.precioUnitario)
@@ -183,7 +212,7 @@ export function Facturacion() {
   return (
     <form onSubmit={handleSubmit} className="mx-auto flex max-w-5xl flex-col gap-6">
       <header className="flex flex-col gap-1">
-        
+
         <p className="text-sm text-slate-500">
           Cargá los detalles del comprobante y los ítems a facturar.
         </p>
@@ -230,12 +259,13 @@ export function Facturacion() {
           <label htmlFor="tipoComprobante" className="mb-1 block text-sm font-medium text-slate-700">
             Tipo
           </label>
+          {/* Se sugiere según la condición de IVA del cliente o proveedor, pero se puede cambiar. */}
           <select
             id="tipoComprobante"
-            disabled={true} // 🔥 BLOQUEADO: Lo maneja el sistema automáticamente
+            disabled={enviando}
             value={tipoComprobante}
-            onChange={(e) => setTipoComprobante(e.target.value)}
-            className="w-full rounded-md border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 cursor-not-allowed focus:outline-none"
+            onChange={(e) => cambiarTipoComprobante(e.target.value)}
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
           >
             <option value="A">Factura A</option>
             <option value="B">Factura B</option>
@@ -247,17 +277,17 @@ export function Facturacion() {
           {tipoOperacion === 'Venta' ? (
             <>
               <label htmlFor="cliente" className="mb-1 block text-sm font-medium text-slate-700">Cliente</label>
-              <select id="cliente" disabled={enviando} value={clienteId} onChange={(e) => setClienteId(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"> 
-                <option value="" disabled>Seleccione un cliente...</option> 
-                {clientes.map(c => ( <option key={c.id} value={c.id}>{c.razonSocial}</option> ))} 
+              <select id="cliente" disabled={enviando} value={clienteId} onChange={(e) => setClienteId(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50">
+                <option value="" disabled>Seleccione un cliente...</option>
+                {clientes.map(c => ( <option key={c.id} value={c.id}>{c.razonSocial}</option> ))}
               </select>
             </>
           ) : (
             <>
               <label htmlFor="proveedor" className="mb-1 block text-sm font-medium text-slate-700">Proveedor</label>
-              <select id="proveedor" disabled={enviando} value={proveedorId} onChange={(e) => setProveedorId(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"> 
-                <option value="" disabled>Seleccione un proveedor...</option> 
-                {proveedores.map(p => ( <option key={p.id} value={p.id}>{p.razonSocial}</option> ))} 
+              <select id="proveedor" disabled={enviando} value={proveedorId} onChange={(e) => setProveedorId(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50">
+                <option value="" disabled>Seleccione un proveedor...</option>
+                {proveedores.map(p => ( <option key={p.id} value={p.id}>{p.razonSocial}</option> ))}
               </select>
             </>
           )}
@@ -281,6 +311,48 @@ export function Facturacion() {
         </div>
       </div>
 
+      {tipoOperacion === 'Compra' ? (
+        <fieldset className="flex flex-wrap items-end gap-3">
+          <legend className="mb-1 text-sm font-medium text-slate-700">Número de la factura del proveedor</legend>
+          <div>
+            <label htmlFor="puntoVentaCompra" className="mb-1 block text-xs text-slate-500">Punto de venta</label>
+            <input
+              id="puntoVentaCompra"
+              inputMode="numeric"
+              placeholder="0003"
+              maxLength={5}
+              disabled={enviando}
+              value={puntoVentaCompra}
+              onChange={(e) => setPuntoVentaCompra(e.target.value.replace(/\D/g, ""))}
+              onBlur={() => puntoVentaCompra && setPuntoVentaCompra(puntoVentaCompra.padStart(4, "0"))}
+              required
+              className="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm tabular-nums focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            />
+          </div>
+          <span className="pb-2 text-slate-400">-</span>
+          <div>
+            <label htmlFor="numeroCompra" className="mb-1 block text-xs text-slate-500">Número</label>
+            <input
+              id="numeroCompra"
+              inputMode="numeric"
+              placeholder="00001234"
+              maxLength={8}
+              disabled={enviando}
+              value={numeroCompra}
+              onChange={(e) => setNumeroCompra(e.target.value.replace(/\D/g, ""))}
+              onBlur={() => numeroCompra && setNumeroCompra(numeroCompra.padStart(8, "0"))}
+              required
+              className="w-32 rounded-md border border-slate-300 px-3 py-2 text-sm tabular-nums focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+            />
+          </div>
+          <p className="pb-2 text-xs text-slate-500">Tal como figura en el comprobante recibido.</p>
+        </fieldset>
+      ) : (
+        <p className="text-xs text-slate-500">
+          El número de la factura se asigna solo, correlativo, en el punto de venta {String(PUNTO_VENTA_PROPIO()).padStart(4, "0")}.
+        </p>
+      )}
+
       <div className="overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full min-w-[640px] border-collapse bg-white">
           <thead>
@@ -296,18 +368,33 @@ export function Facturacion() {
             {items.map((item) => (
               <tr key={item.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
                 <td className="p-2">
-                  <select
+                  {/* Texto libre: si coincide con un producto, mueve stock y toma su precio;
+                      si no (un servicio, un gasto), se factura sólo como concepto. */}
+                  <input
+                    list="productos-facturables"
                     value={item.descripcion}
                     onChange={(e) => handleChangeItem(item.id, "descripcion", e.target.value)}
-                    disabled={enviando || cargandoProductos}
-                    required
+                    disabled={enviando}
+                    placeholder={cargandoProductos ? "Cargando productos..." : "Producto o concepto"}
+                    maxLength={200}
                     className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
-                  >
-                    <option value="" disabled>Seleccione un producto...</option>
-                    {productos.map(p => (
-                      <option key={p.id} value={p.nombre}>{p.nombre}</option>
-                    ))}
-                  </select>
+                  />
+                  {item.descripcion.trim() !== "" && (item.productoId ? (
+                    <span className="mt-0.5 block text-[11px] text-slate-500">Producto del inventario: mueve stock</span>
+                  ) : tipoOperacion === 'Compra' ? (
+                    <label className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={item.agregarAlInventario}
+                        onChange={(e) => setItems(items.map(i => i.id === item.id ? { ...i, agregarAlInventario: e.target.checked } : i))}
+                        disabled={enviando}
+                        className="h-3 w-3 accent-marca-600"
+                      />
+                      Producto nuevo: agregarlo al stock
+                    </label>
+                  ) : (
+                    <span className="mt-0.5 block text-[11px] text-slate-500">Concepto libre: no mueve stock</span>
+                  ))}
                 </td>
                 <td className="p-2">
                   <input
@@ -350,6 +437,11 @@ export function Facturacion() {
             ))}
           </tbody>
         </table>
+        <datalist id="productos-facturables">
+          {productos.map(p => (
+            <option key={p.id} value={p.nombre} />
+          ))}
+        </datalist>
 
         <div className="border-t border-slate-100 px-2 py-2">
           <button
@@ -376,8 +468,9 @@ export function Facturacion() {
               <select
                 value={porcentajeIva}
                 onChange={(e) => setPorcentajeIva(Number(e.target.value))}
-                disabled={true} // 🔥 BLOQUEADO: El porcentaje lo determina la operación
-                className="rounded-md border border-slate-300 bg-slate-100 px-2 py-0.5 text-sm font-semibold text-slate-600 cursor-not-allowed focus:outline-none"
+                disabled={enviando || tipoComprobante === "C"}
+                title={tipoComprobante === "C" ? "La factura C no discrimina IVA" : undefined}
+                className="rounded-md border border-slate-300 px-2 py-0.5 text-sm font-semibold focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
               >
                 <option value={0}>0% (Exento)</option>
                 <option value={10.5}>10.5%</option>

@@ -23,9 +23,9 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
   const handleDobleClicFila = async (asientoId: number) => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
-      
+
       const response = await fetch(`${apiUrl}/api/asientos/${asientoId}/factura`);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           toast.error("Este asiento no tiene un comprobante asociado (ej. Ajuste Manual).");
@@ -94,13 +94,16 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
       cell: (info) => {
         const estaBalanceado = info.row.original.estaBalanceado;
         const estado = info.row.original.estado;
-        
+
         let badgeClass = "bg-slate-100 text-slate-800";
         let text = "Borrador";
 
         if (estado === 1) {
           badgeClass = "bg-green-100 text-green-800";
           text = "Confirmado";
+        } else if (estado === 2) {
+          badgeClass = "bg-slate-200 text-slate-600";
+          text = "Anulado";
         } else if (!estaBalanceado) {
           badgeClass = "bg-red-100 text-red-800";
           text = "Desbalanceado";
@@ -128,10 +131,11 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
     columnHelper.display({
       id: "acciones",
       header: "Acciones",
-      cell: (info) => (
+      // Un asiento anulado ya no tiene acciones: queda sólo como registro.
+      cell: (info) => info.row.original.estado === 2 ? null : (
         <button
           onClick={() => {
-            if (window.confirm("¿Anular este asiento?\n\nSi es un borrador, se elimina. Si está confirmado, se genera su contraasiento (y si pertenece a una factura, se anula la factura completa).")) {
+            if (window.confirm("¿Anular este asiento?\n\nSi es un borrador, se elimina. Si está confirmado, queda anulado y deja de sumar en el Mayor y el Balance (y si pertenece a una factura, se anula la factura completa).")) {
               eliminarMutation.mutate(info.row.original.id.toString());
             }
           }}
@@ -159,7 +163,8 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
 
   const totalesPorFecha = useMemo(() => {
     const totales: Record<string, { debe: number; haber: number }> = {};
-    asientosFiltrados.forEach(a => {
+    // Sólo suman los confirmados: un anulado se ve, pero no tiene efecto contable.
+    asientosFiltrados.filter(a => a.estado === 1).forEach(a => {
       const f = formatearFechaLocal(a.fecha);
       if (!totales[f]) totales[f] = { debe: 0, haber: 0 };
       totales[f].debe += (a.totalDebe || 0);
@@ -229,7 +234,7 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
             Filtrar por fecha:
           </label>
           <div className="flex items-center gap-2">
-            <input 
+            <input
               id="fechaFiltro"
               type="date"
               value={fechaFiltro}
@@ -237,7 +242,7 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
               className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {fechaFiltro && (
-              <button 
+              <button
                 onClick={() => setFechaFiltro("")}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
               >
@@ -294,7 +299,7 @@ export function ListadoAsientos({ clienteId }: { clienteId: string }) {
                         onDoubleClick={() => handleDobleClicFila(row.original.id)}
                         className={`border-b border-slate-100 transition-colors duration-150 hover:bg-slate-50/80 cursor-pointer ${
                           row.getIsExpanded() ? "bg-slate-50/50" : ""
-                        }`}
+                        } ${row.original.estado === 2 ? "*:text-slate-400 *:line-through *:decoration-slate-400" : ""}`}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <td key={cell.id} className="p-4 align-middle">

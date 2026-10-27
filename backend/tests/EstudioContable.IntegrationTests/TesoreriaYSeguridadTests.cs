@@ -42,19 +42,20 @@ public class TesoreriaTests(ApiFixture api)
     }
 
     [Fact]
-    public async Task No_se_puede_sacar_de_la_caja_mas_de_lo_que_hay()
+    public async Task La_caja_puede_quedar_en_negativo_y_sigue_coincidiendo_con_el_mayor()
     {
+        // Caso del ejercicio: se cargan las compras de contado antes que las ventas.
         var jefe = await api.Jefe();
         var saldo = await jefe.SaldoLibro("caja");
 
-        var egreso = await jefe.PostAsJsonAsync("/api/caja", Movimiento(tipo: 2, importe: Math.Max(saldo, 0) + 1));
-        var transferencia = await jefe.PostAsJsonAsync("/api/tesoreria/transferencias",
-            new { origen = "Caja", fecha = "2026-10-20", importe = Math.Max(saldo, 0) + 1 });
+        var egreso = await jefe.PostAsJsonAsync("/api/caja", Movimiento(tipo: 2, importe: Math.Max(saldo, 0) + 1000));
 
-        Assert.Equal(HttpStatusCode.BadRequest, egreso.StatusCode);
-        Assert.Contains("Saldo insuficiente en Caja", await egreso.Detalle());
-        Assert.Equal(HttpStatusCode.BadRequest, transferencia.StatusCode);
-        Assert.Equal(saldo, await jefe.SaldoLibro("caja"));   // nada quedó a medias
+        Assert.True(egreso.IsSuccessStatusCode, await egreso.Detalle());
+        Assert.True(await jefe.SaldoLibro("caja") < 0);
+        Assert.Equal(await jefe.SaldoLibro("caja"), await jefe.SaldoMayor("Caja"));
+
+        await AsegurarEfectivoEnCaja(jefe, Math.Max(saldo, 0) + 1000);   // deja la caja como estaba
+        Assert.Equal(saldo, await jefe.SaldoLibro("caja"));
     }
 
     [Fact]

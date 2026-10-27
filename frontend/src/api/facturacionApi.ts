@@ -5,6 +5,11 @@ export interface CrearFacturaDto {
   tipoOperacion: string;
   tipoComprobante: string;
   cliente: string;
+  clienteId?: number | null;
+  proveedorId?: number | null;
+  condicionPago?: string;
+  puntoVenta?: number | null;
+  numeroComprobante?: number | null;
   subtotal: number;
   iva: number;
   total: number;
@@ -13,6 +18,7 @@ export interface CrearFacturaDto {
 
 export interface CrearFacturaItemDto {
   productoId: number;
+  agregarAlInventario?: boolean;
   descripcion: string;
   cantidad: number;
   precioUnitario: number;
@@ -37,8 +43,10 @@ export interface FacturaDto {
   subtotal: number;
   iva: number;
   total: number;
-  numeroFactura?: string;
-  cuit?: string;
+  puntoVenta?: number | null;
+  numeroComprobante?: number | null;
+  numeroFactura?: string | null;
+  cuit?: string | null;
   condicionPago?: string;
   anulada?: boolean;
   fechaAnulacion?: string | null;
@@ -110,7 +118,7 @@ export async function editarFactura(id: number, payload: CrearFacturaDto): Promi
 
 /**
  * Anula una factura. No se borra: el backend la marca como anulada y genera
- * contraasiento, movimiento inverso de caja/banco y devolución de stock.
+ * la anulación de su asiento, movimiento inverso de caja/banco y devolución de stock.
  */
 export async function anularFactura(id: number): Promise<void> {
   const res = await fetch(`/api/facturas/${id}/anular`, {

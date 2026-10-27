@@ -77,41 +77,35 @@ public class AsientoContableTests
     }
 
     [Fact]
-    public void Contraasiento_invierte_debe_y_haber_y_apunta_al_original()
+    public void Anular_un_confirmado_lo_deja_anulado_sin_tocar_sus_lineas()
     {
-        var original = NuevoAsiento("Factura de Venta N° 3");
-        original.AgregarLinea(Caja, 121, 0, "Total");
-        original.AgregarLinea(Ventas, 0, 100, "Ventas");
-        original.AgregarLinea(IvaDebito, 0, 21, "IVA");
-        original.Confirmar(1);
+        var asiento = NuevoAsiento("Venta - Factura A 0001-00000003");
+        asiento.AgregarLinea(Caja, 121, 0, "Total");
+        asiento.AgregarLinea(Ventas, 0, 100, "Ventas");
+        asiento.AgregarLinea(IvaDebito, 0, 21, "IVA");
+        asiento.Confirmar(1);
 
-        var reverso = original.CrearContraasiento(numeroAsiento: 2, new DateOnly(2026, 10, 26), usuarioCreadorId: 1);
-        reverso.Confirmar(1);
+        asiento.Anular();
 
-        Assert.Equal(original.Id, reverso.AsientoRevertidoId);
-        Assert.StartsWith("Reverso del asiento N° 1", reverso.Descripcion);
-        // Cada cuenta queda con saldo cero sumando original + reverso.
-        foreach (var cuenta in new[] { Caja, Ventas, IvaDebito })
-        {
-            var saldo = original.Lineas.Concat(reverso.Lineas)
-                .Where(l => l.CuentaId == cuenta)
-                .Sum(l => l.Debe - l.Haber);
-            Assert.Equal(0, saldo);
-        }
+        Assert.Equal("Anulado", asiento.Estado.ToString());
+        // No se genera nada invertido: las líneas siguen siendo las originales.
+        Assert.Equal(3, asiento.Lineas.Count);
+        Assert.Equal(21, asiento.Lineas.Single(l => l.CuentaId == IvaDebito).Haber);
+        Assert.Equal(0, asiento.Lineas.Single(l => l.CuentaId == IvaDebito).Debe);
     }
 
     [Fact]
-    public void No_se_puede_revertir_un_borrador_ni_un_contraasiento()
+    public void Solo_se_anula_un_asiento_confirmado()
     {
         var borrador = NuevoAsiento();
         borrador.AgregarLinea(Caja, 10, 0);
         borrador.AgregarLinea(Ventas, 0, 10);
-        Assert.Throws<InvalidOperationException>(() => borrador.CrearContraasiento(2, new DateOnly(2026, 10, 26), 1));
+        Assert.Throws<InvalidOperationException>(() => borrador.Anular());
 
         borrador.Confirmar(1);
-        var reverso = borrador.CrearContraasiento(2, new DateOnly(2026, 10, 26), 1);
-        reverso.Confirmar(1);
-        Assert.Throws<InvalidOperationException>(() => reverso.CrearContraasiento(3, new DateOnly(2026, 10, 26), 1));
+        borrador.Anular();
+        Assert.Throws<InvalidOperationException>(() => borrador.Anular());
+        Assert.Throws<InvalidOperationException>(() => borrador.AgregarLinea(Caja, 1, 0));
     }
 
     [Fact]

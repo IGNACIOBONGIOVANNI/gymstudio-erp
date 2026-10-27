@@ -40,12 +40,15 @@ namespace EstudioContable.API.Controllers
                 Cliente = await NombreDelTerceroAsync(dto.Cliente, dto.TipoOperacion, dto.ClienteId, dto.ProveedorId, cancellationToken),
                 ClienteComercialId = dto.TipoOperacion == "Venta" ? dto.ClienteId : null,
                 ProveedorId = dto.TipoOperacion == "Compra" ? dto.ProveedorId : null,
+                PuntoVenta = dto.PuntoVenta,
+                NumeroComprobante = dto.NumeroComprobante,
                 Subtotal = dto.Subtotal,
                 Iva = dto.Iva,
                 Total = dto.Total,
                 Items = dto.Items.Select(i => new FacturaItem
                 {
                     ProductoId = i.ProductoId > 0 ? i.ProductoId : null,
+                    AgregarAlInventario = i.AgregarAlInventario,
                     Descripcion = i.Descripcion,
                     Cantidad = i.Cantidad,
                     PrecioUnitario = i.PrecioUnitario,
@@ -67,6 +70,13 @@ namespace EstudioContable.API.Controllers
         {
             var facturas = await ConsultarFacturas().ToListAsync(cancellationToken);
             return Ok(facturas);
+        }
+
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> ObtenerFactura(long id, CancellationToken cancellationToken)
+        {
+            var factura = await ConsultarFacturas().FirstOrDefaultAsync(f => f.Id == id, cancellationToken);
+            return factura == null ? NotFound(new { Mensaje = "La factura no existe." }) : Ok(factura);
         }
 
         /// <summary>
@@ -91,8 +101,11 @@ namespace EstudioContable.API.Controllers
 
         private IQueryable<FacturaDto> ConsultarFacturas()
         {
+            // Orden de libro: por fecha y, dentro del día, por comprobante.
             return _context.Facturas
                 .AsNoTracking()
+                .OrderBy(f => f.Fecha).ThenBy(f => f.TipoComprobante).ThenBy(f => f.PuntoVenta)
+                .ThenBy(f => f.NumeroComprobante).ThenBy(f => f.Id)
                 .Select(f => new FacturaDto
                 {
                     Id = f.Id,
@@ -100,7 +113,13 @@ namespace EstudioContable.API.Controllers
                     TipoOperacion = f.TipoOperacion,
                     CondicionPago = f.CondicionPago,
                     TipoComprobante = f.TipoComprobante,
+                    PuntoVenta = f.PuntoVenta,
+                    NumeroComprobante = f.NumeroComprobante,
                     Cliente = f.Cliente,
+                    // CUIT del cliente o proveedor (o el DNI del socio en las cuotas).
+                    Cuit = f.ClienteObj != null ? f.ClienteObj.Cuit
+                        : f.ProveedorObj != null ? f.ProveedorObj.Cuit
+                        : f.SocioObj != null ? f.SocioObj.Dni : null,
                     Subtotal = f.Subtotal,
                     Iva = f.Iva,
                     Total = f.Total,
@@ -151,12 +170,15 @@ namespace EstudioContable.API.Controllers
                 CondicionPago = dto.CondicionPago,
                 TipoComprobante = dto.TipoComprobante,
                 Cliente = nombre,
+                PuntoVenta = dto.PuntoVenta,
+                NumeroComprobante = dto.NumeroComprobante,
                 Subtotal = dto.Subtotal,
                 Iva = dto.Iva,
                 Total = dto.Total,
                 Items = dto.Items.Select(i => new FacturaItem
                 {
                     ProductoId = i.ProductoId > 0 ? i.ProductoId : null,
+                    AgregarAlInventario = i.AgregarAlInventario,
                     Descripcion = i.Descripcion,
                     Cantidad = i.Cantidad,
                     PrecioUnitario = i.PrecioUnitario,
@@ -185,6 +207,8 @@ namespace EstudioContable.API.Controllers
     public class ActualizarFacturaDto
     {
         public DateTime Fecha { get; set; }
+        public int? PuntoVenta { get; set; }
+        public long? NumeroComprobante { get; set; }
         public string TipoOperacion { get; set; } = string.Empty;
         public string CondicionPago { get; set; } = string.Empty;
         public string TipoComprobante { get; set; } = string.Empty;
@@ -198,6 +222,7 @@ namespace EstudioContable.API.Controllers
     public class ActualizarFacturaItemDto
     {
         public long ProductoId { get; set; }
+        public bool AgregarAlInventario { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
@@ -207,6 +232,8 @@ namespace EstudioContable.API.Controllers
     public class CrearFacturaDto
     {
         public DateTime Fecha { get; set; }
+        public int? PuntoVenta { get; set; }
+        public long? NumeroComprobante { get; set; }
         public string TipoOperacion { get; set; } = string.Empty;
         public string CondicionPago { get; set; } = string.Empty;
         public string TipoComprobante { get; set; } = string.Empty;
@@ -222,6 +249,7 @@ namespace EstudioContable.API.Controllers
     public class CrearFacturaItemDto
     {
         public long ProductoId { get; set; }
+        public bool AgregarAlInventario { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal PrecioUnitario { get; set; }
@@ -231,6 +259,14 @@ namespace EstudioContable.API.Controllers
     public class FacturaDto
     {
         public long Id { get; set; }
+        public int? PuntoVenta { get; set; }
+        public long? NumeroComprobante { get; set; }
+        public string? Cuit { get; set; }
+
+        // "0003-00001234" (null en facturas cargadas antes de existir la numeración).
+        public string? NumeroFactura => PuntoVenta.HasValue && NumeroComprobante.HasValue
+            ? $"{PuntoVenta.Value:D4}-{NumeroComprobante.Value:D8}"
+            : null;
         public DateTime Fecha { get; set; }
         public string TipoOperacion { get; set; } = string.Empty;
         public string CondicionPago { get; set; } = string.Empty;

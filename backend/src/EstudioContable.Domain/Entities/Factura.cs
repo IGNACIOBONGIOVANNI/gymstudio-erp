@@ -10,6 +10,16 @@ namespace EstudioContable.Domain.Entities
         public string TipoOperacion { get; set; } = string.Empty;
         public string CondicionPago { get; set; } = string.Empty;
         public string TipoComprobante { get; set; } = string.Empty;
+
+        // Número del comprobante: punto de venta + número (ej. 0003-00001234).
+        // En las ventas lo asigna el sistema (correlativo por tipo y punto de venta);
+        // en las compras es el número de la factura del proveedor.
+        public int? PuntoVenta { get; set; }
+        public long? NumeroComprobante { get; set; }
+
+        public string? NumeroFormateado => PuntoVenta.HasValue && NumeroComprobante.HasValue
+            ? $"{PuntoVenta.Value:D4}-{NumeroComprobante.Value:D8}"
+            : null;
         public string Cliente { get; set; } = string.Empty;
         public long? ClienteComercialId { get; set; }
         public ClienteComercial? ClienteObj { get; set; }

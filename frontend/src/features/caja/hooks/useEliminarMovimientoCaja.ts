@@ -1,6 +1,7 @@
 import { mensajeDeError } from "../../../api/errores";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { avisarSiCajaNegativa } from "../../../api/avisoCaja";
 
 export function useEliminarMovimientoCaja() {
   const queryClient = useQueryClient();
@@ -23,6 +24,7 @@ export function useEliminarMovimientoCaja() {
       queryClient.invalidateQueries({ queryKey: ["libro-banco"] });
       queryClient.invalidateQueries({ queryKey: ["asientos"] });
       toast.success("Movimiento eliminado exitosamente");
+      void avisarSiCajaNegativa();
     },
     onError: (error: any) => {
       toast.error(error.message || "Error al eliminar");

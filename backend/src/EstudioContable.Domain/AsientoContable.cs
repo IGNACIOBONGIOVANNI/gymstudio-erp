@@ -27,7 +27,8 @@ namespace EstudioContable.Domain.Entities
         // Null mientras el asiento esté en Borrador o Anulado sin haber sido confirmado.
         public long? UsuarioConfirmacionId { get; private set; }
 
-        // Si este asiento es un contraasiento, apunta al asiento que revierte.
+        // Asientos de versiones anteriores: un contraasiento apuntaba al asiento que
+        // revertía. Hoy un asiento se anula en lugar de revertirse.
         // Null para los asientos normales.
         public long? AsientoRevertidoId { get; private set; }
 
@@ -101,42 +102,8 @@ namespace EstudioContable.Domain.Entities
         }
 
         /// <summary>
-        /// Genera el contraasiento de este asiento: mismas cuentas e importes con
-        /// Debe y Haber invertidos, de modo que la suma de ambos deja saldo cero.
-        /// Es la forma de "deshacer" un asiento confirmado sin borrarlo, manteniendo
-        /// la trazabilidad en el Libro Diario. El contraasiento se devuelve en
-        /// Borrador; quien lo crea es responsable de confirmarlo y persistirlo.
-        /// Requiere que las líneas de este asiento estén cargadas.
-        /// </summary>
-        public AsientoContable CrearContraasiento(long numeroAsiento, DateOnly fecha, long usuarioCreadorId)
-        {
-            if (Estado != EstadoAsiento.Confirmado)
-                throw new InvalidOperationException("Sólo se puede revertir un asiento Confirmado.");
-
-            if (AsientoRevertidoId.HasValue)
-                throw new InvalidOperationException("Un contraasiento no puede revertirse.");
-
-            if (_lineas.Count == 0)
-                throw new InvalidOperationException("El asiento no tiene líneas cargadas para revertir.");
-
-            var descripcion = $"Reverso del asiento N° {NumeroAsiento} - {Descripcion}";
-            if (descripcion.Length > 500)
-                descripcion = descripcion[..500];
-
-            var reverso = new AsientoContable(ClienteId, numeroAsiento, fecha, descripcion, usuarioCreadorId)
-            {
-                AsientoRevertidoId = Id
-            };
-
-            foreach (var linea in _lineas.OrderBy(l => l.Orden))
-                reverso.AgregarLinea(linea.CuentaId, linea.Haber, linea.Debe, linea.Descripcion);
-
-            return reverso;
-        }
-
-        /// <summary>
-        /// Anula un asiento ya confirmado. No se elimina físicamente (auditoría):
-        /// la reversión contable se hace generando un nuevo asiento de reverso.
+        /// Anula un asiento ya confirmado. No se elimina físicamente (auditoría): queda
+        /// en el Diario como anulado y deja de sumar en el Mayor y en el Balance.
         /// </summary>
         public void Anular()
         {

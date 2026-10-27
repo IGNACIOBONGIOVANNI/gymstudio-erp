@@ -143,6 +143,13 @@ namespace EstudioContable.API.Controllers
                     condicionIva = factura.ProveedorObj.CondicionIva
                 },
                 fecha = factura.Fecha,
+                tipoOperacion = factura.TipoOperacion,
+                tipoComprobante = factura.TipoComprobante,
+                condicionPago = factura.CondicionPago,
+                numeroFactura = factura.NumeroFormateado,
+                anulada = factura.Anulada,
+                subtotal = factura.Subtotal,
+                iva = factura.Iva,
                 total = factura.Total,
                 cae = factura.Cae,
                 fechaVencimientoCae = factura.FechaVencimientoCae,

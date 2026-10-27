@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { anularFactura } from "../../../api/facturacionApi";
 import toast from "react-hot-toast";
+import { avisarSiCajaNegativa } from "../../../api/avisoCaja";
 
 export function useAnularFactura() {
   const queryClient = useQueryClient();
@@ -17,7 +18,8 @@ export function useAnularFactura() {
       queryClient.invalidateQueries({ queryKey: ["productos"] });
       queryClient.invalidateQueries({ queryKey: ["movimientosStock"] });
 
-      toast.success("Factura anulada: se generó el contraasiento y se revirtieron caja/banco y stock");
+      toast.success("Factura anulada: su asiento quedó anulado y se revirtieron caja/banco y stock");
+      void avisarSiCajaNegativa();
     },
     onError: (error: any) => {
       toast.error(error.message || "Error al anular la factura");

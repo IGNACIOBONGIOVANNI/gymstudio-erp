@@ -89,6 +89,9 @@ namespace EstudioContable.Infrastructure.Persistence
                 .HasForeignKey(i => i.ProductoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Factura>().Ignore(f => f.NumeroFormateado);
+            modelBuilder.Entity<FacturaItem>().Ignore(i => i.AgregarAlInventario);
+
             modelBuilder.Entity<Factura>().ToTable(t =>
             {
                 t.HasCheckConstraint("CK_Facturas_ImportesNoNegativos", "\"Subtotal\" >= 0 AND \"Iva\" >= 0");

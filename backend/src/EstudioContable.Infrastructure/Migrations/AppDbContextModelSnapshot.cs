@@ -420,8 +420,14 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<decimal>("Iva")
                         .HasColumnType("numeric");
 
+                    b.Property<long?>("NumeroComprobante")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("ProveedorId")
                         .HasColumnType("bigint");
+
+                    b.Property<int?>("PuntoVenta")
+                        .HasColumnType("integer");
 
                     b.Property<long?>("SocioId")
                         .HasColumnType("bigint");

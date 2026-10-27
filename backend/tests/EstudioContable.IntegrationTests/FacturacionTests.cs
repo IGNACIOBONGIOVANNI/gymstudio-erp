@@ -116,6 +116,55 @@ public class FacturacionTests(ApiFixture api)
         Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
     }
 
+    private static object Compra(long numero, int cantidad = 1, decimal precio = 100) => new
+    {
+        fecha = "2026-10-20T12:00:00Z",
+        tipoOperacion = "Compra",
+        condicionPago = "CuentaCorriente",
+        tipoComprobante = "A",
+        cliente = "Proveedor de prueba",
+        puntoVenta = 3,
+        numeroComprobante = numero,
+        subtotal = cantidad * precio,
+        iva = cantidad * precio * 0.21m,
+        total = cantidad * precio * 1.21m,
+        items = new[] { new { productoId = 0, descripcion = "Insumos", cantidad, precioUnitario = precio, subtotal = cantidad * precio } }
+    };
+
+    [Fact]
+    public async Task Editar_y_anular_no_dejan_haber_en_credito_fiscal_ni_debe_en_debito_fiscal()
+    {
+        // Anular o editar pasa el asiento a Anulado: no hay contraasientos con el IVA invertido.
+        var jefe = await api.Jefe();
+        var venta = (long)(await (await jefe.PostAsJsonAsync("/api/facturas", Venta(cantidad: 1))).Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        var compra = (long)(await (await jefe.PostAsJsonAsync("/api/facturas", Compra(numero: 9101))).Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/facturas/{venta}", Venta(cantidad: 2))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/facturas/{compra}", Compra(numero: 9101, cantidad: 2))).StatusCode);
+        await jefe.PostAsync($"/api/facturas/{venta}/anular", null);
+        await jefe.PostAsync($"/api/facturas/{compra}/anular", null);
+
+        var lineas = (await jefe.GetJson("/api/asientos?clienteId=1")).AsArray()
+            .Where(a => (int)a!["estado"]! == 1)
+            .SelectMany(a => a!["lineas"]!.AsArray())
+            .ToList();
+        Assert.DoesNotContain(lineas, l => (long)l!["cuentaId"]! == 105 && (decimal)l["haber"]! != 0);
+        Assert.DoesNotContain(lineas, l => (long)l!["cuentaId"]! == 201 && (decimal)l["debe"]! != 0);
+    }
+
+    [Fact]
+    public async Task Las_ventas_se_numeran_solas_y_una_compra_no_se_carga_dos_veces()
+    {
+        var jefe = await api.Jefe();
+        var a = await (await jefe.PostAsJsonAsync("/api/facturas", Venta(cantidad: 1))).Content.ReadFromJsonAsync<JsonObject>();
+        var b = await (await jefe.PostAsJsonAsync("/api/facturas", Venta(cantidad: 1))).Content.ReadFromJsonAsync<JsonObject>();
+        Assert.Equal((long)a!["numeroComprobante"]! + 1, (long)b!["numeroComprobante"]!);
+        Assert.Matches(@"^0001-\d{8}$", (string)b["numeroFactura"]!);
+
+        Assert.Equal(HttpStatusCode.Created, (await jefe.PostAsJsonAsync("/api/facturas", Compra(numero: 9201))).StatusCode);
+        var repetida = await jefe.PostAsJsonAsync("/api/facturas", Compra(numero: 9201));
+        Assert.Equal(HttpStatusCode.BadRequest, repetida.StatusCode);
+    }
+
     [Fact]
     public async Task La_razon_social_se_completa_desde_el_cliente_elegido()
     {

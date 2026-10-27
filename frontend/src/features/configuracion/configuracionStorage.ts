@@ -6,14 +6,14 @@ export const CONFIGURACION_INICIAL: ConfiguracionERP = {
   // Datos Fiscales y de la Empresa
   razonSocial: 'GYM STUDIO S.R.L.',
   nombreFantasia: 'Gym Studio Fitness & Health',
-  cuit: '30-71234567-9',
+  cuit: '30-71234567-1',
   condicionIva: 'Responsable Inscripto',
   puntoVenta: '0001',
   direccion: 'Av. Corrientes 1234, Ciudad Autónoma de Buenos Aires',
   telefono: '+54 11 4567-8900',
   email: 'administracion@gymstudio.com',
   inicioActividades: '2020-01-01',
-  ingresosBrutos: '30-71234567-9 (Convenio Multilateral 901)',
+  ingresosBrutos: '30-71234567-1 (Convenio Multilateral 901)',
 
   // Parámetros Contables y Facturación
   monedaPrincipal: 'ARS - Peso Argentino ($)',
@@ -38,6 +38,9 @@ export function obtenerConfiguracion(): ConfiguracionERP {
       return CONFIGURACION_INICIAL;
     }
     const parsed = JSON.parse(raw);
+    // Versiones anteriores traían un CUIT de ejemplo con dígito verificador inválido.
+    if (parsed.cuit === '30-71234567-9') parsed.cuit = CONFIGURACION_INICIAL.cuit;
+    if (parsed.ingresosBrutos === '30-71234567-9 (Convenio Multilateral 901)') parsed.ingresosBrutos = CONFIGURACION_INICIAL.ingresosBrutos;
     return { ...CONFIGURACION_INICIAL, ...parsed };
   } catch (error) {
     console.error('Error al leer configuración de localStorage:', error);

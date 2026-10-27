@@ -3,6 +3,7 @@ import { ArrowRightLeft, Loader2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { mensajeDeError } from "../../api/errores";
+import { avisarSiCajaNegativa } from "../../api/avisoCaja";
 
 interface TransferenciaModalProps {
   origen: "Caja" | "Banco";
@@ -34,6 +35,7 @@ export function TransferenciaModal({ origen, onClose }: TransferenciaModalProps)
         queryClient.invalidateQueries({ queryKey: [k] })
       );
       toast.success(`Transferencia de ${origen} a ${destino} registrada`);
+      void avisarSiCajaNegativa();
       onClose();
     },
     onError: (error: any) => toast.error(error?.message || "No se pudo registrar la transferencia"),

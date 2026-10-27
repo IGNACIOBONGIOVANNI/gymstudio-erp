@@ -114,7 +114,7 @@ export function LibroMayor() {
     };
 
     // El Mayor se arma con las líneas de los asientos confirmados del Libro Diario
-    // (incluidos los contraasientos), así coincide siempre con el Diario y el Balance.
+    // (los anulados no suman), así coincide siempre con el Diario y el Balance.
     // Ids del plan de cuentas (ver PlanDeCuentas.cs en el backend).
     const cuentaPorId: Record<number, CuentaKey> = {
       101: "caja",
@@ -182,7 +182,7 @@ export function LibroMayor() {
             Filtrar por fecha:
           </label>
           <div className="flex items-center gap-2">
-            <input 
+            <input
               id="fechaFiltro"
               type="date"
               value={fechaFiltro}
@@ -190,7 +190,7 @@ export function LibroMayor() {
               className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-800 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
             {fechaFiltro && (
-              <button 
+              <button
                 onClick={() => setFechaFiltro("")}
                 className="text-xs font-semibold px-2.5 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
               >
