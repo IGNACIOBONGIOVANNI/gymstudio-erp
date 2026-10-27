@@ -66,7 +66,7 @@ export default function ModuloConfiguracion() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    toast.success('Archivo de configuración descargado');
+    toast.success('Configuración descargada (los datos contables se copian con scripts\\backup.ps1)');
   };
 
   const handleImportarJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -485,12 +485,36 @@ export default function ModuloConfiguracion() {
           <div className="bg-white rounded-xl border border-slate-200/80 p-6 shadow-sm space-y-6">
             <div>
               <h3 className="text-base font-bold text-slate-900 mb-1">
-                Respaldo Local y Portabilidad de Parámetros
+                Copia de seguridad
               </h3>
               <p className="text-xs text-slate-500">
-                Exportá la configuración actual en un archivo seguro JSON o restauralo en caso de requerir volver a un punto previo.
+                Hay dos cosas para resguardar: los datos contables (facturas, asientos, caja, banco, stock y usuarios) y la configuración de esta pantalla.
               </p>
             </div>
+
+            {/* Los datos contables viven en PostgreSQL: se copian con los scripts del proyecto. */}
+            <div className="p-5 rounded-xl border border-amber-300 bg-amber-50/70 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Datos contables (lo más importante)</h4>
+                  <p className="text-xs text-slate-700 mt-1">
+                    Las facturas, los asientos y el resto de los datos están en la base de datos, no en esta pantalla.
+                    Se copian desde la carpeta del proyecto, en una terminal de PowerShell:
+                  </p>
+                </div>
+              </div>
+              <pre className="text-xs bg-white border border-amber-200 rounded-lg p-3 overflow-x-auto text-slate-800">{[
+                '.\\scripts\\backup.ps1                  # hace la copia en la carpeta "backups"',
+                '.\\scripts\\programar-backup.ps1        # la hace sola todos los días a las 22:00',
+                '.\\scripts\\restaurar.ps1 -Archivo .\\backups\\gymstudio_AAAAMMDD_HHMMSS.dump -Confirmar',
+              ].join('\n')}</pre>
+              <p className="text-xs text-slate-600">
+                Cada copia se verifica y trae su huella SHA-256. Guardá también la carpeta <strong>backups</strong> en un pendrive o en la nube: si se rompe la PC, las copias que están en ella se pierden también.
+              </p>
+            </div>
+
+            <h4 className="font-bold text-slate-900 text-sm pt-2">Configuración de la empresa</h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
@@ -501,10 +525,10 @@ export default function ModuloConfiguracion() {
                     <Download className="h-5 w-5" />
                   </div>
                   <h4 className="font-bold text-slate-900 text-sm">
-                    Descargar Copia de Seguridad
+                    Descargar configuración
                   </h4>
                   <p className="text-xs text-slate-500 mt-1">
-                    Crea un archivo snapshot descargable con todos los datos fiscales, alícuotas y reglas configuradas.
+                    Descarga un archivo con los datos de la empresa y los parámetros de esta pantalla (no incluye datos contables).
                   </p>
                 </div>
                 <div className="mt-5">
@@ -514,7 +538,7 @@ export default function ModuloConfiguracion() {
                     className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-marca-600 rounded-lg hover:bg-marca-700 shadow-sm transition-all active:scale-95"
                   >
                     <Download className="h-4 w-4" />
-                    <span>Descargar Backup JSON</span>
+                    <span>Descargar configuración (JSON)</span>
                   </button>
                 </div>
               </div>
@@ -526,10 +550,10 @@ export default function ModuloConfiguracion() {
                     <Upload className="h-5 w-5" />
                   </div>
                   <h4 className="font-bold text-slate-900 text-sm">
-                    Restaurar desde Archivo
+                    Cargar configuración
                   </h4>
                   <p className="text-xs text-slate-500 mt-1">
-                    Seleccioná un archivo JSON previamente exportado para restaurar los parámetros de la empresa al instante.
+                    Seleccioná un archivo descargado antes para volver a esos datos de la empresa. No modifica facturas ni asientos.
                   </p>
                 </div>
                 <div className="mt-5">
@@ -551,7 +575,7 @@ export default function ModuloConfiguracion() {
             <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
               <p className="text-xs text-blue-800">
-                La configuración se almacena localmente en tu navegador de forma persistente. Incluso al refrescar la página con F5 o reiniciar la aplicación, todos los parámetros se mantendrán intactos.
+                La configuración se guarda en este navegador. Si abrís el sistema desde otro navegador u otra PC vas a ver los valores iniciales: descargá el archivo y cargalo ahí.
               </p>
             </div>
 

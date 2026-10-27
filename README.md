@@ -29,6 +29,19 @@ Requisitos: Docker Desktop abierto y conexión a internet **la primera vez**
 - API + Swagger: http://localhost:5122/swagger
 - PostgreSQL (para pgAdmin o psql): `localhost:5433`, usuario `postgres`, contraseña `password`
 
+### Copias de seguridad
+
+Los datos viven en el volumen de Docker: se pierden con `docker compose down -v` o con la PC.
+Para copiarlos y restaurarlos (en PowerShell, con el sistema levantado):
+
+```powershell
+.\scripts\backup.ps1                # copia en la carpeta backups\ (verificada, con huella SHA-256)
+.\scripts\programar-backup.ps1      # la hace sola todos los días
+.\scripts\restaurar.ps1 -Archivo .\backups\gymstudio_AAAAMMDD_HHMMSS.dump -Confirmar
+```
+
+Detalles y recomendaciones en [`docs/BACKUPS.md`](docs/BACKUPS.md).
+
 Para empezar de nuevo con la base vacía (**borra todos los datos cargados**):
 
 ```bash
