@@ -1,3 +1,4 @@
+using EstudioContable.API.Auth;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Banco.Commands;
@@ -33,6 +34,7 @@ namespace EstudioContable.API.Controllers
         /// <summary>
         /// Registra un nuevo movimiento bancario.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CrearMovimientoBancoCommand command, CancellationToken cancellationToken)
         {
@@ -43,6 +45,7 @@ namespace EstudioContable.API.Controllers
         /// <summary>
         /// Edita un movimiento de banco existente.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] EditarMovimientoBancoCommand command, CancellationToken cancellationToken)
         {
@@ -54,6 +57,7 @@ namespace EstudioContable.API.Controllers
         /// <summary>
         /// Elimina un movimiento de banco.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {

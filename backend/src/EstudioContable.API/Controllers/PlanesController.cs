@@ -1,3 +1,4 @@
+using EstudioContable.API.Auth;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace EstudioContable.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPost]
         public async Task<IActionResult> CrearPlan([FromBody] CrearPlanCommand command, CancellationToken cancellationToken)
         {
@@ -39,6 +41,7 @@ namespace EstudioContable.API.Controllers
 
         public record ActualizarPlanRequest(string Nombre, decimal PrecioMensual, int DuracionMeses);
 
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarPlan(long id, [FromBody] ActualizarPlanRequest request, CancellationToken cancellationToken)
         {
@@ -47,6 +50,7 @@ namespace EstudioContable.API.Controllers
             return existe ? NoContent() : NotFound();
         }
 
+        [Authorize(Roles = Roles.Gestion)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarPlan(long id, CancellationToken cancellationToken)
         {

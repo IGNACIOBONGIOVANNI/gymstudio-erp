@@ -19,7 +19,7 @@ namespace EstudioContable.API.Controllers
     [Authorize(Roles = Roles.Administrador)]
     public class UsuariosController : ControllerBase
     {
-        private const int LargoMinimoPassword = 6;
+        private const int LargoMinimoPassword = 8;
 
         private readonly AppDbContext _context;
         private readonly IPasswordHasher<Usuario> _hasher;
@@ -149,6 +149,8 @@ namespace EstudioContable.API.Controllers
 
             if (password.Length < LargoMinimoPassword)
                 throw new ArgumentException($"La contraseña debe tener al menos {LargoMinimoPassword} caracteres.");
+            if (!password.Any(char.IsLetter) || !password.Any(char.IsDigit))
+                throw new ArgumentException("La contraseña debe combinar letras y números.");
         }
 
         private static RolUsuario ParsearRol(string rol)

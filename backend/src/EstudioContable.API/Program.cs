@@ -112,6 +112,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         // Respuestas 401/403 con cuerpo JSON, para que el frontend muestre el motivo.
         options.Events = new JwtBearerEvents
         {
+            // Un token firmado no alcanza: el usuario tiene que seguir activo y con el mismo
+            // rol que figura en el token. Así una baja o un cambio de rol rige al instante
+            // (y no recién cuando vence el token).
+            OnTokenValidated = async context =>
+            {
+                var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                long id;
+                try { id = TokenService.ObtenerUsuarioId(context.Principal!); }
+                catch (UnauthorizedAccessException) { context.Fail("Token sin usuario."); return; }
+
+                var actual = await db.Usuarios.AsNoTracking()
+                    .Where(u => u.Id == id)
+                    .Select(u => new { u.Activo, u.Rol })
+                    .FirstOrDefaultAsync(context.HttpContext.RequestAborted);
+                var rolDelToken = context.Principal!.FindFirst("role")?.Value;
+
+                if (actual == null || !actual.Activo || actual.Rol.ToString() != rolDelToken)
+                    context.Fail("La sesión ya no es válida.");
+            },
             OnChallenge = async context =>
             {
                 context.HandleResponse();
@@ -189,6 +208,26 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 app.UseMiddleware<EstudioContable.API.Middlewares.ExceptionMiddleware>();
+
+// Cabeceras de seguridad: sin adivinar tipos de archivo, sin incrustar la API en otra página,
+// sin filtrar la URL de origen y sin guardar en caché datos contables ni tokens.
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        var h = context.Response.Headers;
+        h["X-Content-Type-Options"] = "nosniff";
+        h["X-Frame-Options"] = "DENY";
+        h["Referrer-Policy"] = "no-referrer";
+        if (context.Request.Path.StartsWithSegments("/api"))
+        {
+            h["Cache-Control"] = "no-store";
+            h["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'";
+        }
+        return Task.CompletedTask;
+    });
+    await next();
+});
 
 app.UseCors("PermitirFrontend");
 

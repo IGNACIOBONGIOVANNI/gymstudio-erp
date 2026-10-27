@@ -1,3 +1,4 @@
+using EstudioContable.API.Auth;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Ventas.Commands;
@@ -45,6 +46,7 @@ namespace EstudioContable.API.Controllers
         /// <summary>
         /// Importa facturas de venta desde un archivo Excel masivamente.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPost("import")]
         public async Task<IActionResult> Importar([FromQuery] long? clienteId, IFormFile file, CancellationToken cancellationToken)
         {
@@ -53,13 +55,14 @@ namespace EstudioContable.API.Controllers
 
             using var stream = file.OpenReadStream();
             var cantInsertadas = await _mediator.Send(new ImportarLibroVentaCommand(clienteId, stream), cancellationToken);
-            
+
             return Ok(new { FacturasImportadas = cantInsertadas });
         }
 
         /// <summary>
         /// Crea una factura de venta manual.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CrearFacturaVentaCommand command, CancellationToken cancellationToken)
         {

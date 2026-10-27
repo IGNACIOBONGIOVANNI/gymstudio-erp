@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using EstudioContable.API.Auth;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EstudioContable.Application.Inventario.Queries.DTOs;
@@ -33,17 +35,19 @@ namespace EstudioContable.API.Controllers
             return CreatedAtAction(nameof(Get), new { id }, id);
         }
 
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(long id, [FromBody] EstudioContable.Application.Inventario.Commands.ActualizarProducto.ActualizarProductoCommand command)
         {
             if (id != command.Id) return BadRequest(new ProblemDetails { Status = 400, Title = "Error de Validación", Detail = "El Id de la URL no coincide con el del producto." });
-            
+
             var result = await _mediator.Send(command);
             if (!result) return NotFound();
-            
+
             return NoContent();
         }
 
+        [Authorize(Roles = Roles.Gestion)]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(long id)
         {

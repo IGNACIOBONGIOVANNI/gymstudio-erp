@@ -1,3 +1,4 @@
+using EstudioContable.API.Auth;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Compras.Queries.ObtenerLibroCompra;
@@ -32,6 +33,7 @@ namespace EstudioContable.API.Controllers
         /// <summary>
         /// Crea una factura de compra manual.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] EstudioContable.Application.Compras.Commands.CrearFacturaCompraCommand command, CancellationToken cancellationToken)
         {
@@ -41,6 +43,7 @@ namespace EstudioContable.API.Controllers
         /// <summary>
         /// Elimina una factura de compra y sus movimientos asociados.
         /// </summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
         {

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using EstudioContable.API.Auth;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +22,7 @@ namespace EstudioContable.API.Controllers
         public record TransferenciaRequest(string Origen, DateTime Fecha, decimal Importe, string? Detalle);
 
         /// <summary>Transferencia de fondos entre Caja y Banco (en cualquier sentido).</summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpPost("transferencias")]
         public async Task<IActionResult> Transferir([FromBody] TransferenciaRequest request, CancellationToken cancellationToken)
         {

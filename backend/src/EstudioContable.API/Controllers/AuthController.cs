@@ -34,12 +34,26 @@ namespace EstudioContable.API.Controllers
             public string Password { get; set; } = string.Empty;
         }
 
+        private const int FallosParaBloquear = 5;
+        private static readonly TimeSpan DuracionBloqueo = TimeSpan.FromMinutes(15);
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Fallos, DateTime Desde)> _fallos = new();
+
         [HttpPost("login")]
         [AllowAnonymous]
         [EnableRateLimiting(PoliticaLimiteLogin)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
         {
             var email = Usuario.NormalizarEmail(request.Email);
+
+            if (_fallos.TryGetValue(email, out var estado))
+            {
+                if (DateTime.UtcNow - estado.Desde > DuracionBloqueo)
+                    _fallos.TryRemove(email, out _);
+                else if (estado.Fallos >= FallosParaBloquear)
+                    return StatusCode(StatusCodes.Status429TooManyRequests,
+                        new { detail = "Demasiados intentos fallidos con esta cuenta. Esperá 15 minutos o pedile al administrador que revise el acceso." });
+            }
+
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
             // Mismo mensaje para usuario inexistente y contraseña incorrecta:
@@ -49,7 +63,11 @@ namespace EstudioContable.API.Controllers
                 : _hasher.VerifyHashedPassword(usuario, usuario.PasswordHash, request.Password ?? string.Empty);
 
             if (usuario == null || resultado == PasswordVerificationResult.Failed)
+            {
+                _fallos.AddOrUpdate(email, _ => (1, DateTime.UtcNow), (_, e) => (e.Fallos + 1, e.Fallos == 0 ? DateTime.UtcNow : e.Desde));
                 return Unauthorized(new { detail = "Credenciales incorrectas" });
+            }
+            _fallos.TryRemove(email, out _);
 
             if (!usuario.Activo)
                 return Unauthorized(new { detail = "Esta cuenta se encuentra inactiva. Contacte al administrador." });

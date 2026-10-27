@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using EstudioContable.API.Auth;
 using System;
 using System.Linq;
 using System.Threading;
@@ -67,6 +69,7 @@ namespace EstudioContable.API.Controllers
         }
 
         /// <summary>Baja lógica: el registro queda para las facturas que ya lo usan.</summary>
+        [Authorize(Roles = Roles.Gestion)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
         {

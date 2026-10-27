@@ -18,6 +18,9 @@ public sealed class ApiFixture : IAsyncLifetime
     // Contraseña de los usuarios iniciales (appsettings.Development.json).
     public const string Clave = "123456";
 
+    // Contraseña de los usuarios que crean los tests (cumple la política: 8+ con letras y números).
+    public const string ClaveNueva = "clave-de-prueba-123";
+
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:15-alpine")
         .Build();
@@ -50,10 +53,10 @@ public sealed class ApiFixture : IAsyncLifetime
     public HttpClient ClienteAnonimo() => _factory.CreateClient();
 
     /// <summary>Cliente HTTP ya autenticado con el usuario indicado.</summary>
-    public async Task<HttpClient> ClienteComo(string email)
+    public async Task<HttpClient> ClienteComo(string email, string? clave = null)
     {
         var cliente = _factory.CreateClient();
-        var respuesta = await cliente.PostAsJsonAsync("/api/auth/login", new { email, password = Clave });
+        var respuesta = await cliente.PostAsJsonAsync("/api/auth/login", new { email, password = clave ?? Clave });
         respuesta.EnsureSuccessStatusCode();
         var cuerpo = await respuesta.Content.ReadFromJsonAsync<JsonObject>();
         cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (string)cuerpo!["token"]!);

@@ -149,14 +149,77 @@ public class SeguridadTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var email = $"temporal.{Guid.NewGuid():N}"[..20] + "@gym.com";
-        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Temporal", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.Clave });
+        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Temporal", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
         Assert.Equal(HttpStatusCode.Created, alta.StatusCode);
         var id = (long)(await alta.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
 
         await jefe.PutAsJsonAsync($"/api/usuarios/{id}/estado", new { activo = false });
 
-        var login = await api.ClienteAnonimo().PostAsJsonAsync("/api/auth/login", new { email, password = ApiFixture.Clave });
+        var login = await api.ClienteAnonimo().PostAsJsonAsync("/api/auth/login", new { email, password = ApiFixture.ClaveNueva });
         Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
         Assert.Contains("inactiva", await login.Detalle());
+    }
+
+    [Fact]
+    public async Task Recepcion_no_puede_mover_dinero_ni_borrar_catalogos()
+    {
+        // Antes la API sólo ocultaba estas acciones en pantalla: Recepción podía llamarlas igual.
+        var recepcion = await api.Recepcion();
+        var vacio = new { };
+        foreach (var ruta in new[] { "/api/caja", "/api/banco", "/api/tesoreria/transferencias" })
+            Assert.Equal(HttpStatusCode.Forbidden, (await recepcion.PostAsJsonAsync(ruta, vacio)).StatusCode);
+        foreach (var ruta in new[] { "/api/planes/1", "/api/productos/1", "/api/clientes/1", "/api/proveedores/1", "/api/caja/1", "/api/banco/1" })
+            Assert.Equal(HttpStatusCode.Forbidden, (await recepcion.DeleteAsync(ruta)).StatusCode);
+    }
+
+    [Fact]
+    public async Task El_token_deja_de_valer_cuando_el_usuario_se_da_de_baja()
+    {
+        var jefe = await api.Jefe();
+        var email = $"baja.{Guid.NewGuid():N}"[..18] + "@gym.com";
+        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Con token", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
+        var id = (long)(await alta.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        var sesion = await api.ClienteComo(email, ApiFixture.ClaveNueva);
+        Assert.Equal(HttpStatusCode.OK, (await sesion.GetAsync("/api/facturas")).StatusCode);
+
+        await jefe.PutAsJsonAsync($"/api/usuarios/{id}/estado", new { activo = false });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await sesion.GetAsync("/api/facturas")).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("abc123")]        // corta
+    [InlineData("12345678")]      // sólo números
+    [InlineData("abcdefgh")]      // sólo letras
+    public async Task Las_contrasenas_debiles_se_rechazan(string clave)
+    {
+        var jefe = await api.Jefe();
+        var email = $"debil.{Guid.NewGuid():N}"[..18] + "@gym.com";
+        var respuesta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Débil", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = clave });
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Una_cuenta_se_bloquea_tras_cinco_claves_incorrectas()
+    {
+        var jefe = await api.Jefe();
+        var email = $"bloq.{Guid.NewGuid():N}"[..18] + "@gym.com";
+        await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Bloqueable", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
+        var anonimo = api.ClienteAnonimo();
+        for (var i = 0; i < 5; i++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await anonimo.PostAsJsonAsync("/api/auth/login", new { email, password = "incorrecta" + i })).StatusCode);
+
+        // Bloqueada: ni siquiera la clave correcta entra.
+        Assert.Equal(HttpStatusCode.TooManyRequests, (await anonimo.PostAsJsonAsync("/api/auth/login", new { email, password = ApiFixture.ClaveNueva })).StatusCode);
+    }
+
+    [Fact]
+    public async Task Las_respuestas_de_la_api_llevan_cabeceras_de_seguridad()
+    {
+        var jefe = await api.Jefe();
+        var respuesta = await jefe.GetAsync("/api/planes");
+        Assert.Equal("nosniff", respuesta.Headers.GetValues("X-Content-Type-Options").Single());
+        Assert.Equal("DENY", respuesta.Headers.GetValues("X-Frame-Options").Single());
+        Assert.Contains("no-store", respuesta.Headers.GetValues("Cache-Control").Single());
     }
 }
