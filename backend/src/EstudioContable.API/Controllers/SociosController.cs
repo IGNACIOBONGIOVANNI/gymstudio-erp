@@ -62,9 +62,10 @@ namespace EstudioContable.API.Controllers
 
             // Sus membresías se borrarían en cascada y las facturas quedarían sin socio.
             var tieneHistorial = await _context.Membresias.AnyAsync(m => m.SocioId == id, cancellationToken)
-                || await _context.Facturas.AnyAsync(f => f.SocioId == id, cancellationToken);
+                || await _context.Facturas.AnyAsync(f => f.SocioId == id, cancellationToken)
+                || await _context.AsignacionesRutina.AnyAsync(a => a.SocioId == id, cancellationToken);
             if (tieneHistorial)
-                throw new System.InvalidOperationException($"{socio.Apellido} {socio.Nombre} tiene cuotas cobradas o facturas registradas y no se puede eliminar.");
+                throw new System.InvalidOperationException($"{socio.Apellido} {socio.Nombre} tiene cuotas cobradas, facturas o rutinas registradas y no se puede eliminar.");
 
             _context.Socios.Remove(socio);
             await _context.SaveChangesAsync(cancellationToken);

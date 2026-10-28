@@ -253,6 +253,7 @@ using (var scope = app.Services.CreateScope())
         context.Database.Migrate();
         await UsuariosIniciales.CrearSiNoExistenAsync(
             context, services.GetRequiredService<IPasswordHasher<Usuario>>(), app.Configuration);
+        await EstudioContable.API.Datos.RutinasIniciales.CrearSiNoExistenAsync(context);
     }
     catch (Exception ex)
     {

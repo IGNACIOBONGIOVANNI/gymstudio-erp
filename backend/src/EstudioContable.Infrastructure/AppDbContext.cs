@@ -35,6 +35,10 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<ClienteComercial> ClientesComerciales => Set<ClienteComercial>();
         public DbSet<Proveedor> Proveedores => Set<Proveedor>();
         public DbSet<RegistroAuditoria> Auditoria => Set<RegistroAuditoria>();
+        public DbSet<Ejercicio> Ejercicios => Set<Ejercicio>();
+        public DbSet<Rutina> Rutinas => Set<Rutina>();
+        public DbSet<RutinaEjercicio> RutinaEjercicios => Set<RutinaEjercicio>();
+        public DbSet<AsignacionRutina> AsignacionesRutina => Set<AsignacionRutina>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -100,6 +104,44 @@ namespace EstudioContable.Infrastructure.Persistence
 
             modelBuilder.Entity<Plan>().ToTable(t =>
                 t.HasCheckConstraint("CK_Planes_Valores", "\"DuracionMeses\" > 0 AND \"PrecioMensual\" >= 0"));
+
+            // Rutinas de gimnasio. Los CHECK repiten las reglas del dominio; el índice parcial
+            // garantiza una sola rutina activa por socio aunque dos recepcionistas asignen a la vez.
+            modelBuilder.Entity<Ejercicio>(e =>
+            {
+                e.Property(x => x.Nombre).HasMaxLength(100);
+                e.Property(x => x.GrupoMuscular).HasMaxLength(30);
+            });
+
+            modelBuilder.Entity<Rutina>(e =>
+            {
+                e.Property(x => x.Nombre).HasMaxLength(100);
+                e.Property(x => x.Objetivo).HasMaxLength(200);
+                e.Property(x => x.Nivel).HasMaxLength(20);
+                e.HasMany(x => x.Ejercicios).WithOne().HasForeignKey(x => x.RutinaId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<RutinaEjercicio>(e =>
+            {
+                e.Property(x => x.Repeticiones).HasMaxLength(20);
+                e.Property(x => x.Indicaciones).HasMaxLength(200);
+                e.HasOne(x => x.Ejercicio).WithMany().HasForeignKey(x => x.EjercicioId).OnDelete(DeleteBehavior.Restrict);
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_RutinaEjercicios_Dia", "\"Dia\" BETWEEN 1 AND 7");
+                    t.HasCheckConstraint("CK_RutinaEjercicios_Series", "\"Series\" BETWEEN 1 AND 20");
+                    t.HasCheckConstraint("CK_RutinaEjercicios_Descanso", "\"DescansoSegundos\" BETWEEN 0 AND 600");
+                });
+            });
+
+            modelBuilder.Entity<AsignacionRutina>(e =>
+            {
+                e.Property(x => x.Observaciones).HasMaxLength(500);
+                e.HasOne(x => x.Socio).WithMany().HasForeignKey(x => x.SocioId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne(x => x.Rutina).WithMany().HasForeignKey(x => x.RutinaId).OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => x.SocioId).IsUnique().HasFilter("\"Activa\"").HasDatabaseName("ux_asignaciones_rutina_activa_por_socio");
+                e.ToTable(t => t.HasCheckConstraint("CK_AsignacionesRutina_Fechas", "\"FechaFin\" IS NULL OR \"FechaFin\" >= \"FechaInicio\""));
+            });
 
             modelBuilder.Entity<Membresia>().ToTable(t =>
                 t.HasCheckConstraint("CK_Membresias_Vigencia", "\"FechaVencimiento\" >= \"FechaInicio\""));

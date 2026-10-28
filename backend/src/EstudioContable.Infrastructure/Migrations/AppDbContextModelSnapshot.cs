@@ -166,6 +166,49 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.ToTable("asientos_contables", "contabilidad");
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.AsignacionRutina", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly?>("FechaFin")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("FechaInicio")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long>("RutinaId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("SocioId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RutinaId");
+
+                    b.HasIndex("SocioId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_asignaciones_rutina_activa_por_socio")
+                        .HasFilter("\"Activa\"");
+
+                    b.ToTable("AsignacionesRutina", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_AsignacionesRutina_Fechas", "\"FechaFin\" IS NULL OR \"FechaFin\" >= \"FechaInicio\"");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Cliente", b =>
                 {
                     b.Property<long>("Id")
@@ -378,6 +421,32 @@ namespace EstudioContable.Infrastructure.Migrations
                             Naturaleza = 3,
                             Nombre = "Compras"
                         });
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.Ejercicio", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("GrupoMuscular")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Ejercicios", "contabilidad");
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Factura", b =>
@@ -1072,6 +1141,92 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.ToTable("auditoria", "contabilidad");
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.Rutina", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ModificadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nivel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Objetivo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rutinas", "contabilidad");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.RutinaEjercicio", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("DescansoSegundos")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Dia")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("EjercicioId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Indicaciones")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Repeticiones")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<long>("RutinaId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Series")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EjercicioId");
+
+                    b.HasIndex("RutinaId");
+
+                    b.ToTable("RutinaEjercicios", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_RutinaEjercicios_Descanso", "\"DescansoSegundos\" BETWEEN 0 AND 600");
+
+                            t.HasCheckConstraint("CK_RutinaEjercicios_Dia", "\"Dia\" BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("CK_RutinaEjercicios_Series", "\"Series\" BETWEEN 1 AND 20");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Socio", b =>
                 {
                     b.Property<long>("Id")
@@ -1179,6 +1334,25 @@ namespace EstudioContable.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("AsientoRevertidoId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.AsignacionRutina", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Rutina", "Rutina")
+                        .WithMany()
+                        .HasForeignKey("RutinaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EstudioContable.Domain.Entities.Socio", "Socio")
+                        .WithMany()
+                        .HasForeignKey("SocioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rutina");
+
+                    b.Navigation("Socio");
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Factura", b =>
@@ -1328,6 +1502,23 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Navigation("Producto");
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.RutinaEjercicio", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Ejercicio", "Ejercicio")
+                        .WithMany()
+                        .HasForeignKey("EjercicioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EstudioContable.Domain.Entities.Rutina", null)
+                        .WithMany("Ejercicios")
+                        .HasForeignKey("RutinaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ejercicio");
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Socio", b =>
                 {
                     b.HasOne("EstudioContable.Domain.Entities.Plan", "PlanActualObj")
@@ -1375,6 +1566,11 @@ namespace EstudioContable.Infrastructure.Migrations
             modelBuilder.Entity("EstudioContable.Domain.Entities.Plan", b =>
                 {
                     b.Navigation("Membresias");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.Rutina", b =>
+                {
+                    b.Navigation("Ejercicios");
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Socio", b =>

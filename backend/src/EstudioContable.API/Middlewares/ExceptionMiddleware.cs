@@ -104,6 +104,12 @@ namespace EstudioContable.API.Middlewares
                 => "Otra venta tomó ese número de comprobante al mismo tiempo. Volvé a guardar.",
             "23505" when pg.ConstraintName == "UX_Facturas_NumeroCompra"
                 => "Esa factura del proveedor ya está cargada.",
+            "23505" when pg.ConstraintName == "ux_asignaciones_rutina_activa_por_socio"
+                => "Ese socio ya tiene una rutina activa: otra persona se la asignó al mismo tiempo. Actualizá la pantalla.",
+            "23505" when pg.ConstraintName == "ux_ejercicios_nombre"
+                => "Ya existe un ejercicio con ese nombre.",
+            "23505" when pg.ConstraintName == "ux_rutinas_nombre"
+                => "Ya existe una rutina con ese nombre.",
             "23505" => "Ya existe un registro con esos datos.",
             "23514" => $"Los datos no cumplen una regla de la base de datos ({pg.ConstraintName}).",
             _ => "La base de datos rechazó la operación."
