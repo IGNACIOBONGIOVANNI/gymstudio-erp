@@ -94,3 +94,15 @@ public class AsignacionRutinaTests
         Assert.Throws<InvalidOperationException>(() => a.Finalizar(Hoy));
     }
 }
+
+public class RutinaTopeTests
+{
+    private static RutinaEjercicio Linea() => new(1, 1, 3, "10", 60, null);
+
+    [Fact]
+    public void Una_rutina_acepta_hasta_el_tope_de_renglones_y_rechaza_uno_mas()
+    {
+        Assert.Equal(Rutina.MaximoDeRenglones, new Rutina("Justa", null, "Principiante", Enumerable.Range(0, Rutina.MaximoDeRenglones).Select(_ => Linea())).Ejercicios.Count);
+        Assert.Throws<ArgumentException>(() => new Rutina("Enorme", null, "Principiante", Enumerable.Range(0, Rutina.MaximoDeRenglones + 1).Select(_ => Linea())));
+    }
+}

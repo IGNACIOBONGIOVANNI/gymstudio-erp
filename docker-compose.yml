@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: estudio_contable
     ports:
-      - "5433:5432" # 5433 en la PC, para no chocar con un PostgreSQL local
+      - "127.0.0.1:5433:5432" # 5433 para no chocar con un PostgreSQL local; solo accesible desde esta PC
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -21,7 +21,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "5122:5122"
+      - "127.0.0.1:5122:5122" # solo accesible desde esta PC
     environment:
       # Connection string uses the 'db' service hostname
       - ConnectionStrings__DefaultConnection=Host=db;Database=estudio_contable;Username=postgres;Password=password
@@ -41,7 +41,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "127.0.0.1:5173:5173" # solo accesible desde esta PC
     volumes:
       - ./frontend:/app # Bind mount to allow hot reload
       - /app/node_modules # Exclude node_modules from host to prevent OS incompatibility

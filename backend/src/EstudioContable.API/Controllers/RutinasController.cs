@@ -116,6 +116,10 @@ namespace EstudioContable.API.Controllers
         private async Task<List<RutinaEjercicio>> ConstruirLineasAsync(RutinaRequest request, long? rutinaId, CancellationToken cancellationToken)
         {
             var pedidos = request.Ejercicios ?? new List<RutinaEjercicioRequest>();
+            if (pedidos.Any(p => p is null))
+                throw new ArgumentException("Cada renglón de la rutina debe indicar su ejercicio, día, series y repeticiones.");
+            if (pedidos.Count > Rutina.MaximoDeRenglones)
+                throw new ArgumentException($"Una rutina no puede tener más de {Rutina.MaximoDeRenglones} ejercicios.");
             var ids = pedidos.Select(p => p.EjercicioId).Distinct().ToList();
 
             var ejercicios = await _context.Ejercicios.AsNoTracking()

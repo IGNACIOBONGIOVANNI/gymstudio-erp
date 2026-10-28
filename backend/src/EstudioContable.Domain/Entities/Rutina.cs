@@ -12,6 +12,9 @@ namespace EstudioContable.Domain.Entities
     {
         public static readonly string[] Niveles = { "Principiante", "Intermedio", "Avanzado" };
 
+        /// <summary>Tope de renglones por rutina (7 días con unos 20 ejercicios cada uno ya es mucho).</summary>
+        public const int MaximoDeRenglones = 150;
+
         public long Id { get; private set; }
         public string Nombre { get; private set; } = string.Empty;
         public string Objetivo { get; private set; } = string.Empty;
@@ -43,6 +46,8 @@ namespace EstudioContable.Domain.Entities
 
             var lista = ejercicios.ToList();
             if (lista.Count == 0) throw new ArgumentException("La rutina debe tener al menos un ejercicio.");
+            if (lista.Count > MaximoDeRenglones)
+                throw new ArgumentException($"Una rutina no puede tener más de {MaximoDeRenglones} ejercicios.");
 
             // Orden dentro de cada día: el de la lista.
             foreach (var dia in lista.GroupBy(e => e.Dia))

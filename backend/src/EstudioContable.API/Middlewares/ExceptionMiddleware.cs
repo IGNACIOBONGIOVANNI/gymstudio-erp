@@ -79,14 +79,15 @@ namespace EstudioContable.API.Middlewares
 
         /// <summary>
         /// PostgresException si el error es una regla de la base: RAISE EXCEPTION de un
-        /// trigger (P0001), integridad (clase 23) o un número fuera de rango (22003).
+        /// trigger (P0001), integridad (clase 23) o un dato que la base no acepta (clase 22:
+        /// número fuera de rango, texto demasiado largo o con caracteres no permitidos).
         /// </summary>
         private static Npgsql.PostgresException? ObtenerErrorDeBase(Exception ex)
         {
             for (var actual = ex; actual != null; actual = actual.InnerException)
             {
                 if (actual is Npgsql.PostgresException pg
-                    && (pg.SqlState == "P0001" || pg.SqlState == "22003" || pg.SqlState.StartsWith("23")))
+                    && (pg.SqlState == "P0001" || pg.SqlState.StartsWith("22") || pg.SqlState.StartsWith("23")))
                     return pg;
             }
             return null;
@@ -97,6 +98,9 @@ namespace EstudioContable.API.Middlewares
             // Mensajes propios de los triggers: ya están en castellano.
             "P0001" => pg.MessageText,
             "22003" => "Uno de los importes es demasiado grande.",
+            "22001" => "Uno de los textos supera el largo permitido.",
+            "22021" or "22P05" => "Uno de los textos tiene caracteres que no se pueden guardar.",
+            var clase22 when clase22.StartsWith("22") => "Uno de los datos no tiene un valor válido.",
             "23503" when pg.MessageText.StartsWith("update or delete")
                 => "No se puede eliminar porque hay otros registros que lo usan (facturas, movimientos o membresías).",
             "23503" => "Uno de los datos hace referencia a un registro que no existe (por ejemplo, una cuenta o un producto).",

@@ -37,6 +37,7 @@ namespace EstudioContable.API.Controllers
         public async Task<IActionResult> Resumen([FromQuery] string? mes, [FromQuery] DateOnly? hoy, CancellationToken cancellationToken)
         {
             var dia = hoy ?? DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3));
+            if (dia.Year < 2000 || dia.Year > 2100) throw new ArgumentException("La fecha de hoy debe estar entre los años 2000 y 2100.");
             var primerDia = ParsearMes(mes) ?? new DateOnly(dia.Year, dia.Month, 1);
 
             var gimnasio = await ResumenGimnasioAsync(dia, cancellationToken);
@@ -64,6 +65,7 @@ namespace EstudioContable.API.Controllers
             if (string.IsNullOrWhiteSpace(mes)) return null;
             if (!DateOnly.TryParseExact(mes.Trim() + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var fecha))
                 throw new ArgumentException("El mes debe tener el formato aaaa-mm (por ejemplo 2026-10).");
+            if (fecha.Year < 2000 || fecha.Year > 2100) throw new ArgumentException("El mes debe estar entre los años 2000 y 2100.");
             return fecha;
         }
 

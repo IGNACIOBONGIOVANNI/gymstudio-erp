@@ -29,6 +29,9 @@ Requisitos: Docker Desktop abierto y conexión a internet **la primera vez**
 - API + Swagger: http://localhost:5122/swagger
 - PostgreSQL (para pgAdmin o psql): `localhost:5433`, usuario `postgres`, contraseña `password`
 
+Los tres puertos (5173, 5122 y 5433) solo escuchan en esta PC (`127.0.0.1`): otra computadora de la red no puede
+conectarse al sistema ni a la base. Para abrirlo a la red a propósito, sacar `127.0.0.1:` de `docker-compose.yml`.
+
 ### Copias de seguridad
 
 Los datos viven en el volumen de Docker: se pierden con `docker compose down -v` o con la PC.

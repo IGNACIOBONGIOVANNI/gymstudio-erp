@@ -34,7 +34,12 @@ namespace EstudioContable.API.Controllers
         private record FacturaDeCuenta(long Id, long? TerceroId, DateOnly Fecha, string Descripcion, decimal Total);
         private record PagoConTercero(long TerceroId, PagoDeCuenta Pago);
 
-        private static DateOnly Hoy(DateOnly? hoy) => hoy ?? DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3)); // Argentina
+        private static DateOnly Hoy(DateOnly? hoy)
+        {
+            var dia = hoy ?? DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3)); // Argentina
+            if (dia.Year < 2000 || dia.Year > 2100) throw new ArgumentException("La fecha de hoy debe estar entre los años 2000 y 2100.");
+            return dia;
+        }
 
         private static bool? EsDeClientes(string tipo) => tipo.ToLowerInvariant() switch
         {
