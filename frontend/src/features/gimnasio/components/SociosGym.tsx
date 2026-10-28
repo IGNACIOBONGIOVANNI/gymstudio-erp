@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useMemo } from "react";
-import { Plus, Edit2, Trash2, Dumbbell } from "lucide-react";
+import { Plus, Edit2, Trash2, Dumbbell, Activity } from "lucide-react";
 import {
   createColumnHelper,
   flexRender,
@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-table";
 import { SocioForm } from "./SocioForm";
 import { ModalRutinaSocio } from "./ModalRutinaSocio";
+import { ModalSeguimientoSocio } from "./ModalSeguimientoSocio";
 import toast from 'react-hot-toast';
 import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 
@@ -31,6 +32,7 @@ export function SociosGym() {
   const [isLoading, setIsLoading] = useState(true);
   const [socioToEdit, setSocioToEdit] = useState<SocioDto | null>(null);
   const [socioRutina, setSocioRutina] = useState<SocioDto | null>(null);
+  const [socioSeguimiento, setSocioSeguimiento] = useState<SocioDto | null>(null);
 
   // Modal de eliminación
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
@@ -129,6 +131,14 @@ export function SociosGym() {
       header: () => <div className="text-right">Acciones</div>,
       cell: (info) => (
         <div className="flex justify-end gap-2">
+          <button
+            onClick={() => setSocioSeguimiento(info.row.original)}
+            className="p-1.5 text-slate-400 hover:text-marca-700 hover:bg-marca-50 rounded-md transition-colors"
+            title="Seguimiento de peso y medidas"
+            aria-label="Seguimiento de peso y medidas"
+          >
+            <Activity className="h-4 w-4" />
+          </button>
           <button
             onClick={() => setSocioRutina(info.row.original)}
             className="p-1.5 text-slate-400 hover:text-marca-700 hover:bg-marca-50 rounded-md transition-colors"
@@ -243,6 +253,13 @@ export function SociosGym() {
             setIsFormOpen(false);
             fetchSocios();
           }}
+        />
+      )}
+
+      {socioSeguimiento && (
+        <ModalSeguimientoSocio
+          socio={{ id: socioSeguimiento.id, nombre: socioSeguimiento.nombre, apellido: socioSeguimiento.apellido }}
+          onClose={() => setSocioSeguimiento(null)}
         />
       )}
 

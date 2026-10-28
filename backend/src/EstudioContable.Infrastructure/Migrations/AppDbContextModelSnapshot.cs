@@ -784,6 +784,69 @@ namespace EstudioContable.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.MedicionSocio", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal?>("BrazoCm")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<decimal?>("CaderaCm")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<decimal?>("CinturaCm")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("GrasaCorporalPct")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<decimal?>("MusloCm")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<string>("Notas")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<decimal?>("PechoCm")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<decimal>("PesoKg")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<long>("SocioId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SocioId", "Fecha")
+                        .IsUnique()
+                        .HasDatabaseName("ux_mediciones_socio_fecha");
+
+                    b.ToTable("MedicionesSocio", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_MedicionesSocio_Grasa", "\"GrasaCorporalPct\" IS NULL OR \"GrasaCorporalPct\" BETWEEN 2 AND 70");
+
+                            t.HasCheckConstraint("CK_MedicionesSocio_Perimetros", "(\"CinturaCm\" IS NULL OR \"CinturaCm\" BETWEEN 30 AND 250) AND (\"CaderaCm\" IS NULL OR \"CaderaCm\" BETWEEN 30 AND 250) AND (\"PechoCm\" IS NULL OR \"PechoCm\" BETWEEN 30 AND 250) AND (\"BrazoCm\" IS NULL OR \"BrazoCm\" BETWEEN 10 AND 100) AND (\"MusloCm\" IS NULL OR \"MusloCm\" BETWEEN 20 AND 150)");
+
+                            t.HasCheckConstraint("CK_MedicionesSocio_Peso", "\"PesoKg\" BETWEEN 20 AND 400");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Membresia", b =>
                 {
                     b.Property<long>("Id")
@@ -1444,6 +1507,15 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Navigation("Asiento");
 
                     b.Navigation("Cuenta");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.MedicionSocio", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Socio", null)
+                        .WithMany()
+                        .HasForeignKey("SocioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Membresia", b =>

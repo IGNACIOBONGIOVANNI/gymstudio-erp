@@ -39,6 +39,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<Rutina> Rutinas => Set<Rutina>();
         public DbSet<RutinaEjercicio> RutinaEjercicios => Set<RutinaEjercicio>();
         public DbSet<AsignacionRutina> AsignacionesRutina => Set<AsignacionRutina>();
+        public DbSet<MedicionSocio> MedicionesSocio => Set<MedicionSocio>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -141,6 +142,26 @@ namespace EstudioContable.Infrastructure.Persistence
                 e.HasOne(x => x.Rutina).WithMany().HasForeignKey(x => x.RutinaId).OnDelete(DeleteBehavior.Restrict);
                 e.HasIndex(x => x.SocioId).IsUnique().HasFilter("\"Activa\"").HasDatabaseName("ux_asignaciones_rutina_activa_por_socio");
                 e.ToTable(t => t.HasCheckConstraint("CK_AsignacionesRutina_Fechas", "\"FechaFin\" IS NULL OR \"FechaFin\" >= \"FechaInicio\""));
+            });
+
+            // Seguimiento de peso y medidas: una medición por socio y día, con rangos razonables en la base.
+            modelBuilder.Entity<MedicionSocio>(e =>
+            {
+                e.Property(x => x.Notas).HasMaxLength(300);
+                foreach (var propiedad in new[] { nameof(MedicionSocio.PesoKg), nameof(MedicionSocio.GrasaCorporalPct), nameof(MedicionSocio.CinturaCm),
+                    nameof(MedicionSocio.CaderaCm), nameof(MedicionSocio.PechoCm), nameof(MedicionSocio.BrazoCm), nameof(MedicionSocio.MusloCm) })
+                    e.Property(propiedad).HasPrecision(6, 1);
+                e.HasOne<Socio>().WithMany().HasForeignKey(x => x.SocioId).OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => new { x.SocioId, x.Fecha }).IsUnique().HasDatabaseName("ux_mediciones_socio_fecha");
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_MedicionesSocio_Peso", "\"PesoKg\" BETWEEN 20 AND 400");
+                    t.HasCheckConstraint("CK_MedicionesSocio_Grasa", "\"GrasaCorporalPct\" IS NULL OR \"GrasaCorporalPct\" BETWEEN 2 AND 70");
+                    t.HasCheckConstraint("CK_MedicionesSocio_Perimetros",
+                        "(\"CinturaCm\" IS NULL OR \"CinturaCm\" BETWEEN 30 AND 250) AND (\"CaderaCm\" IS NULL OR \"CaderaCm\" BETWEEN 30 AND 250) AND " +
+                        "(\"PechoCm\" IS NULL OR \"PechoCm\" BETWEEN 30 AND 250) AND (\"BrazoCm\" IS NULL OR \"BrazoCm\" BETWEEN 10 AND 100) AND " +
+                        "(\"MusloCm\" IS NULL OR \"MusloCm\" BETWEEN 20 AND 150)");
+                });
             });
 
             modelBuilder.Entity<Membresia>().ToTable(t =>

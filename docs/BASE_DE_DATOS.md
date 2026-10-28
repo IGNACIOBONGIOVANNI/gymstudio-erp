@@ -40,6 +40,7 @@ erDiagram
     Ejercicios ||--o{ RutinaEjercicios : "se usa en"
     Socios ||--o{ AsignacionesRutina : "entrena con"
     Rutinas ||--o{ AsignacionesRutina : "se asigna"
+    Socios ||--o{ MedicionesSocio : "se mide"
 
     asientos_contables {
         bigint Id PK
@@ -85,6 +86,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `Membresias` | `CK_Membresias_Vigencia` | Vencimiento >= inicio |
 | `RutinaEjercicios` | `CK_RutinaEjercicios_Dia` / `_Series` / `_Descanso` | Día 1 a 7, series 1 a 20, descanso 0 a 600 s |
 | `AsignacionesRutina` | `CK_AsignacionesRutina_Fechas` | Vencimiento >= inicio |
+| `MedicionesSocio` | `CK_MedicionesSocio_Peso` / `_Grasa` / `_Perimetros` | Peso 20 a 400 kg, grasa 2 a 70 %, perímetros dentro de rangos humanos |
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
 
 ### Únicas y claves foráneas
@@ -92,6 +94,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 - `asientos_contables (cliente_id, numero_asiento)` único: no se repite la numeración.
 - `asientos_contables (asiento_revertido_id)` único: un asiento se revierte una sola vez.
 - `Usuario (Email)` único: es el nombre de usuario del login.
+- `MedicionesSocio (SocioId, Fecha)` único: una medición por socio y día.
 - `AsignacionesRutina (SocioId)` único **donde Activa**: un socio tiene una sola rutina activa.
 - `Ejercicios` y `Rutinas`: nombre único sin distinguir mayúsculas (`lower("Nombre")`).
 - Las FK `lineas_asiento → CuentasContables`, `Facturas → asientos_contables` y
@@ -103,7 +106,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 |---|---|---|---|
 | `trg_validar_balance_lineas` / `trg_validar_balance_asiento` | `lineas_asiento`, `asientos_contables` | `AFTER`, **diferido** al `COMMIT` | Un asiento Confirmado debe cumplir la partida doble: Debe = Haber, más de 0 y al menos 2 líneas |
 | `trg_proteger_lineas_asiento` / `trg_proteger_asiento` | `lineas_asiento`, `asientos_contables` | `BEFORE UPDATE OR DELETE` | Un asiento Confirmado o Anulado es inmutable: no se borra, no vuelve a Borrador y sus líneas no cambian |
-| `trg_auditar_*` (10 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
+| `trg_auditar_*` (11 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
 | `trg_auditoria_solo_lectura` / `trg_auditoria_sin_truncate` | `auditoria` | `BEFORE UPDATE OR DELETE` / `BEFORE TRUNCATE` | La auditoría no se puede alterar |
 
 **¿Por qué el trigger de balance es diferido?** Al confirmar una factura se inserta

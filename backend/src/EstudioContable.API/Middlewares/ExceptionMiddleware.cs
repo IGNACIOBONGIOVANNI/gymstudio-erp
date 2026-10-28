@@ -106,6 +106,8 @@ namespace EstudioContable.API.Middlewares
                 => "Esa factura del proveedor ya está cargada.",
             "23505" when pg.ConstraintName == "ux_asignaciones_rutina_activa_por_socio"
                 => "Ese socio ya tiene una rutina activa: otra persona se la asignó al mismo tiempo. Actualizá la pantalla.",
+            "23505" when pg.ConstraintName == "ux_mediciones_socio_fecha"
+                => "Ya hay una medición de ese socio en esa fecha.",
             "23505" when pg.ConstraintName == "ux_ejercicios_nombre"
                 => "Ya existe un ejercicio con ese nombre.",
             "23505" when pg.ConstraintName == "ux_rutinas_nombre"

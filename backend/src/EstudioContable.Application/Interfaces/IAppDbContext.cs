@@ -33,6 +33,7 @@ namespace EstudioContable.Application.Interfaces
         DbSet<Rutina> Rutinas { get; }
         DbSet<RutinaEjercicio> RutinaEjercicios { get; }
         DbSet<AsignacionRutina> AsignacionesRutina { get; }
+        DbSet<MedicionSocio> MedicionesSocio { get; }
 
         /// <summary>Vista contabilidad.v_libro_mayor: saldos por cuenta de los asientos confirmados.</summary>
         IQueryable<SaldoCuentaMayor> LibroMayor { get; }

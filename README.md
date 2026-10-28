@@ -92,6 +92,8 @@ controlan en el backend; el frontend sólo oculta menús.
 | Anular o editar facturas                                   | ✔ | ✔ | ✘ |
 | Asignar, cambiar y finalizar la rutina de un socio         | ✔ | ✔ | ✔ |
 | Crear, editar y eliminar rutinas modelo y ejercicios       | ✔ | ✔ | ✘ |
+| Registrar y corregir mediciones de peso y medidas          | ✔ | ✔ | ✔ |
+| Eliminar mediciones                                        | ✔ | ✔ | ✘ |
 | Crear, confirmar o anular asientos manuales; crear cuentas | ✔ | ✔ | ✘ |
 | Administrar usuarios y consultar la auditoría              | ✔ | ✘ | ✘ |
 
@@ -152,6 +154,17 @@ Menú **Rutinas** (y el botón de la pesa en **Socios**):
   anterior se cierra el día que empieza la nueva. Queda el historial.
 - **Imprimir PDF** de la rutina del socio, en blanco y negro, con una columna para anotar el peso.
 
+## Seguimiento de socios, avisos y exportación
+
+- **Seguimiento** (botón de la curva en **Socios**): peso y, si se midieron, grasa corporal y
+  perímetros (cintura, cadera, pecho, brazo, muslo). Una medición por socio y día; hay un gráfico de
+  evolución, la variación desde la primera medición y PDF para imprimir.
+- **Avisos por WhatsApp** (pantalla **Recepción**): filtros "Por vencer en 7 días" y "Vencidos" y un botón
+  que abre WhatsApp con el mensaje de la cuota ya escrito. Entiende los teléfonos como se escriben en
+  Argentina (0, 15, +54 9); no usa ningún servicio externo, lo envía la persona desde su WhatsApp.
+- **Exportar a Excel**: cada libro (Diario, Mayor, Balance, IVA Ventas y Compras, Caja, Banco, Stock) tiene,
+  junto a "Imprimir PDF", un botón que descarga la planilla `.xlsx` con el mismo período y los mismos totales.
+
 ## Base de datos
 
 Triggers (partida doble, inmutabilidad de asientos, auditoría), restricciones
@@ -163,6 +176,7 @@ Triggers (partida doble, inmutabilidad de asientos, auditoría), restricciones
 
 ```bash
 dotnet test backend/EstudioContable.slnx
+cd frontend && npm test
 ```
 
 - **Dominio** (`backend/tests/EstudioContable.Domain.Tests`, sin base de datos):
