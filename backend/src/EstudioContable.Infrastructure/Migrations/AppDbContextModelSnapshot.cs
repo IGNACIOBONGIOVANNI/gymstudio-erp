@@ -893,6 +893,9 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<long?>("AsientoContableId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("ClienteComercialId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ClienteId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -912,6 +915,9 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<decimal>("Importe")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<long?>("ProveedorId")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("TipoMovimiento")
                         .HasColumnType("integer");
 
@@ -919,11 +925,17 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("AsientoContableId");
 
+                    b.HasIndex("ClienteComercialId");
+
                     b.HasIndex("FacturaId");
+
+                    b.HasIndex("ProveedorId");
 
                     b.ToTable("movimientos_banco", "banco", t =>
                         {
                             t.HasCheckConstraint("CK_movimientos_banco_importe_positivo", "\"Importe\" > 0");
+
+                            t.HasCheckConstraint("CK_movimientos_banco_un_solo_tercero", "NOT (\"ClienteComercialId\" IS NOT NULL AND \"ProveedorId\" IS NOT NULL)");
                         });
                 });
 
@@ -938,6 +950,9 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<long?>("AsientoContableId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("ClienteComercialId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ClienteId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -957,6 +972,9 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<decimal>("Importe")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<long?>("ProveedorId")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("TipoMovimiento")
                         .HasColumnType("integer");
 
@@ -964,11 +982,17 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasIndex("AsientoContableId");
 
+                    b.HasIndex("ClienteComercialId");
+
                     b.HasIndex("FacturaId");
+
+                    b.HasIndex("ProveedorId");
 
                     b.ToTable("movimientos_caja", "caja", t =>
                         {
                             t.HasCheckConstraint("CK_movimientos_caja_importe_positivo", "\"Importe\" > 0");
+
+                            t.HasCheckConstraint("CK_movimientos_caja_un_solo_tercero", "NOT (\"ClienteComercialId\" IS NOT NULL AND \"ProveedorId\" IS NOT NULL)");
                         });
                 });
 
@@ -1544,10 +1568,20 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasForeignKey("AsientoContableId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("EstudioContable.Domain.Entities.ClienteComercial", null)
+                        .WithMany()
+                        .HasForeignKey("ClienteComercialId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EstudioContable.Domain.Entities.Factura", null)
                         .WithMany()
                         .HasForeignKey("FacturaId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EstudioContable.Domain.Entities.Proveedor", null)
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoCaja", b =>
@@ -1557,10 +1591,20 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasForeignKey("AsientoContableId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("EstudioContable.Domain.Entities.ClienteComercial", null)
+                        .WithMany()
+                        .HasForeignKey("ClienteComercialId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("EstudioContable.Domain.Entities.Factura", null)
                         .WithMany()
                         .HasForeignKey("FacturaId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("EstudioContable.Domain.Entities.Proveedor", null)
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoStock", b =>

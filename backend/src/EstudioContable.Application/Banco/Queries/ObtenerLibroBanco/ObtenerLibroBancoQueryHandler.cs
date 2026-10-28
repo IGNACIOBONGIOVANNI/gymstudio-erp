@@ -40,7 +40,9 @@ namespace EstudioContable.Application.Banco.Queries.ObtenerLibroBanco
                 x.TipoMovimiento == TipoMovimientoBanco.Ingreso ? x.Importe : null,
                 x.TipoMovimiento == TipoMovimientoBanco.Egreso ? x.Importe : null,
                 x.FacturaId,
-                x.AsientoContableId.HasValue && asientosDeTransferencias.Contains(x.AsientoContableId.Value)
+                x.AsientoContableId.HasValue && asientosDeTransferencias.Contains(x.AsientoContableId.Value),
+                x.ClienteComercialId,
+                x.ProveedorId
             )).ToList();
 
             var saldoAnterior = 0m;

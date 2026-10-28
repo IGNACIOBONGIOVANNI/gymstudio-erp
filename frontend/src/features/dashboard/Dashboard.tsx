@@ -181,6 +181,8 @@ export function Dashboard() {
                 <Indicador etiqueta={f.ivaAPagar >= 0 ? "IVA a pagar" : "IVA a favor"} valor={formatearPesos(Math.abs(f.ivaAPagar))} nota="Débito fiscal menos crédito fiscal del mes" />
                 <Indicador etiqueta="Saldo de Caja" valor={formatearPesos(f.cajaSaldo)} nota={f.cajaSaldo < 0 ? "Caja en negativo: revisá los movimientos" : "Igual al Libro Caja"} alerta={f.cajaSaldo < 0} />
                 <Indicador etiqueta="Saldo de Banco" valor={formatearPesos(f.bancoSaldo)} nota="Igual al Libro Banco" />
+                <Indicador etiqueta="A cobrar" valor={formatearPesos(f.aCobrar)} nota="Lo que te deben los clientes" />
+                <Indicador etiqueta="A pagar" valor={formatearPesos(f.aPagar)} nota="Lo que debés a proveedores" />
                 <Indicador etiqueta="Facturas anuladas" valor={String(f.facturasAnuladas)} nota="Del mes, no suman en los totales" />
               </section>
 

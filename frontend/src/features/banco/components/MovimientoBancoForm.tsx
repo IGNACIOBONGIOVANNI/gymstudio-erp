@@ -5,6 +5,7 @@ import { useCrearMovimientoBanco } from "../hooks/useCrearMovimientoBanco";
 // 🔥 Asegurate de tener este hook creado para actualizar (te dejo el código más abajo)
 import { useEditarMovimientoBanco } from "../hooks/useEditarMovimientoBanco";
 import { hoyLocal } from "../../../utils/formatters";
+import { SelectorDeTercero } from "../../../components/SelectorDeTercero";
 
 interface MovimientoBancoFormProps {
   clienteId: string;
@@ -20,6 +21,11 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
   // Cuenta contra la que se registra el asiento ("" = la de siempre: Otros Ingresos /
   // Gastos Generales al crear, o la que ya tenía al editar).
   const [contrapartida, setContrapartida] = useState("");
+  // Cliente (cobro) o proveedor (pago) al que corresponde: arma su cuenta corriente.
+  const [terceroId, setTerceroId] = useState("");
+  const contrapartidaEfectiva = contrapartida || (movimientoAEditar ? "" : tipoMovimiento === 1 ? "106" : "107");
+  const pideCliente = contrapartidaEfectiva === "103";
+  const pideProveedor = contrapartidaEfectiva === "202";
 
   const { mutate: crear, isPending: isCreating } = useCrearMovimientoBanco();
   const { mutate: editar, isPending: isEditing } = useEditarMovimientoBanco();
@@ -35,6 +41,13 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
         : "";
       setFecha(fechaFormateada);
       setDetalle(movimientoAEditar.detalle || "");
+      if (movimientoAEditar.clienteComercialId) {
+        setContrapartida("103");
+        setTerceroId(String(movimientoAEditar.clienteComercialId));
+      } else if (movimientoAEditar.proveedorId) {
+        setContrapartida("202");
+        setTerceroId(String(movimientoAEditar.proveedorId));
+      }
 
       // Si tiene ingreso, es tipo 1. Si tiene egreso, es tipo 2.
       if (movimientoAEditar.ingreso != null && movimientoAEditar.ingreso > 0) {
@@ -52,6 +65,8 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
     setDetalle("");
     setTipoMovimiento(1);
     setImporte("");
+    setContrapartida("");
+    setTerceroId("");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,6 +76,8 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
     if (!fecha) return void toast.error("Indicá la fecha del movimiento");
     if (!detalle.trim()) return void toast.error("Indicá el detalle del movimiento");
     if (!Number.isFinite(monto) || monto <= 0) return void toast.error("El importe debe ser un número mayor a cero");
+    if (pideCliente && !terceroId) return void toast.error("Elegí el cliente al que corresponde el cobro");
+    if (pideProveedor && !terceroId) return void toast.error("Elegí el proveedor al que corresponde el pago");
 
     const fechaIso = new Date(fecha).toISOString();
     const cuentaContrapartidaId = contrapartida ? Number(contrapartida) : null;
@@ -77,13 +94,19 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
             ingreso: tipoMovimiento === 1 ? monto : null,
             egreso: tipoMovimiento === 2 ? monto : null,
             cuentaContrapartidaId,
+            clienteComercialId: pideCliente ? Number(terceroId) : null,
+            proveedorId: pideProveedor ? Number(terceroId) : null,
           },
         },
         { onSuccess: () => onClose() }
       );
     } else {
       crear(
-        { clienteId, fecha: fechaIso, detalle, tipoMovimiento, importe: monto, cuentaContrapartidaId },
+        {
+          clienteId, fecha: fechaIso, detalle, tipoMovimiento, importe: monto, cuentaContrapartidaId,
+          clienteComercialId: pideCliente ? Number(terceroId) : null,
+          proveedorId: pideProveedor ? Number(terceroId) : null,
+        },
         { onSuccess: () => onClose() }
       );
     }
@@ -127,6 +150,7 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
               onChange={(e) => {
                 setTipoMovimiento(Number(e.target.value));
                 setContrapartida("");
+                setTerceroId("");
               }}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             >
@@ -141,7 +165,7 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
             </label>
             <select
               value={contrapartida || (movimientoAEditar ? "" : tipoMovimiento === 1 ? "106" : "107")}
-              onChange={(e) => setContrapartida(e.target.value)}
+              onChange={(e) => { setContrapartida(e.target.value); setTerceroId(""); }}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             >
               {tipoMovimiento === 1 ? (
@@ -162,6 +186,10 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
               El movimiento genera su asiento en el Libro Diario contra esta cuenta.
             </p>
           </div>
+
+          {(pideCliente || pideProveedor) && (
+            <SelectorDeTercero tipo={pideCliente ? "cliente" : "proveedor"} value={terceroId} onChange={setTerceroId} />
+          )}
 
           <div>
             <label className="block text-sm font-medium text-slate-700">

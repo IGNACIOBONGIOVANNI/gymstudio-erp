@@ -164,6 +164,21 @@ namespace EstudioContable.Infrastructure.Persistence
                 });
             });
 
+            // Cobros y pagos a cuenta corriente: el cliente o proveedor al que corresponden. Un movimiento
+            // nunca es de los dos a la vez, y no se puede borrar un cliente o proveedor que tiene cobros o pagos.
+            modelBuilder.Entity<MovimientoCaja>(e =>
+            {
+                e.HasOne<ClienteComercial>().WithMany().HasForeignKey(x => x.ClienteComercialId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne<Proveedor>().WithMany().HasForeignKey(x => x.ProveedorId).OnDelete(DeleteBehavior.Restrict);
+                e.ToTable(t => t.HasCheckConstraint("CK_movimientos_caja_un_solo_tercero", "NOT (\"ClienteComercialId\" IS NOT NULL AND \"ProveedorId\" IS NOT NULL)"));
+            });
+            modelBuilder.Entity<MovimientoBanco>(e =>
+            {
+                e.HasOne<ClienteComercial>().WithMany().HasForeignKey(x => x.ClienteComercialId).OnDelete(DeleteBehavior.Restrict);
+                e.HasOne<Proveedor>().WithMany().HasForeignKey(x => x.ProveedorId).OnDelete(DeleteBehavior.Restrict);
+                e.ToTable(t => t.HasCheckConstraint("CK_movimientos_banco_un_solo_tercero", "NOT (\"ClienteComercialId\" IS NOT NULL AND \"ProveedorId\" IS NOT NULL)"));
+            });
+
             modelBuilder.Entity<Membresia>().ToTable(t =>
                 t.HasCheckConstraint("CK_Membresias_Vigencia", "\"FechaVencimiento\" >= \"FechaInicio\""));
 

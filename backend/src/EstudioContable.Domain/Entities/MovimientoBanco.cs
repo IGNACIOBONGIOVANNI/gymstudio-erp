@@ -14,6 +14,10 @@ namespace EstudioContable.Domain.Entities
         public long? FacturaId { get; private set; }
         public long? AsientoContableId { get; private set; }
 
+        // Cliente al que se le cobró o proveedor al que se le pagó: permite armar su cuenta corriente.
+        public long? ClienteComercialId { get; private set; }
+        public long? ProveedorId { get; private set; }
+
         public bool EsIngreso => TipoMovimiento == TipoMovimientoBanco.Ingreso;
 
         private MovimientoBanco() { } // Para EF Core
@@ -49,6 +53,14 @@ namespace EstudioContable.Domain.Entities
             => Actualizar(fecha, detalle, esIngreso ? TipoMovimientoBanco.Ingreso : TipoMovimientoBanco.Egreso, importe);
 
         public void AsignarAsiento(long asientoId) => AsientoContableId = asientoId;
+
+        public void AsignarTercero(long? clienteComercialId, long? proveedorId)
+        {
+            if (clienteComercialId.HasValue && proveedorId.HasValue)
+                throw new ArgumentException("Un movimiento corresponde a un cliente o a un proveedor, no a los dos.");
+            ClienteComercialId = clienteComercialId;
+            ProveedorId = proveedorId;
+        }
 
         private static void Validar(DateTime fecha, string detalle, TipoMovimientoBanco tipoMovimiento, decimal importe)
         {

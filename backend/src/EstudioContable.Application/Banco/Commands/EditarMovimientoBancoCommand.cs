@@ -9,6 +9,8 @@ namespace EstudioContable.Application.Banco.Commands
         string Detalle,
         decimal? Ingreso,
         decimal? Egreso,
-        long? CuentaContrapartidaId = null
+        long? CuentaContrapartidaId = null,
+        long? ClienteComercialId = null,
+        long? ProveedorId = null
     ) : IRequest<Unit>;
 }

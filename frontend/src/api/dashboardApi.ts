@@ -17,6 +17,8 @@ export interface FinanzasDelMes {
   resultado: number;
   ivaAPagar: number;
   cajaSaldo: number;
+  aCobrar: number;
+  aPagar: number;
   bancoSaldo: number;
   facturasAnuladas: number;
   serie: MesDeLaSerie[];

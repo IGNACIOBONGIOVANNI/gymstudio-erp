@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
-  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard,
+  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -22,6 +22,7 @@ import { LibroBanco } from './features/banco/components/LibroBanco'
 import { PlanesGym } from './features/gimnasio/components/PlanesGym'
 import { RutinasGym } from './features/gimnasio/components/RutinasGym'
 import { Dashboard } from './features/dashboard/Dashboard'
+import { CuentasCorrientes } from './features/cuentas/CuentasCorrientes'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { Facturacion } from './features/ventas/components/Facturacion'
@@ -79,6 +80,7 @@ const MENU: Grupo[] = [
       { id: 'facturar', titulo: 'Facturar', icono: <Receipt className={icono} />, tarjeta: true },
       { id: 'ventas', titulo: 'Libro de Ventas', icono: <BookOpenText className={icono} /> },
       { id: 'compras', titulo: 'Libro de Compras', icono: <ShoppingCart className={icono} /> },
+      { id: 'cuentas', titulo: 'Cuentas a cobrar y pagar', icono: <HandCoins className={icono} />, roles: GESTION },
       { id: 'clientes', titulo: 'Clientes', icono: <Building2 className={icono} /> },
       { id: 'proveedores', titulo: 'Proveedores', icono: <Truck className={icono} /> },
     ],
@@ -190,6 +192,7 @@ function AppContent() {
   const contenido = (() => {
     switch (vista.id) {
       case 'inicio': return <Dashboard />
+      case 'cuentas': return <CuentasCorrientes />
       case 'recepcion': return <RecepcionGym />
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />

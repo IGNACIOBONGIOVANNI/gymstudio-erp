@@ -10,6 +10,8 @@ namespace EstudioContable.Application.Banco.Commands
         string Detalle,
         TipoMovimientoBanco TipoMovimiento,
         decimal Importe,
-        long? CuentaContrapartidaId = null
+        long? CuentaContrapartidaId = null,
+        long? ClienteComercialId = null,
+        long? ProveedorId = null
     ) : IRequest<long>;
 }

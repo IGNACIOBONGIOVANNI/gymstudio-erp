@@ -134,8 +134,18 @@ namespace EstudioContable.API.Controllers
             var bancoSaldo = await _context.MovimientosBanco.AsNoTracking().Where(m => m.ClienteId == clienteId)
                 .SumAsync(m => m.TipoMovimiento == TipoMovimientoBanco.Ingreso ? m.Importe : -m.Importe, cancellationToken);
 
+            // Lo que deben los clientes y lo que se debe a los proveedores: saldos del Mayor, que son los
+            // mismos totales de la pantalla de cuentas a cobrar y a pagar.
+            var cuentasPorCobrarYPagar = await _context.LibroMayor
+                .Where(m => m.ClienteId == PlanDeCuentas.ClienteIdPorDefecto && (m.CuentaId == PlanDeCuentas.DeudoresPorVentas || m.CuentaId == PlanDeCuentas.Proveedores))
+                .ToListAsync(cancellationToken);
+            var deudores = cuentasPorCobrarYPagar.FirstOrDefault(m => m.CuentaId == PlanDeCuentas.DeudoresPorVentas);
+            var proveedores = cuentasPorCobrarYPagar.FirstOrDefault(m => m.CuentaId == PlanDeCuentas.Proveedores);
+
             return new
             {
+                ACobrar = deudores is null ? 0m : deudores.TotalDebe - deudores.TotalHaber,
+                APagar = proveedores is null ? 0m : proveedores.TotalHaber - proveedores.TotalDebe,
                 Ventas = DelMes("Venta"),
                 Compras = DelMes("Compra"),
                 Resultado = ventas - compras,                 // neto vendido menos neto comprado del mes

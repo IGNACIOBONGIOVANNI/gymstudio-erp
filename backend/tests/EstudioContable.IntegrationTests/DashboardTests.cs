@@ -90,6 +90,44 @@ public class DashboardTests(ApiFixture api)
         Assert.Equal(0m, origen["Cuotas de socios"]);
     }
 
+    private static readonly int[] Multiplicadores = { 5, 4, 3, 2, 7, 6, 5, 4, 3, 2 };
+
+    private static string CuitNuevo()
+    {
+        while (true)
+        {
+            var d = "30" + Random.Shared.Next(10_000_000, 99_999_999);
+            var suma = Multiplicadores.Select((m, i) => m * (d[i] - '0')).Sum();
+            var v = 11 - suma % 11;
+            if (v == 11) v = 0;
+            if (v != 10) return d + v;
+        }
+    }
+
+    [Fact]
+    public async Task Lo_que_hay_que_cobrar_y_pagar_es_el_total_de_las_cuentas_corrientes()
+    {
+        var jefe = await api.Jefe();
+        var cliente = await jefe.PostAsJsonAsync("/api/clientes", new { razonSocial = $"Cliente resumen {Guid.NewGuid():N}"[..28], direccion = "Calle 1", localidad = "Haedo", cuit = CuitNuevo(), condicionIva = "Responsable Inscripto" });
+        Assert.True(cliente.IsSuccessStatusCode, await cliente.Detalle());
+        var clienteId = (long)(await cliente.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        var venta = await jefe.PostAsJsonAsync("/api/facturas", new
+        {
+            fecha = "2025-06-10T12:00:00Z", tipoOperacion = "Venta", condicionPago = "CuentaCorriente", tipoComprobante = "A", clienteId,
+            subtotal = 1000m, iva = 210m, total = 1210m,
+            items = new[] { new { productoId = 0, descripcion = "Servicio", cantidad = 1, precioUnitario = 1000m, subtotal = 1000m } }
+        });
+        Assert.True(venta.IsSuccessStatusCode, await venta.Detalle());
+
+        var resumen = (await Resumen(jefe, "2025-06", "2025-06-20"))["finanzas"]!;
+        var cobrar = await jefe.GetJson("/api/cuentas-corrientes/clientes?hoy=2025-06-20");
+        var pagar = await jefe.GetJson("/api/cuentas-corrientes/proveedores?hoy=2025-06-20");
+
+        Assert.Equal((decimal)cobrar["total"]!["saldo"]!, (decimal)resumen["aCobrar"]!);
+        Assert.Equal((decimal)pagar["total"]!["saldo"]!, (decimal)resumen["aPagar"]!);
+        Assert.True((decimal)resumen["aCobrar"]! >= 1210m);
+    }
+
     [Fact]
     public async Task Recepcion_ve_solo_lo_del_gimnasio_y_nunca_los_importes()
     {

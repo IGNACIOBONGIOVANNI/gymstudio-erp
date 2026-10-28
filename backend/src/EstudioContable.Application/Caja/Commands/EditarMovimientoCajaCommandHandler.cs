@@ -27,7 +27,9 @@ namespace EstudioContable.Application.Caja.Commands
                 request.Detalle,
                 esIngreso,
                 esIngreso ? request.Ingreso!.Value : request.Egreso!.Value,
-                request.CuentaContrapartidaId);
+                request.CuentaContrapartidaId,
+                request.ClienteComercialId,
+                request.ProveedorId);
 
             await _tesoreria.EditarAsync(LibroTesoreria.Caja, request.Id, datos, cancellationToken);
             return Unit.Value;

@@ -90,6 +90,7 @@ controlan en el backend; el frontend sólo oculta menús.
 | Consultar libros, facturar, socios, planes, stock          | ✔ | ✔ | ✔ |
 | Ver los importes del resumen de inicio (ventas, caja, IVA) | ✔ | ✔ | ✘ |
 | Anular o editar facturas                                   | ✔ | ✔ | ✘ |
+| Ver cuentas a cobrar y a pagar y estados de cuenta         | ✔ | ✔ | ✘ |
 | Asignar, cambiar y finalizar la rutina de un socio         | ✔ | ✔ | ✔ |
 | Crear, editar y eliminar rutinas modelo y ejercicios       | ✔ | ✔ | ✘ |
 | Registrar y corregir mediciones de peso y medidas          | ✔ | ✔ | ✔ |
@@ -115,6 +116,22 @@ Las facturas y los asientos confirmados **no se borran**:
   de la nueva.
 - En el Libro Diario, "anular" un asiento borrador lo elimina; uno confirmado
   queda Anulado (o anula la factura a la que pertenece).
+
+## Cuentas a cobrar y a pagar
+
+Menú **Cuentas a cobrar y pagar** (solo Administrador y Contador). Para cada cliente (o proveedor) muestra
+lo facturado en **cuenta corriente**, lo cobrado (o pagado), el saldo y la antigüedad de la deuda (0 a 30,
+31 a 60, 61 a 90 y más de 90 días), con su estado de cuenta en pantalla y en PDF.
+
+- Un **cobro a un cliente** se carga en Caja o Banco como ingreso con la contrapartida *Cobro a clientes
+  (Deudores por Ventas)* y **eligiendo el cliente**; un **pago a un proveedor**, como egreso con *Pago a
+  proveedores* y eligiendo el proveedor. Sin elegirlo el sistema no deja guardar.
+- Los pagos no se asignan a una factura puntual: se aplican a las más antiguas primero, y lo que sobra
+  queda como saldo a favor.
+- Las facturas anuladas no cuentan. Eliminar o corregir un cobro actualiza la deuda.
+- **Control contable:** el total debe ser igual al saldo de *Deudores por Ventas* (o *Proveedores*) del
+  Libro Mayor; si no, la pantalla avisa y explica la causa probable (cobros viejos sin cliente asignado o
+  asientos manuales). El resumen de inicio muestra lo mismo como "A cobrar" y "A pagar".
 
 ## Caja y Banco
 

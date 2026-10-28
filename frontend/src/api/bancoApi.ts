@@ -50,6 +50,9 @@ export interface CrearMovimientoBancoCommand {
   importe: number;
   // Cuenta contra la que se registra el asiento (null = la de siempre).
   cuentaContrapartidaId?: number | null;
+  // Cliente al que se le cobró o proveedor al que se le pagó (cuando la contrapartida es Deudores o Proveedores).
+  clienteComercialId?: number | null;
+  proveedorId?: number | null;
 }
 
 /** Registra un nuevo movimiento bancario */

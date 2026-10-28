@@ -26,7 +26,9 @@ namespace EstudioContable.Application.Caja.Commands
                 request.Detalle,
                 request.TipoMovimiento == TipoMovimientoCaja.Ingreso,
                 request.Importe,
-                request.CuentaContrapartidaId);
+                request.CuentaContrapartidaId,
+                request.ClienteComercialId,
+                request.ProveedorId);
 
             return _tesoreria.CrearAsync(LibroTesoreria.Caja, datos, cancellationToken);
         }

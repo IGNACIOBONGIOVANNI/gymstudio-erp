@@ -14,7 +14,8 @@ namespace EstudioContable.Application.Services
     public enum LibroTesoreria { Caja, Banco }
 
     /// <summary>Datos de un movimiento cargado a mano en el Libro Caja o Banco.</summary>
-    public record DatosMovimientoTesoreria(DateTime Fecha, string Detalle, bool EsIngreso, decimal Importe, long? CuentaContrapartidaId);
+    public record DatosMovimientoTesoreria(DateTime Fecha, string Detalle, bool EsIngreso, decimal Importe, long? CuentaContrapartidaId,
+        long? ClienteComercialId = null, long? ProveedorId = null);
 
     /// <summary>Paso de fondos de un libro al otro (ej. depósito de efectivo en el banco).</summary>
     public record DatosTransferencia(LibroTesoreria Origen, DateTime Fecha, decimal Importe, string? Detalle);
@@ -55,6 +56,9 @@ namespace EstudioContable.Application.Services
             IMovimientoTesoreria movimiento = libro == LibroTesoreria.Caja
                 ? new MovimientoCaja(clienteId, datos.Fecha, datos.Detalle, datos.EsIngreso ? TipoMovimientoCaja.Ingreso : TipoMovimientoCaja.Egreso, datos.Importe)
                 : new MovimientoBanco(clienteId, datos.Fecha, datos.Detalle, datos.EsIngreso ? TipoMovimientoBanco.Ingreso : TipoMovimientoBanco.Egreso, datos.Importe);
+
+            var (clienteCobrado, proveedorPagado) = await ResolverTerceroAsync(contrapartida, datos, movimiento, cancellationToken);
+            movimiento.AsignarTercero(clienteCobrado, proveedorPagado);
 
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
@@ -120,6 +124,7 @@ namespace EstudioContable.Application.Services
                     "Las transferencias entre Caja y Banco no se editan: eliminala y cargala de nuevo (así los dos libros quedan siempre iguales).");
             var anterior = await ContrapartidaActualAsync(libro, movimiento, cancellationToken);
             var contrapartida = ResolverContrapartida(datos, anterior);
+            var (clienteCobrado, proveedorPagado) = await ResolverTerceroAsync(contrapartida, datos, movimiento, cancellationToken);
 
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
@@ -127,6 +132,7 @@ namespace EstudioContable.Application.Services
                     await OperacionesContables.AnularAsientoAsync(_context, asientoId, cancellationToken);
 
                 movimiento.ActualizarDatos(datos.Fecha, datos.Detalle, datos.EsIngreso, datos.Importe);
+                movimiento.AsignarTercero(clienteCobrado, proveedorPagado);
                 await _context.SaveChangesAsync(cancellationToken);
 
                 await RegistrarAsientoAsync(libro, movimiento, contrapartida, cancellationToken);
@@ -243,6 +249,38 @@ namespace EstudioContable.Application.Services
         {
             if (movimiento is MovimientoCaja caja) _context.MovimientosCaja.Remove(caja);
             else _context.MovimientosBanco.Remove((MovimientoBanco)movimiento);
+        }
+
+        /// <summary>
+        /// Un cobro a clientes (Deudores por Ventas) debe decir de qué cliente es, y un pago a proveedores,
+        /// a qué proveedor; así se arma la cuenta corriente de cada uno. Con cualquier otra contrapartida
+        /// no se guarda ninguno. Al editar sin indicarlo se conserva el que ya tenía.
+        /// </summary>
+        private async Task<(long? ClienteId, long? ProveedorId)> ResolverTerceroAsync(long contrapartida, DatosMovimientoTesoreria datos, IMovimientoTesoreria movimiento, CancellationToken cancellationToken)
+        {
+            if (contrapartida == PlanDeCuentas.DeudoresPorVentas)
+            {
+                var id = datos.ClienteComercialId ?? movimiento.ClienteComercialId
+                    ?? throw new ArgumentException("Elegí el cliente al que corresponde el cobro.");
+                var cliente = await _context.ClientesComerciales.AsNoTracking().Where(c => c.Id == id).Select(c => new { c.RazonSocial, c.Activo }).FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new ArgumentException("El cliente elegido no existe.");
+                if (!cliente.Activo && id != movimiento.ClienteComercialId)
+                    throw new InvalidOperationException($"El cliente {cliente.RazonSocial} está dado de baja.");
+                return (id, null);
+            }
+
+            if (contrapartida == PlanDeCuentas.Proveedores)
+            {
+                var id = datos.ProveedorId ?? movimiento.ProveedorId
+                    ?? throw new ArgumentException("Elegí el proveedor al que corresponde el pago.");
+                var proveedor = await _context.Proveedores.AsNoTracking().Where(p => p.Id == id).Select(p => new { p.RazonSocial, p.Activo }).FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new ArgumentException("El proveedor elegido no existe.");
+                if (!proveedor.Activo && id != movimiento.ProveedorId)
+                    throw new InvalidOperationException($"El proveedor {proveedor.RazonSocial} está dado de baja.");
+                return (null, id);
+            }
+
+            return (null, null);
         }
 
         private static long ResolverContrapartida(DatosMovimientoTesoreria datos, long? anterior)

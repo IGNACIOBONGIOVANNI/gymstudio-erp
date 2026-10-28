@@ -7,6 +7,8 @@ namespace EstudioContable.Application.Caja.Queries.DTOs
         decimal? Ingreso,
         decimal? Egreso,
         long? FacturaId,
-        bool EsTransferencia
+        bool EsTransferencia,
+        long? ClienteComercialId = null,
+        long? ProveedorId = null
     );
 }

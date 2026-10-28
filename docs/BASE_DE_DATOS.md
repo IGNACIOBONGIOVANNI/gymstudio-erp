@@ -86,6 +86,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `Membresias` | `CK_Membresias_Vigencia` | Vencimiento >= inicio |
 | `RutinaEjercicios` | `CK_RutinaEjercicios_Dia` / `_Series` / `_Descanso` | Día 1 a 7, series 1 a 20, descanso 0 a 600 s |
 | `AsignacionesRutina` | `CK_AsignacionesRutina_Fechas` | Vencimiento >= inicio |
+| `movimientos_caja` / `movimientos_banco` | `CK_..._un_solo_tercero` | Un cobro o pago es de un cliente **o** de un proveedor, nunca de los dos |
 | `MedicionesSocio` | `CK_MedicionesSocio_Peso` / `_Grasa` / `_Perimetros` | Peso 20 a 400 kg, grasa 2 a 70 %, perímetros dentro de rangos humanos |
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
 
@@ -94,6 +95,8 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 - `asientos_contables (cliente_id, numero_asiento)` único: no se repite la numeración.
 - `asientos_contables (asiento_revertido_id)` único: un asiento se revierte una sola vez.
 - `Usuario (Email)` único: es el nombre de usuario del login.
+- `movimientos_caja` y `movimientos_banco` → `ClientesComerciales` / `Proveedores` (cobros y pagos a cuenta corriente) son
+  `RESTRICT`: no se puede borrar un cliente o proveedor que tiene cobros o pagos registrados.
 - `MedicionesSocio (SocioId, Fecha)` único: una medición por socio y día.
 - `AsignacionesRutina (SocioId)` único **donde Activa**: un socio tiene una sola rutina activa.
 - `Ejercicios` y `Rutinas`: nombre único sin distinguir mayúsculas (`lower("Nombre")`).

@@ -40,6 +40,8 @@ export function generarResumenPDF(datos: ResumenInicio) {
       [f.ivaAPagar >= 0 ? 'IVA a pagar' : 'IVA a favor', pesos(Math.abs(f.ivaAPagar))],
       ['Saldo de Caja', pesos(f.cajaSaldo)],
       ['Saldo de Banco', pesos(f.bancoSaldo)],
+      ['A cobrar a clientes (cuenta corriente)', pesos(f.aCobrar)],
+      ['A pagar a proveedores (cuenta corriente)', pesos(f.aPagar)],
       ['Facturas anuladas del mes', String(f.facturasAnuladas)],
     ], [1]);
 

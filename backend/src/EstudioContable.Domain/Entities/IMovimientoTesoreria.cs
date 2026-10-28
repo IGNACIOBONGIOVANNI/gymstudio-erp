@@ -21,6 +21,11 @@ namespace EstudioContable.Domain.Entities
         // los de una factura se registran en el asiento de la factura).
         long? AsientoContableId { get; }
 
+        // Cliente al que se le cobró o proveedor al que se le pagó (sólo cobros y pagos a cuenta corriente).
+        long? ClienteComercialId { get; }
+        long? ProveedorId { get; }
+
+        void AsignarTercero(long? clienteComercialId, long? proveedorId);
         void ActualizarDatos(DateTime fecha, string detalle, bool esIngreso, decimal importe);
         void AsignarAsiento(long asientoId);
     }
