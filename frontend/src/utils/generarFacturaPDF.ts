@@ -37,7 +37,55 @@ const CONDICION_DE_VENTA: Record<string, string> = {
   CuentaCorriente: 'Cuenta corriente',
 };
 
+// Patrones Interleaved 2 of 5 (n = fino, w = ancho), el que usa el código de barras de ARCA.
+const PATRON_ITF = ['nnwwn', 'wnnnw', 'nwnnw', 'wwnnn', 'nnwnw', 'wnwnn', 'nwwnn', 'nnnww', 'wnnwn', 'nwnwn'];
+
+function hash32(texto: string, semilla: number) {
+  let h = (2166136261 ^ semilla) >>> 0;
+  for (let i = 0; i < texto.length; i++) h = Math.imul(h ^ texto.charCodeAt(i), 16777619) >>> 0;
+  return h;
+}
+
+// CAE simulado: 14 dígitos que salen siempre igual para el mismo comprobante (no cambia al reimprimir).
+function caeSimulado(clave: string) {
+  const n = hash32(clave, 1) * 100000 + (hash32(clave, 2) % 100000);
+  return String(n % 100000000000000).padStart(14, '0');
+}
+
+function aAAAAMMDD(fechaIso: string, sumarDias: number) {
+  const d = new Date(fechaIso);
+  const base = Number.isNaN(d.getTime()) ? new Date() : d;
+  base.setUTCDate(base.getUTCDate() + sumarDias);
+  return { compacta: `${base.getUTCFullYear()}${String(base.getUTCMonth() + 1).padStart(2, '0')}${String(base.getUTCDate()).padStart(2, '0')}`, legible: `${String(base.getUTCDate()).padStart(2, '0')}/${String(base.getUTCMonth() + 1).padStart(2, '0')}/${base.getUTCFullYear()}` };
+}
+
+// Dígito verificador del código de barras de ARCA: impares x3 + pares, complemento a 10.
+function digitoVerificador(codigo: string) {
+  let impares = 0, pares = 0;
+  [...codigo].forEach((c, i) => { if (i % 2 === 0) impares += Number(c); else pares += Number(c); });
+  return String((10 - ((impares * 3 + pares) % 10)) % 10);
+}
+
+function dibujarCodigoITF(doc: jsPDF, digitos: string, x: number, y: number, alto: number) {
+  const fino = 0.33, ancho = fino * 2.5;
+  doc.setFillColor(0, 0, 0);
+  let cursor = x;
+  const barra = (w: number, pintar: boolean) => { if (pintar) doc.rect(cursor, y, w, alto, 'F'); cursor += w; };
+  [fino, fino, fino, fino].forEach((w, i) => barra(w, i % 2 === 0)); // inicio
+  for (let i = 0; i < digitos.length; i += 2) {
+    const barras = PATRON_ITF[Number(digitos[i])], espacios = PATRON_ITF[Number(digitos[i + 1])];
+    for (let k = 0; k < 5; k++) {
+      barra(barras[k] === 'w' ? ancho : fino, true);
+      barra(espacios[k] === 'w' ? ancho : fino, false);
+    }
+  }
+  barra(ancho, true); barra(fino, false); barra(fino, true); // fin
+  return cursor - x;
+}
+
 interface Parte { nombre: string; cuit: string; domicilio: string; condicionIva: string }
+
+const Cuit_digitos = (v: string) => v.replace(/[^0-9]/g, '');
 
 export function generarFacturaPDF(factura: FacturaParaImprimir) {
   const doc = new jsPDF();
@@ -165,7 +213,7 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
   autoTable(doc, {
     ...estiloTabla(),
     startY: 91,
-    margin: { left: 10, right: 10, top: 15, bottom: 30 },
+    margin: { left: 10, right: 10, top: 15, bottom: 52 },
     styles: { font: 'helvetica', fontSize: 9, textColor: 0, lineColor: 150, lineWidth: 0.15, cellPadding: 1.8 },
     head: [['Cant.', 'Descripción', { content: 'P. Unitario', styles: { halign: 'right' } }, { content: 'Subtotal', styles: { halign: 'right' } },
       ...(letra === 'C' ? [] : [{ content: `IVA ${etiquetaTasa}`, styles: { halign: 'right' as const } }, { content: 'Total', styles: { halign: 'right' as const } }])]],
@@ -191,7 +239,7 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
   filas.push(['IMPORTE TOTAL', pesos(factura.total)]);
 
   y = (doc as any).lastAutoTable.finalY + 6;
-  if (y + filas.length * 7 + 30 > ALTO_PAGINA) { doc.addPage(); y = 20; }
+  if (y + filas.length * 7 + 52 > ALTO_PAGINA) { doc.addPage(); y = 20; }
   doc.setLineWidth(0.3);
   doc.rect(115, y, 85, filas.length * 7 + 3);
   filas.forEach(([etiqueta, valor], i) => {
@@ -219,6 +267,13 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
     doc.setTextColor(0);
   }
 
+  const cuitEmisor = Cuit_digitos(emisor.cuit).padStart(11, '0').slice(-11);
+  const cae = factura.cae ?? caeSimulado(`${letra}|${puntoVenta}|${numero}|${cuitEmisor}`);
+  const vencimiento = factura.fechaVencimientoCae ? { compacta: factura.fechaVencimientoCae.slice(0, 10).replace(/-/g, ''), legible: fecha(factura.fechaVencimientoCae) } : aAAAAMMDD(factura.fecha, 10);
+  const codigoBase = `${cuitEmisor}${(CODIGO_COMPROBANTE[letra] ?? '011')}${puntoVenta.replace(/[^0-9]/g, '').padStart(5, '0').slice(-5)}${cae}${vencimiento.compacta}`;
+  const codigoBarras = codigoBase + digitoVerificador(codigoBase);
+  const esSimulado = !factura.cae;
+
   const total = doc.getNumberOfPages();
   for (let p = 1; p <= total; p++) {
     doc.setPage(p);
@@ -227,16 +282,22 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
     doc.setLineWidth(0.15);
     doc.line(10, ALTO_PAGINA - 22, 200, ALTO_PAGINA - 22);
     doc.setFontSize(8);
-    if (factura.cae) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.text(esSimulado
+      ? 'Práctica académica: CAE y código de barras SIMULADOS, sin validez fiscal ante ARCA.'
+      : (esCompra ? 'Copia interna del comprobante recibido, registrada en el Libro IVA Compras.' : 'Comprobante emitido por el sistema de gestión.'), 10, ALTO_PAGINA - 16);
+    if (p === total) {
       doc.setFont('helvetica', 'bold');
-      doc.text(`CAE N°: ${factura.cae}`, 10, ALTO_PAGINA - 16);
-      doc.text(`Vencimiento CAE: ${fecha(factura.fechaVencimientoCae)}`, 10, ALTO_PAGINA - 11);
-    } else {
+      doc.setFontSize(9);
+      doc.text(`CAE N°: ${cae}${esSimulado ? ' (simulado)' : ''}`, 10, ALTO_PAGINA - 46);
+      doc.text(`Vencimiento CAE: ${vencimiento.legible}`, 200, ALTO_PAGINA - 46, { align: 'right' });
+      const anchoCodigo = dibujarCodigoITF(doc, codigoBarras, 10, ALTO_PAGINA - 43, 11);
       doc.setFont('helvetica', 'normal');
-      doc.text(esCompra
-        ? 'Copia interna del comprobante recibido del proveedor, registrada en el Libro IVA Compras.'
-        : 'Comprobante emitido por el sistema de gestión, sin CAE: no válido como factura electrónica ante ARCA.', 10, ALTO_PAGINA - 16);
+      doc.setFontSize(7);
+      doc.text(codigoBarras, 10 + anchoCodigo / 2, ALTO_PAGINA - 28, { align: 'center' });
     }
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text(`Página ${p} de ${total}`, 200, ALTO_PAGINA - 11, { align: 'right' });
   }
