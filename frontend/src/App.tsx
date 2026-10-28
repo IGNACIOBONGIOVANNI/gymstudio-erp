@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
-  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck,
+  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -20,6 +20,7 @@ import { LibroCompra } from './features/compras/components/LibroCompra'
 import { LibroCaja } from './features/caja/components/LibroCaja'
 import { LibroBanco } from './features/banco/components/LibroBanco'
 import { PlanesGym } from './features/gimnasio/components/PlanesGym'
+import { RutinasGym } from './features/gimnasio/components/RutinasGym'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { Facturacion } from './features/ventas/components/Facturacion'
@@ -62,6 +63,7 @@ const MENU: Grupo[] = [
       { id: 'recepcion', titulo: 'Recepción', icono: <DoorOpen className={icono} /> },
       { id: 'socios', titulo: 'Socios', icono: <Users className={icono} /> },
       { id: 'planes', titulo: 'Planes', icono: <CalendarRange className={icono} /> },
+      { id: 'rutinas', titulo: 'Rutinas', icono: <Dumbbell className={icono} /> },
     ],
   },
   {
@@ -183,6 +185,7 @@ function AppContent() {
       case 'recepcion': return <RecepcionGym />
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />
+      case 'rutinas': return <RutinasGym />
       case 'facturar': return <Facturacion />
       case 'ventas': return <LibroVenta />
       case 'compras': return <LibroCompra />

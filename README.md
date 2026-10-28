@@ -89,6 +89,8 @@ controlan en el backend; el frontend sólo oculta menús.
 |-----------------------------------------------------------|:---:|:---:|:---:|
 | Consultar libros, facturar, socios, planes, stock          | ✔ | ✔ | ✔ |
 | Anular o editar facturas                                   | ✔ | ✔ | ✘ |
+| Asignar, cambiar y finalizar la rutina de un socio         | ✔ | ✔ | ✔ |
+| Crear, editar y eliminar rutinas modelo y ejercicios       | ✔ | ✔ | ✘ |
 | Crear, confirmar o anular asientos manuales; crear cuentas | ✔ | ✔ | ✘ |
 | Administrar usuarios y consultar la auditoría              | ✔ | ✘ | ✘ |
 
@@ -102,24 +104,39 @@ sesión de 8 horas (`Jwt:ExpiracionMinutos`).
 
 Las facturas y los asientos confirmados **no se borran**:
 
-- **Anular** una factura la marca como anulada y genera un contraasiento, el
-  movimiento inverso de caja/banco y la devolución de stock.
+- **Anular** una factura la marca como anulada y deja su asiento en estado
+  **Anulado** (sigue en la base, pero no suma en el Diario, el Mayor ni el
+  Balance), con el movimiento inverso de caja/banco y la devolución de stock.
+  Así el IVA Crédito Fiscal nunca tiene Haber ni el Débito Fiscal tiene Debe.
 - **Editar** una factura revierte los efectos de la versión anterior y aplica los
   de la nueva.
 - En el Libro Diario, "anular" un asiento borrador lo elimina; uno confirmado
-  genera su contraasiento (o anula la factura a la que pertenece).
+  queda Anulado (o anula la factura a la que pertenece).
 
 ## Caja y Banco
 
 - Cada movimiento cargado en el Libro Caja o Banco genera su asiento contra la
   cuenta elegida (Otros Ingresos, Gastos Generales, Deudores por Ventas o
-  Proveedores). Editar o eliminar registra un contraasiento.
+  Proveedores). Editar o eliminar anula el asiento anterior.
 - **Transferir a Banco / Transferir a Caja**: egreso en un libro, ingreso en el
   otro y un único asiento. No se edita; si hay un error se elimina (se borran los
   dos movimientos) y se carga de nuevo.
 - Caja y Banco no se usan en asientos manuales: son cuentas de control cuyo saldo
   sale sólo de sus libros y de las facturas, así el Libro Caja siempre coincide con
   el Mayor.
+
+## Rutinas de gimnasio
+
+Menú **Rutinas** (y el botón de la pesa en **Socios**):
+
+- **Ejercicios**: catálogo con grupo muscular. Si un ejercicio está en alguna rutina no se
+  borra: queda desactivado.
+- **Rutinas modelo**: de 1 a 7 días, cada uno con sus ejercicios, series, repeticiones, descanso
+  e indicaciones. Se cargan dos de ejemplo la primera vez.
+- **Rutina de un socio**: se asigna con fecha de inicio y vencimiento opcional. Un socio tiene
+  una sola rutina activa (la base lo garantiza con un índice parcial); al asignar otra, la
+  anterior se cierra el día que empieza la nueva. Queda el historial.
+- **Imprimir PDF** de la rutina del socio, en blanco y negro, con una columna para anotar el peso.
 
 ## Base de datos
 
@@ -135,8 +152,8 @@ dotnet test backend/EstudioContable.slnx
 ```
 
 - **Dominio** (`backend/tests/EstudioContable.Domain.Tests`, sin base de datos):
-  partida doble, contraasientos, CUIT, DNI, renovación de membresías, stock,
-  movimientos de caja y banco, usuarios.
+  partida doble, asientos anulados, CUIT, DNI, renovación de membresías, stock,
+  movimientos de caja y banco, usuarios, rutinas y su asignación a socios.
 - **Integración** (`backend/tests/EstudioContable.IntegrationTests`): levantan la
   API completa contra un PostgreSQL real y descartable (Testcontainers, requiere
   Docker abierto). Facturar, editar y anular dejando caja, Mayor y stock

@@ -66,7 +66,11 @@ export function estiloTabla(extra: Partial<UserOptions> = {}): Partial<UserOptio
  * período a la derecha) y pie con fecha de emisión y "Página N de M". Se dibuja al
  * final, cuando ya se sabe cuántas páginas tiene el documento.
  */
-export function encabezadosYPies(doc: jsPDF, tituloDePagina: (pagina: number) => { titulo: string; periodo: string }) {
+export function encabezadosYPies(
+  doc: jsPDF,
+  tituloDePagina: (pagina: number) => { titulo: string; periodo: string },
+  notaDerecha = 'Importes en pesos ($)',
+) {
   const negocio = datosDelNegocio();
   const total = doc.getNumberOfPages();
   const ahora = new Date();
@@ -92,7 +96,7 @@ export function encabezadosYPies(doc: jsPDF, tituloDePagina: (pagina: number) =>
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.text(periodo, ANCHO_PAGINA - MARGEN, 21, { align: 'right' });
-    doc.text('Importes en pesos ($)', ANCHO_PAGINA - MARGEN, 25, { align: 'right' });
+    doc.text(notaDerecha, ANCHO_PAGINA - MARGEN, 25, { align: 'right' });
 
     doc.setDrawColor(0);
     doc.setLineWidth(0.4);

@@ -36,6 +36,10 @@ erDiagram
     Socios ||--o{ Membresias : "contrata"
     Planes ||--o{ Membresias : "define"
     Socios }o--o| Planes : "plan actual"
+    Rutinas ||--|{ RutinaEjercicios : "tiene (por dia)"
+    Ejercicios ||--o{ RutinaEjercicios : "se usa en"
+    Socios ||--o{ AsignacionesRutina : "entrena con"
+    Rutinas ||--o{ AsignacionesRutina : "se asigna"
 
     asientos_contables {
         bigint Id PK
@@ -79,6 +83,8 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `Productos` | `CK_Productos_StockNoNegativo` | `StockActual >= 0` |
 | `Planes` | `CK_Planes_Valores` | Duración > 0 y precio >= 0 |
 | `Membresias` | `CK_Membresias_Vigencia` | Vencimiento >= inicio |
+| `RutinaEjercicios` | `CK_RutinaEjercicios_Dia` / `_Series` / `_Descanso` | Día 1 a 7, series 1 a 20, descanso 0 a 600 s |
+| `AsignacionesRutina` | `CK_AsignacionesRutina_Fechas` | Vencimiento >= inicio |
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
 
 ### Únicas y claves foráneas
@@ -86,6 +92,8 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 - `asientos_contables (cliente_id, numero_asiento)` único: no se repite la numeración.
 - `asientos_contables (asiento_revertido_id)` único: un asiento se revierte una sola vez.
 - `Usuario (Email)` único: es el nombre de usuario del login.
+- `AsignacionesRutina (SocioId)` único **donde Activa**: un socio tiene una sola rutina activa.
+- `Ejercicios` y `Rutinas`: nombre único sin distinguir mayúsculas (`lower("Nombre")`).
 - Las FK `lineas_asiento → CuentasContables`, `Facturas → asientos_contables` y
   `FacturaItems → Productos` son `RESTRICT`: no se puede borrar algo que está referenciado.
 
@@ -95,7 +103,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 |---|---|---|---|
 | `trg_validar_balance_lineas` / `trg_validar_balance_asiento` | `lineas_asiento`, `asientos_contables` | `AFTER`, **diferido** al `COMMIT` | Un asiento Confirmado debe cumplir la partida doble: Debe = Haber, más de 0 y al menos 2 líneas |
 | `trg_proteger_lineas_asiento` / `trg_proteger_asiento` | `lineas_asiento`, `asientos_contables` | `BEFORE UPDATE OR DELETE` | Un asiento Confirmado o Anulado es inmutable: no se borra, no vuelve a Borrador y sus líneas no cambian |
-| `trg_auditar_*` (7 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
+| `trg_auditar_*` (10 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
 | `trg_auditoria_solo_lectura` / `trg_auditoria_sin_truncate` | `auditoria` | `BEFORE UPDATE OR DELETE` / `BEFORE TRUNCATE` | La auditoría no se puede alterar |
 
 **¿Por qué el trigger de balance es diferido?** Al confirmar una factura se inserta
@@ -104,9 +112,9 @@ por fila, el asiento estaría "desbalanceado" entre una línea y la siguiente. C
 `DEFERRABLE INITIALLY DEFERRED`, la validación corre una sola vez al hacer `COMMIT`,
 con el asiento completo. Si no balancea, se revierte toda la transacción.
 
-**¿Cómo se corrige un asiento confirmado?** Con un contraasiento: mismas cuentas e
-importes con Debe y Haber invertidos (`asiento_revertido_id` apunta al original).
-Es lo que hace el sistema al anular o editar una factura.
+**¿Cómo se corrige un asiento confirmado?** Se anula: queda en estado Anulado (inmutable) y
+deja de sumar en el Diario, el Mayor y el Balance. Es lo que hace el sistema al anular o editar
+una factura; ya no genera contraasientos (`asiento_revertido_id` solo conserva los de datos antiguos).
 
 ## Auditoría
 
