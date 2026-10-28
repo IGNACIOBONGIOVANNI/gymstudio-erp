@@ -127,6 +127,21 @@ Las facturas y los asientos confirmados **no se borran**:
 - En el Libro Diario, "anular" un asiento borrador lo elimina; uno confirmado
   queda Anulado (o anula la factura a la que pertenece).
 
+## Control de integridad, vista previa del asiento y novedades
+
+- **Control de integridad** (menú *Contabilidad*, solo Administrador y Contador): el sistema se audita a sí mismo
+  en vivo con 16 controles de solo lectura. Entre otros: Debe = Haber en todo el Diario y en cada asiento,
+  Activo = Pasivo + Patrimonio + Resultado, Libro Caja y Banco = sus cuentas del Mayor, neto e IVA de las facturas =
+  Ventas, Compras e IVA del Mayor, cuentas a cobrar y a pagar = Deudores por Ventas y Proveedores, toda factura con
+  su asiento, anuladas sin efecto, sin stock negativo y sin números de venta repetidos. Si alguien toca un dato por
+  fuera de las reglas (por ejemplo, un movimiento insertado directo en la base), el control correspondiente da la
+  diferencia exacta.
+- **Vista previa del asiento** (pantalla *Facturar*): antes de emitir, muestra qué cuentas se debitan y se
+  acreditan. Usa la misma función que arma el asiento real, así que lo que se ve es lo que se registra.
+- **Novedades** (pantalla de inicio): frases automáticas calculadas con los propios datos, sin servicios externos
+  (ventas contra el mes anterior, deudas de más de 90 días con el nombre del cliente, productos sin stock,
+  cuotas por vencer...). Primero lo que requiere atención. Recepción solo ve las del gimnasio.
+
 ## Cuentas a cobrar y a pagar
 
 Menú **Cuentas a cobrar y pagar** (solo Administrador y Contador). Para cada cliente (o proveedor) muestra

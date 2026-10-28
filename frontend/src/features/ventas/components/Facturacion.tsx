@@ -5,6 +5,7 @@ import { useCrearFactura } from "../hooks/useCrearFactura";
 import { useProductos } from "../../../hooks/useProductos";
 import { obtenerConfiguracion } from "../../configuracion/configuracionStorage";
 import { hoyLocal } from "../../../utils/formatters";
+import { VistaPreviaAsiento } from "./VistaPreviaAsiento";
 
 interface FacturaItem {
   id: string;
@@ -148,6 +149,10 @@ export function Facturacion() {
   const subtotalGeneral = items.reduce((acc, item) => acc + (item.cantidad * item.precioUnitario), 0);
   const iva = (tipoComprobante === "A" || tipoComprobante === "B") ? subtotalGeneral * (porcentajeIva / 100) : 0;
   const total = subtotalGeneral + iva;
+  // Mismos importes (redondeados a centavos) que se envían al emitir, para la vista previa del asiento.
+  const subtotalPrevia = Math.round(subtotalGeneral * 100) / 100;
+  const ivaPrevia = (tipoComprobante === "A" || tipoComprobante === "B") ? Math.round(subtotalGeneral * porcentajeIva) / 100 : 0;
+  const totalPrevia = Math.round((subtotalPrevia + ivaPrevia) * 100) / 100;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -498,6 +503,8 @@ export function Facturacion() {
           </div>
         </div>
       </div>
+
+      <VistaPreviaAsiento tipoOperacion={tipoOperacion} condicionPago={condicionPago} subtotal={subtotalPrevia} iva={ivaPrevia} total={totalPrevia} />
 
       <div className="flex justify-end gap-3 border-t border-slate-200 pt-6">
         <button

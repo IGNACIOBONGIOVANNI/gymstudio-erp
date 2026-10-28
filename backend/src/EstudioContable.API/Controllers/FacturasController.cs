@@ -85,6 +85,56 @@ namespace EstudioContable.API.Controllers
         /// Nombre que se imprime en la factura: el que viene en el formulario o, si está
         /// vacío, la razón social del cliente (venta) o proveedor (compra) elegido.
         /// </summary>
+        public record VistaPreviaRequest(string? TipoOperacion, string? CondicionPago, decimal Subtotal, decimal Iva, decimal Total);
+
+        /// <summary>
+        /// Muestra el asiento que se generaría al emitir la factura, sin guardar nada. Usa la misma función que
+        /// arma el asiento real, así que lo que se ve es exactamente lo que se va a registrar.
+        /// </summary>
+        [HttpPost("vista-previa-asiento")]
+        public async Task<IActionResult> VistaPreviaAsiento([FromBody] VistaPreviaRequest r, CancellationToken cancellationToken)
+        {
+            var operacion = r.TipoOperacion?.Trim();
+            if (operacion is not ("Venta" or "Compra"))
+                throw new ArgumentException("Elegí si es una venta o una compra.");
+            var condicion = r.CondicionPago?.Trim();
+            if (condicion is not ("ContadoCaja" or "TransferenciaBanco" or "CuentaCorriente"))
+                throw new ArgumentException("Elegí la condición de pago.");
+            if (r.Subtotal < 0 || r.Iva < 0 || r.Total < 0 || r.Subtotal > 1_000_000_000_000m || r.Total > 1_000_000_000_000m)
+                throw new ArgumentException("Los importes deben ser positivos y razonables.");
+            if (Math.Abs(r.Subtotal + r.Iva - r.Total) > 0.01m)
+                throw new ArgumentException("El total debe ser la suma del subtotal y el IVA.");
+
+            var lineas = EstudioContable.Application.Services.FacturacionService.LineasDelAsiento(operacion, condicion, r.Subtotal, r.Iva, r.Total);
+            var ids = lineas.Select(l => l.CuentaId).ToList();
+            var cuentas = await _context.CuentasContables.AsNoTracking().Where(c => ids.Contains(c.Id))
+                .Select(c => new { c.Id, c.Codigo, c.Nombre }).ToDictionaryAsync(c => c.Id, cancellationToken);
+
+            var efectos = new List<string>();
+            var esVenta = operacion == "Venta";
+            if (condicion == "CuentaCorriente")
+                efectos.Add(esVenta ? "El importe queda como deuda del cliente (cuentas a cobrar)." : "El importe queda como deuda con el proveedor (cuentas a pagar).");
+            else
+                efectos.Add($"Registra {(esVenta ? "un ingreso" : "un egreso")} en {(condicion == "ContadoCaja" ? "la Caja" : "el Banco")}.");
+            efectos.Add(esVenta ? "Los productos del inventario que se vendan descuentan stock." : "Los productos del inventario que se compren suman stock.");
+
+            return Ok(new
+            {
+                Lineas = lineas.Select(l => new
+                {
+                    l.CuentaId,
+                    Codigo = cuentas.GetValueOrDefault(l.CuentaId)?.Codigo ?? "",
+                    Cuenta = cuentas.GetValueOrDefault(l.CuentaId)?.Nombre ?? $"Cuenta {l.CuentaId}",
+                    l.Debe,
+                    l.Haber,
+                    l.Glosa
+                }),
+                TotalDebe = lineas.Sum(l => l.Debe),
+                TotalHaber = lineas.Sum(l => l.Haber),
+                Efectos = efectos
+            });
+        }
+
         // La factura A se emite a Responsables Inscriptos (y Monotributistas); a un Consumidor Final o
         // un Exento le corresponde la B.
         private async Task ValidarTipoParaElClienteAsync(string? tipoComprobante, string tipoOperacion, long? clienteId, CancellationToken cancellationToken)

@@ -12,6 +12,9 @@ using EstadoAsiento = EstudioContable.Domain.Entities.EstadoAsiento;
 
 namespace EstudioContable.Application.Services
 {
+    /// <summary>Una línea del asiento de una factura: cuenta, importes al Debe o al Haber y su glosa.</summary>
+    public record LineaDeAsiento(long CuentaId, decimal Debe, decimal Haber, string Glosa);
+
     public class FacturacionService : IFacturacionService
     {
         private const string Venta = "Venta";
@@ -132,27 +135,8 @@ namespace EstudioContable.Application.Services
                 detalle,
                 PlanDeCuentas.UsuarioSistemaId);
 
-            var cuentaContrapartida = factura.CondicionPago switch
-            {
-                ContadoCaja => PlanDeCuentas.Caja,
-                TransferenciaBanco => PlanDeCuentas.Banco,
-                _ => esVenta ? PlanDeCuentas.DeudoresPorVentas : PlanDeCuentas.Proveedores
-            };
-
-            if (esVenta)
-            {
-                asiento.AgregarLinea(cuentaContrapartida, factura.Total, 0, "Total Factura");
-                asiento.AgregarLinea(PlanDeCuentas.Ventas, 0, factura.Subtotal, "Ventas");
-                if (factura.Iva > 0)
-                    asiento.AgregarLinea(PlanDeCuentas.IvaDebitoFiscal, 0, factura.Iva, "IVA Débito Fiscal");
-            }
-            else
-            {
-                asiento.AgregarLinea(PlanDeCuentas.Compras, factura.Subtotal, 0, "Compras");
-                if (factura.Iva > 0)
-                    asiento.AgregarLinea(PlanDeCuentas.IvaCreditoFiscal, factura.Iva, 0, "IVA Crédito Fiscal");
-                asiento.AgregarLinea(cuentaContrapartida, 0, factura.Total, "Total Factura");
-            }
+            foreach (var linea in LineasDelAsiento(factura.TipoOperacion, factura.CondicionPago, factura.Subtotal, factura.Iva, factura.Total))
+                asiento.AgregarLinea(linea.CuentaId, linea.Debe, linea.Haber, linea.Glosa);
 
             asiento.Confirmar(PlanDeCuentas.UsuarioSistemaId);
             _context.AsientosContables.Add(asiento);
@@ -320,6 +304,37 @@ namespace EstudioContable.Application.Services
         /// de venta. Compras: el número de la factura del proveedor es obligatorio y no
         /// puede cargarse dos veces la misma factura del mismo proveedor.
         /// </summary>
+        /// <summary>
+        /// Las líneas del asiento de una factura. Es la única fuente: la usa tanto el asiento real como la
+        /// vista previa que se muestra antes de emitir, así lo que se ve es exactamente lo que se registra.
+        /// </summary>
+        public static IReadOnlyList<LineaDeAsiento> LineasDelAsiento(string tipoOperacion, string condicionPago, decimal subtotal, decimal iva, decimal total)
+        {
+            var cuentaContrapartida = condicionPago switch
+            {
+                ContadoCaja => PlanDeCuentas.Caja,
+                TransferenciaBanco => PlanDeCuentas.Banco,
+                _ => tipoOperacion == Venta ? PlanDeCuentas.DeudoresPorVentas : PlanDeCuentas.Proveedores
+            };
+
+            var lineas = new List<LineaDeAsiento>();
+            if (tipoOperacion == Venta)
+            {
+                lineas.Add(new(cuentaContrapartida, total, 0, "Total Factura"));
+                lineas.Add(new(PlanDeCuentas.Ventas, 0, subtotal, "Ventas"));
+                if (iva > 0)
+                    lineas.Add(new(PlanDeCuentas.IvaDebitoFiscal, 0, iva, "IVA Débito Fiscal"));
+            }
+            else
+            {
+                lineas.Add(new(PlanDeCuentas.Compras, subtotal, 0, "Compras"));
+                if (iva > 0)
+                    lineas.Add(new(PlanDeCuentas.IvaCreditoFiscal, iva, 0, "IVA Crédito Fiscal"));
+                lineas.Add(new(cuentaContrapartida, 0, total, "Total Factura"));
+            }
+            return lineas;
+        }
+
         private async Task AsignarOValidarNumeroAsync(Factura factura, long? idExcluido, CancellationToken cancellationToken)
         {
             if (factura.PuntoVenta is < 1 or > 99999)

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EstudioContable.API.Auth;
 using EstudioContable.Application.Common;
 using EstudioContable.Application.Interfaces;
+using EstudioContable.Application.Services;
 using EstudioContable.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,8 +29,22 @@ namespace EstudioContable.API.Controllers
         private const int MesesDeSerie = 6;
 
         private readonly IAppDbContext _context;
+        private readonly ICuentasCorrientesService _cuentas;
+        private readonly IControlIntegridadService _integridad;
 
-        public DashboardController(IAppDbContext context) => _context = context;
+        public DashboardController(IAppDbContext context, ICuentasCorrientesService cuentas, IControlIntegridadService integridad)
+        {
+            _context = context;
+            _cuentas = cuentas;
+            _integridad = integridad;
+        }
+
+        /// <summary>Una novedad del resumen: nivel "atencion", "info" u "ok" y su texto.</summary>
+        public record Novedad(string Nivel, string Texto);
+
+        private record FinanzasParaNovedades(decimal Ventas, decimal VentasMesAnterior, string MesAnterior, decimal Compras, decimal Caja);
+        private record ResumenGimnasio(int SociosConCuotaAlDia, int SociosVencidos, int SociosSinPlan, int CuotasPorVencer, int DiasPorVencer, int SociosSinRutina, int RutinasVencidas);
+        private record ProductoConPocoStock(long Id, string Nombre, int Stock);
 
         /// <param name="mes">Mes a resumir ("2026-10"); por defecto el de <paramref name="hoy"/>.</param>
         /// <param name="hoy">Día de hoy del navegador ("2026-10-27"); por defecto el de Argentina (UTC-3).</param>
@@ -45,19 +60,111 @@ namespace EstudioContable.API.Controllers
                 .Where(p => p.StockActual <= StockBajo)
                 .OrderBy(p => p.StockActual).ThenBy(p => p.Nombre)
                 .Take(8)
-                .Select(p => new { p.Id, p.Nombre, Stock = p.StockActual })
+                .Select(p => new ProductoConPocoStock(p.Id, p.Nombre, p.StockActual))
                 .ToListAsync(cancellationToken);
 
             var veFinanzas = User.IsInRole(Roles.Administrador) || User.IsInRole(Roles.Contador);
+            (object Json, FinanzasParaNovedades Datos)? finanzas = veFinanzas ? await ResumenFinanzasAsync(primerDia, cancellationToken) : null;
+            var novedades = await NovedadesAsync(veFinanzas, dia, primerDia, finanzas?.Datos, gimnasio, stockBajo, cancellationToken);
             return Ok(new
             {
                 Mes = primerDia.ToString("yyyy-MM", CultureInfo.InvariantCulture),
                 Hoy = dia,
-                Finanzas = veFinanzas ? await ResumenFinanzasAsync(primerDia, cancellationToken) : null,
+                Finanzas = finanzas?.Json,
                 Gimnasio = gimnasio,
-                StockBajo = stockBajo,
-                UmbralStockBajo = StockBajo
+                StockBajo = stockBajo.Select(p => new { p.Id, p.Nombre, p.Stock }),
+                UmbralStockBajo = StockBajo,
+                Novedades = novedades
             });
+        }
+
+        private static readonly string[] Meses = { "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre" };
+
+        private static string NombreDelMes(string yyyyMm)
+        {
+            var partes = yyyyMm.Split('-');
+            return $"{Meses[int.Parse(partes[1], CultureInfo.InvariantCulture) - 1]} de {partes[0]}";
+        }
+
+        /// <summary>Importe con el formato argentino: $ 1.234.567,89.</summary>
+        private static string Pesos(decimal v)
+            => "$ " + Math.Abs(v).ToString("N2", CultureInfo.InvariantCulture).Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+        /// <summary>
+        /// Frases automáticas sobre cómo viene el negocio, calculadas con los propios datos (sin servicios externos).
+        /// Primero lo que requiere atención. Lo financiero solo se calcula para Administrador y Contador.
+        /// </summary>
+        private async Task<List<Novedad>> NovedadesAsync(bool veFinanzas, DateOnly dia, DateOnly primerDia, FinanzasParaNovedades? f,
+            ResumenGimnasio g, List<ProductoConPocoStock> stockBajo, CancellationToken cancellationToken)
+        {
+            var lista = new List<Novedad>();
+            string Plural(int n, string uno, string varios) => n == 1 ? uno : varios;
+
+            if (veFinanzas && f is not null)
+            {
+                var mes = NombreDelMes(primerDia.ToString("yyyy-MM", CultureInfo.InvariantCulture));
+                if (f.VentasMesAnterior > 0)
+                {
+                    var porcentaje = Math.Round((f.Ventas - f.VentasMesAnterior) / f.VentasMesAnterior * 100m, 0);
+                    lista.Add(new("info", Math.Abs(porcentaje) < 10
+                        ? $"Las ventas de {mes} se mantienen parecidas a las de {NombreDelMes(f.MesAnterior)} ({(porcentaje >= 0 ? "+" : "-")}{Math.Abs(porcentaje)} %)."
+                        : $"Las ventas de {mes} {(porcentaje > 0 ? "subieron" : "bajaron")} un {Math.Abs(porcentaje)} % respecto de {NombreDelMes(f.MesAnterior)}."));
+                }
+                else if (f.Ventas > 0)
+                    lista.Add(new("info", $"En {mes} ya se vendieron {Pesos(f.Ventas)} (netos); el mes anterior no hubo ventas."));
+                else
+                    lista.Add(new("info", $"Todavía no hay ventas cargadas en {mes}."));
+
+                if (f.Compras > f.Ventas)
+                    lista.Add(new("atencion", $"En {mes} se compró más de lo que se vendió: el resultado del mes es de -{Pesos(f.Compras - f.Ventas)}."));
+                if (f.Caja < 0)
+                    lista.Add(new("atencion", $"La Caja está en negativo (-{Pesos(f.Caja)}): revisá los movimientos de caja."));
+
+                var clientes = await _cuentas.ListadoAsync(true, dia, cancellationToken);
+                var viejas = clientes.Antiguedad.Mas90;
+                var masDe30 = clientes.Antiguedad.De31A60 + clientes.Antiguedad.De61A90 + viejas;
+                if (viejas > 0)
+                {
+                    var peor = clientes.Terceros.OrderByDescending(t => t.Antiguedad.Mas90).First();
+                    lista.Add(new("atencion", $"Los clientes tienen {Pesos(viejas)} con más de 90 días de antigüedad; la deuda más vieja es de {peor.Nombre} ({Pesos(peor.Antiguedad.Mas90)})."));
+                }
+                else if (masDe30 > 0)
+                    lista.Add(new("info", $"Hay {Pesos(masDe30)} de deuda de clientes con más de 30 días: conviene reclamarla."));
+                else if (clientes.Saldo > 0)
+                    lista.Add(new("info", $"Los clientes te deben {Pesos(clientes.Saldo)}, todo con menos de 30 días."));
+
+                var proveedores = await _cuentas.ListadoAsync(false, dia, cancellationToken);
+                var proveedoresViejas = proveedores.Antiguedad.De61A90 + proveedores.Antiguedad.Mas90;
+                if (proveedoresViejas > 0)
+                    lista.Add(new("atencion", $"Se le debe {Pesos(proveedores.Saldo)} a proveedores, de los cuales {Pesos(proveedoresViejas)} tienen más de 60 días."));
+                else if (proveedores.Saldo > 0)
+                    lista.Add(new("info", $"Se le debe {Pesos(proveedores.Saldo)} a proveedores, todo con menos de 60 días."));
+
+                var integridad = await _integridad.EjecutarAsync(cancellationToken);
+                lista.Add(integridad.Correctos == integridad.Total
+                    ? new("ok", $"Contabilidad verificada: {integridad.Total} controles correctos (partida doble, Caja y Banco contra el Mayor, IVA, cuentas corrientes y stock).")
+                    : new("atencion", $"El control de integridad encontró diferencias en {integridad.Total - integridad.Correctos} de {integridad.Total} controles: revisalo en Control de integridad."));
+            }
+
+            if (g.CuotasPorVencer > 0)
+                lista.Add(new("info", $"{g.CuotasPorVencer} {Plural(g.CuotasPorVencer, "cuota vence", "cuotas vencen")} en los próximos {g.DiasPorVencer} días: avisales por WhatsApp desde Recepción."));
+            if (g.SociosVencidos > 0)
+                lista.Add(new("info", $"{g.SociosVencidos} {Plural(g.SociosVencidos, "socio tiene", "socios tienen")} la cuota vencida."));
+            if (g.SociosSinRutina > 0)
+                lista.Add(new("info", $"{g.SociosSinRutina} {Plural(g.SociosSinRutina, "socio al día no tiene", "socios al día no tienen")} rutina asignada."));
+            if (g.RutinasVencidas > 0)
+                lista.Add(new("atencion", $"{g.RutinasVencidas} {Plural(g.RutinasVencidas, "rutina vencida", "rutinas vencidas")}: hay que renovarla{(g.RutinasVencidas == 1 ? "" : "s")}."));
+
+            var sinStock = stockBajo.Where(p => p.Stock <= 0).ToList();
+            if (sinStock.Count > 0)
+                lista.Add(new("atencion", $"{sinStock.Count} {Plural(sinStock.Count, "producto sin stock", "productos sin stock")}: {string.Join(", ", sinStock.Take(3).Select(p => p.Nombre))}{(sinStock.Count > 3 ? " y otros" : "")}."));
+            var pocoStock = stockBajo.Count - sinStock.Count;
+            if (pocoStock > 0)
+                lista.Add(new("info", $"{pocoStock} {Plural(pocoStock, "producto con poco stock", "productos con poco stock")} (hasta {StockBajo} unidades)."));
+
+            if (lista.Count == 0)
+                lista.Add(new("ok", "Todo en orden: no hay alertas por ahora."));
+            return lista.OrderBy(n => n.Nivel switch { "atencion" => 0, "info" => 1, _ => 2 }).ToList();
         }
 
         private static DateOnly? ParsearMes(string? mes)
@@ -71,7 +178,7 @@ namespace EstudioContable.API.Controllers
 
         private static DateTime Utc(DateOnly d) => new(d.Year, d.Month, d.Day, 0, 0, 0, DateTimeKind.Utc);
 
-        private async Task<object> ResumenFinanzasAsync(DateOnly primerDia, CancellationToken cancellationToken)
+        private async Task<(object Json, FinanzasParaNovedades Datos)> ResumenFinanzasAsync(DateOnly primerDia, CancellationToken cancellationToken)
         {
             var inicioMes = Utc(primerDia);
             var finMes = inicioMes.AddMonths(1);
@@ -144,7 +251,7 @@ namespace EstudioContable.API.Controllers
             var deudores = cuentasPorCobrarYPagar.FirstOrDefault(m => m.CuentaId == PlanDeCuentas.DeudoresPorVentas);
             var proveedores = cuentasPorCobrarYPagar.FirstOrDefault(m => m.CuentaId == PlanDeCuentas.Proveedores);
 
-            return new
+            var json = new
             {
                 ACobrar = deudores is null ? 0m : deudores.TotalDebe - deudores.TotalHaber,
                 APagar = proveedores is null ? 0m : proveedores.TotalHaber - proveedores.TotalDebe,
@@ -163,9 +270,10 @@ namespace EstudioContable.API.Controllers
                 },
                 TopProductos = topBase.Select(x => new { Producto = nombres.GetValueOrDefault(x.ProductoId) ?? "(producto eliminado)", x.Cantidad, x.Total })
             };
+            return (json, new FinanzasParaNovedades(ventas, serie[^2].Ventas, serie[^2].Mes, compras, cajaSaldo));
         }
 
-        private async Task<object> ResumenGimnasioAsync(DateOnly hoy, CancellationToken cancellationToken)
+        private async Task<ResumenGimnasio> ResumenGimnasioAsync(DateOnly hoy, CancellationToken cancellationToken)
         {
             var inicioHoy = Utc(hoy);
             var activos = _context.Socios.AsNoTracking().Where(s => s.Activo);
@@ -180,16 +288,7 @@ namespace EstudioContable.API.Controllers
             var rutinasVencidas = await _context.AsignacionesRutina.AsNoTracking()
                 .CountAsync(a => a.Activa && a.FechaFin != null && a.FechaFin < hoy, cancellationToken);
 
-            return new
-            {
-                SociosConCuotaAlDia = conCuota,
-                SociosVencidos = vencidos,
-                SociosSinPlan = sinPlan,
-                CuotasPorVencer = porVencer,
-                DiasPorVencer,
-                SociosSinRutina = sinRutina,
-                RutinasVencidas = rutinasVencidas
-            };
+            return new ResumenGimnasio(conCuota, vencidos, sinPlan, porVencer, DiasPorVencer, sinRutina, rutinasVencidas);
         }
     }
 }

@@ -128,6 +128,64 @@ public class DashboardTests(ApiFixture api)
         Assert.True((decimal)resumen["aCobrar"]! >= 1210m);
     }
 
+
+    private static string[] Novedades(JsonNode resumen) => resumen["novedades"]!.AsArray().Select(n => (string)n!["texto"]!).ToArray();
+
+    [Fact]
+    public async Task Las_novedades_comparan_las_ventas_con_el_mes_anterior()
+    {
+        var jefe = await api.Jefe();
+        await Crear(jefe, Venta("2022-03-10T12:00:00Z", cantidad: 1, precio: 1000));    // mes anterior: neto 1.000
+        await Crear(jefe, Venta("2022-04-10T12:00:00Z", cantidad: 1, precio: 2500));    // mes elegido: neto 2.500
+
+        var textos = Novedades(await Resumen(jefe, "2022-04", "2022-04-20"));
+
+        Assert.Contains(textos, t => t.Contains("Las ventas de abril de 2022 subieron un 150 % respecto de marzo de 2022"));
+    }
+
+    [Fact]
+    public async Task Una_deuda_de_cliente_de_mas_de_90_dias_se_avisa_con_el_nombre_del_cliente()
+    {
+        var jefe = await api.Jefe();
+        var nombre = $"Cliente moroso {Guid.NewGuid():N}"[..26];
+        var cliente = await jefe.PostAsJsonAsync("/api/clientes", new { razonSocial = nombre, direccion = "Calle 1", localidad = "Haedo", cuit = CuitNuevo(), condicionIva = "Responsable Inscripto" });
+        Assert.True(cliente.IsSuccessStatusCode, await cliente.Detalle());
+        var clienteId = (long)(await cliente.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        var venta = await jefe.PostAsJsonAsync("/api/facturas", new
+        {
+            fecha = "2023-04-10T12:00:00Z", tipoOperacion = "Venta", condicionPago = "CuentaCorriente", tipoComprobante = "A", clienteId,
+            subtotal = 1000m, iva = 210m, total = 1210m,
+            items = new[] { new { productoId = 0, descripcion = "Servicio", cantidad = 1, precioUnitario = 1000m, subtotal = 1000m } }
+        });
+        Assert.True(venta.IsSuccessStatusCode, await venta.Detalle());
+
+        // 144 días después de la factura, sin cobrar.
+        var textos = Novedades(await Resumen(jefe, "2023-09", "2023-09-01"));
+
+        Assert.Contains(textos, t => t.Contains("con más de 90 días de antigüedad") && t.Contains(nombre) && t.Contains("$ 1.210,00"));
+    }
+
+    [Fact]
+    public async Task Con_la_contabilidad_en_orden_las_novedades_lo_confirman_y_Recepcion_no_ve_frases_financieras()
+    {
+        var jefe = await api.Jefe();
+        Assert.Contains(Novedades(await Resumen(jefe, "2025-03", "2025-03-20")), t => t.StartsWith("Contabilidad verificada"));
+
+        var recepcion = await api.Recepcion();
+        var textos = Novedades(await Resumen(recepcion, "2025-03", "2025-03-20"));
+        Assert.NotEmpty(textos);
+        Assert.DoesNotContain(textos, t => t.Contains("$") || t.Contains("ventas") || t.Contains("Caja") || t.Contains("clientes") || t.Contains("Contabilidad") || t.Contains("proveedores"));
+    }
+
+    [Fact]
+    public async Task Las_novedades_ponen_primero_lo_que_requiere_atencion()
+    {
+        var jefe = await api.Jefe();
+        var nivel = (await Resumen(jefe, "2025-03", "2025-03-20"))["novedades"]!.AsArray().Select(n => (string)n!["nivel"]!).ToList();
+
+        var orden = nivel.Select(n => n switch { "atencion" => 0, "info" => 1, _ => 2 }).ToList();
+        Assert.Equal(orden.OrderBy(x => x), orden);
+    }
     [Fact]
     public async Task Recepcion_ve_solo_lo_del_gimnasio_y_nunca_los_importes()
     {

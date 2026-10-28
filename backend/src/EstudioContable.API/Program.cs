@@ -167,6 +167,8 @@ builder.Services.AddScoped<ICuentaRepository, CuentaRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IFacturacionService, EstudioContable.Application.Services.FacturacionService>();
 builder.Services.AddScoped<EstudioContable.Application.Services.ITesoreriaService, EstudioContable.Application.Services.TesoreriaService>();
+builder.Services.AddScoped<EstudioContable.Application.Services.IControlIntegridadService, EstudioContable.Application.Services.ControlIntegridadService>();
+builder.Services.AddScoped<EstudioContable.Application.Services.ICuentasCorrientesService, EstudioContable.Application.Services.CuentasCorrientesService>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
 // Registro de MediatR (apuntando al Assembly de la capa Application)

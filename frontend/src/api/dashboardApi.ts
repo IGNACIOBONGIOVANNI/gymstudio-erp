@@ -44,6 +44,7 @@ export interface ResumenInicio {
   gimnasio: GimnasioResumen;
   stockBajo: { id: number; nombre: string; stock: number }[];
   umbralStockBajo: number;
+  novedades: { nivel: 'atencion' | 'info' | 'ok'; texto: string }[];
 }
 
 const pesos = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });

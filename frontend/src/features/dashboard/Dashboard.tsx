@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, Printer } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, Printer } from "lucide-react";
 import toast from "react-hot-toast";
 import { pedir } from "../../api/rutinasApi";
 import { compacto, formatearPesos, nombreDelMes, techoDelEje, type FinanzasDelMes, type ResumenInicio } from "../../api/dashboardApi";
@@ -172,6 +172,22 @@ export function Dashboard() {
         <div className={`${tarjeta} text-center text-slate-500`}>Cargando...</div>
       ) : datos && g ? (
         <>
+          {datos.novedades.length > 0 && (
+            <section aria-label="Novedades" className={tarjeta}>
+              <h2 className={`${titulo} mb-3`}>Novedades</h2>
+              <ul className="space-y-2">
+                {datos.novedades.map((n, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
+                    {n.nivel === "atencion" ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-label="Atención" />
+                      : n.nivel === "ok" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-label="En orden" />
+                      : <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-label="Dato" />}
+                    <span>{n.texto}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {f && (
             <>
               <section aria-label="Indicadores del mes" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

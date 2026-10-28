@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
-  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins,
+  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins, ListChecks,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -23,6 +23,7 @@ import { PlanesGym } from './features/gimnasio/components/PlanesGym'
 import { RutinasGym } from './features/gimnasio/components/RutinasGym'
 import { Dashboard } from './features/dashboard/Dashboard'
 import { CuentasCorrientes } from './features/cuentas/CuentasCorrientes'
+import { ControlIntegridad } from './features/integridad/ControlIntegridad'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { Facturacion } from './features/ventas/components/Facturacion'
@@ -105,6 +106,7 @@ const MENU: Grupo[] = [
       { id: 'diario', titulo: 'Libro Diario', icono: <BookText className={icono} /> },
       { id: 'mayor', titulo: 'Libro Mayor', icono: <Scale className={icono} /> },
       { id: 'balance', titulo: 'Balance General', icono: <BarChart3 className={icono} /> },
+      { id: 'integridad', titulo: 'Control de integridad', icono: <ListChecks className={icono} />, roles: GESTION },
       { id: 'asiento', titulo: 'Nuevo asiento', icono: <FilePlus2 className={icono} />, roles: GESTION, tarjeta: true },
     ],
   },
@@ -193,6 +195,7 @@ function AppContent() {
     switch (vista.id) {
       case 'inicio': return <Dashboard />
       case 'cuentas': return <CuentasCorrientes />
+      case 'integridad': return <ControlIntegridad />
       case 'recepcion': return <RecepcionGym />
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />
