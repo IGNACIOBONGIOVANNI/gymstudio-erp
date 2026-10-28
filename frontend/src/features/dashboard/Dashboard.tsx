@@ -172,11 +172,11 @@ export function Dashboard() {
         <div className={`${tarjeta} text-center text-slate-500`}>Cargando...</div>
       ) : datos && g ? (
         <>
-          {datos.novedades.length > 0 && (
+          {(datos.novedades?.length ?? 0) > 0 && (
             <section aria-label="Novedades" className={tarjeta}>
               <h2 className={`${titulo} mb-3`}>Novedades</h2>
               <ul className="space-y-2">
-                {datos.novedades.map((n, i) => (
+                {(datos.novedades ?? []).map((n, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
                     {n.nivel === "atencion" ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-label="Atención" />
                       : n.nivel === "ok" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-label="En orden" />

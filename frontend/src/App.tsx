@@ -36,6 +36,7 @@ import { Login } from './components/Login'
 import { LogoGym } from './components/LogoGym'
 import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
 import { Asistente } from './components/Asistente'
+import { LimiteDeErrores } from './components/LimiteDeErrores'
 import { useCuentas } from './asientos/hooks/useCuentas'
 
 const queryClient = new QueryClient()
@@ -335,11 +336,13 @@ function AppContent() {
       <main className="lg:pl-60">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <h1 className="mb-6 text-2xl font-semibold tracking-tight text-slate-900">{vista.titulo}</h1>
-          {vista.tarjeta ? (
-            <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">{contenido}</div>
-          ) : (
-            contenido
-          )}
+          <LimiteDeErrores key={vista.id}>
+            {vista.tarjeta ? (
+              <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">{contenido}</div>
+            ) : (
+              contenido
+            )}
+          </LimiteDeErrores>
         </div>
       </main>
 
