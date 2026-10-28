@@ -88,6 +88,7 @@ controlan en el backend; el frontend sólo oculta menús.
 | Acción                                                    | Administrador | Contador | Recepción |
 |-----------------------------------------------------------|:---:|:---:|:---:|
 | Consultar libros, facturar, socios, planes, stock          | ✔ | ✔ | ✔ |
+| Ver los importes del resumen de inicio (ventas, caja, IVA) | ✔ | ✔ | ✘ |
 | Anular o editar facturas                                   | ✔ | ✔ | ✘ |
 | Asignar, cambiar y finalizar la rutina de un socio         | ✔ | ✔ | ✔ |
 | Crear, editar y eliminar rutinas modelo y ejercicios       | ✔ | ✔ | ✘ |
@@ -124,6 +125,19 @@ Las facturas y los asientos confirmados **no se borran**:
 - Caja y Banco no se usan en asientos manuales: son cuentas de control cuyo saldo
   sale sólo de sus libros y de las facturas, así el Libro Caja siempre coincide con
   el Mayor.
+
+## Resumen de inicio (dashboard)
+
+La primera pantalla muestra, para el mes elegido: ventas y compras netas, resultado, IVA a pagar
+(débito menos crédito fiscal), saldos de Caja y Banco, facturas anuladas, ventas vs. compras de los
+últimos 6 meses, ingresos por origen (cuotas o productos), productos más vendidos, estado de las
+cuotas de los socios, socios sin rutina, rutinas vencidas y productos con poco stock (5 unidades o
+menos). El botón **Imprimir resumen** lo saca en PDF.
+
+- Los totales salen de las mismas tablas que los libros, así que coinciden con el Diario, la Caja y
+  el Banco; las facturas anuladas no suman.
+- Los importes los calcula y los entrega el servidor solo a Administrador y Contador; Recepción
+  recibe únicamente lo del gimnasio.
 
 ## Rutinas de gimnasio
 

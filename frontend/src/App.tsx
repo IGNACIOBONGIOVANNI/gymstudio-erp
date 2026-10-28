@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
-  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell,
+  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -21,6 +21,7 @@ import { LibroCaja } from './features/caja/components/LibroCaja'
 import { LibroBanco } from './features/banco/components/LibroBanco'
 import { PlanesGym } from './features/gimnasio/components/PlanesGym'
 import { RutinasGym } from './features/gimnasio/components/RutinasGym'
+import { Dashboard } from './features/dashboard/Dashboard'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { Facturacion } from './features/ventas/components/Facturacion'
@@ -57,6 +58,12 @@ const icono = 'h-4 w-4 shrink-0'
 const GESTION: Rol[] = ['Administrador', 'Contador']
 
 const MENU: Grupo[] = [
+  {
+    titulo: 'Inicio',
+    vistas: [
+      { id: 'inicio', titulo: 'Resumen', icono: <LayoutDashboard className={icono} /> },
+    ],
+  },
   {
     titulo: 'Recepción',
     vistas: [
@@ -156,14 +163,14 @@ function AppContent() {
   )
   const vistas = menu.flatMap((g) => g.vistas)
 
-  const [vistaId, setVistaId] = useState<string>(rol === 'Recepcion' ? 'recepcion' : 'diario')
+  const [vistaId, setVistaId] = useState<string>('inicio')
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [mostrarReportes, setMostrarReportes] = useState(false)
 
   // Si el rol cambia (otro usuario inicia sesión) y la vista ya no está permitida, volver al inicio.
   useEffect(() => {
     if (user && !vistas.some((v) => v.id === vistaId)) {
-      setVistaId(rol === 'Recepcion' ? 'recepcion' : 'diario')
+      setVistaId('inicio')
     }
   }, [user, rol, vistaId, vistas])
 
@@ -182,6 +189,7 @@ function AppContent() {
 
   const contenido = (() => {
     switch (vista.id) {
+      case 'inicio': return <Dashboard />
       case 'recepcion': return <RecepcionGym />
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />
