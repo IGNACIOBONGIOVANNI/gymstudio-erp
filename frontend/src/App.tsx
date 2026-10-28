@@ -29,6 +29,7 @@ import { obtenerConfiguracion } from './features/configuracion/configuracionStor
 
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Login } from './components/Login'
+import { LogoGym } from './components/LogoGym'
 import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
 import { useCuentas } from './asientos/hooks/useCuentas'
 
@@ -213,7 +214,10 @@ function AppContent() {
   const barraLateral = (
     <div className="flex h-full flex-col bg-slate-900 text-slate-300">
       <div className="px-5 pt-5 pb-3">
-        <p className="text-xl font-semibold tracking-tight text-white">GymStudio</p>
+        <div className="flex items-center gap-2.5">
+          <LogoGym className="h-9 w-9 shrink-0" />
+          <p className="text-xl font-semibold tracking-tight text-white">GymStudio</p>
+        </div>
         {negocio && <p className="mt-0.5 truncate text-sm text-slate-400">{negocio}</p>}
       </div>
 
@@ -291,7 +295,7 @@ function AppContent() {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <span className="font-semibold text-white">GymStudio</span>
+        <span className="flex items-center gap-2 font-semibold text-white"><LogoGym className="h-6 w-6" />GymStudio</span>
         <span className="w-8" />
       </header>
       {menuAbierto && (

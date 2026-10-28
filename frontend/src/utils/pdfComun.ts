@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import type { UserOptions } from 'jspdf-autotable';
 import { obtenerConfiguracion } from '../features/configuracion/configuracionStorage';
+import { dibujarLogo } from './logoPDF';
 
 // Todo lo impreso por el sistema sale en blanco y negro para que se fotocopie bien:
 // texto negro, líneas grises finas y sin fondos oscuros.
@@ -78,11 +79,12 @@ export function encabezadosYPies(doc: jsPDF, tituloDePagina: (pagina: number) =>
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text(negocio.razonSocial, MARGEN, 16);
+    dibujarLogo(doc, MARGEN, 10, 13);
+    doc.text(negocio.razonSocial, MARGEN + 16, 16);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text(`CUIT ${negocio.cuit}  ·  ${negocio.condicionIva}`, MARGEN, 21);
-    if (negocio.domicilio) doc.text(doc.splitTextToSize(negocio.domicilio, 100)[0], MARGEN, 25);
+    doc.text(`CUIT ${negocio.cuit}  ·  ${negocio.condicionIva}`, MARGEN + 16, 21);
+    if (negocio.domicilio) doc.text(doc.splitTextToSize(negocio.domicilio, 100)[0], MARGEN + 16, 25);
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);

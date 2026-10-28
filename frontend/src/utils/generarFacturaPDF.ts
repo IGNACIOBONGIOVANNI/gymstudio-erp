@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { dibujarLogo } from './logoPDF';
 import { ALTO_PAGINA, ANCHO_PAGINA, abrirPDF, datosDelNegocio, estiloTabla, fecha, formatearCuit, importe, pesos } from './pdfComun';
 
 // Acepta tanto la factura del listado (/api/facturas) como la que devuelve
@@ -144,7 +145,10 @@ export function generarFacturaPDF(factura: FacturaParaImprimir) {
   doc.text(`COD. ${CODIGO_COMPROBANTE[letra] ?? '-'}`, 105, 27.5, { align: 'center' });
 
   doc.setFontSize(13);
-  doc.text(doc.splitTextToSize(emisor.nombre, 80), 14, 19);
+  // En una venta el emisor es el gimnasio: lleva su logo. En una compra es el proveedor, que tiene el suyo.
+  const xNombre = esCompra ? 14 : 33;
+  if (!esCompra) dibujarLogo(doc, 14, 12, 16);
+  doc.text(doc.splitTextToSize(emisor.nombre, 92 - xNombre), xNombre, 19);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   let y = 32;

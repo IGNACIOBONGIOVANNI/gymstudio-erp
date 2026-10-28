@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { LogoGym } from './LogoGym';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 
 export function Login() {
@@ -40,6 +41,7 @@ export function Login() {
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <div className="bg-slate-900 p-8 text-center">
+          <LogoGym className="mx-auto mb-3 h-16 w-16" />
           <h2 className="text-3xl font-semibold tracking-tight text-white mb-1">GymStudio</h2>
           <p className="text-slate-400 text-sm">Ingresá con tu email y contraseña</p>
         </div>
