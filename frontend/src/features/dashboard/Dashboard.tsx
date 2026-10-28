@@ -220,10 +220,11 @@ export function Dashboard() {
             </>
           )}
 
-          <section aria-label="Gimnasio" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <section aria-label="Gimnasio" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <Indicador etiqueta="Socios con cuota al día" valor={String(g.sociosConCuotaAlDia)} />
-            <Indicador etiqueta={`Cuotas que vencen en ${g.diasPorVencer} días`} valor={String(g.cuotasPorVencer)} nota="Para avisarles en recepción" alerta={g.cuotasPorVencer > 0} />
-            <Indicador etiqueta="Socios con cuota vencida" valor={String(g.sociosVencidos)} />
+            <Indicador etiqueta={`Cuotas que vencen en ${g.diasPorVencer} días`} valor={String(g.cuotasPorVencer)} nota="Avisales por WhatsApp desde Recepción" alerta={g.cuotasPorVencer > 0} />
+            <Indicador etiqueta="Socios con cuota vencida" valor={String(g.sociosVencidos)} nota="Pagaron antes y ya les venció" />
+            <Indicador etiqueta="Socios sin plan" valor={String(g.sociosSinPlan)} nota="Todavía no pagaron ninguna cuota" />
             <Indicador etiqueta="Al día y sin rutina" valor={String(g.sociosSinRutina)} nota="Asignales una desde Socios" alerta={g.sociosSinRutina > 0} />
             <Indicador etiqueta="Rutinas vencidas" valor={String(g.rutinasVencidas)} nota="Hay que renovarlas" alerta={g.rutinasVencidas > 0} />
           </section>

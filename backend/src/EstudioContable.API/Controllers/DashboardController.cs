@@ -159,8 +159,10 @@ namespace EstudioContable.API.Controllers
             var activos = _context.Socios.AsNoTracking().Where(s => s.Activo);
             var vigentes = activos.Where(s => s.FechaVencimiento >= inicioHoy);
 
-            var totalActivos = await activos.CountAsync(cancellationToken);
             var conCuota = await vigentes.CountAsync(cancellationToken);
+            // Vencida: tuvo plan y su vencimiento pasó. Sin plan: todavía no pagó ninguna cuota (como en Recepción).
+            var vencidos = await activos.CountAsync(s => s.FechaVencimiento != null && s.FechaVencimiento < inicioHoy, cancellationToken);
+            var sinPlan = await activos.CountAsync(s => s.FechaVencimiento == null, cancellationToken);
             var porVencer = await vigentes.CountAsync(s => s.FechaVencimiento < inicioHoy.AddDays(DiasPorVencer + 1), cancellationToken);
             var sinRutina = await vigentes.CountAsync(s => !_context.AsignacionesRutina.Any(a => a.SocioId == s.Id && a.Activa), cancellationToken);
             var rutinasVencidas = await _context.AsignacionesRutina.AsNoTracking()
@@ -169,7 +171,8 @@ namespace EstudioContable.API.Controllers
             return new
             {
                 SociosConCuotaAlDia = conCuota,
-                SociosVencidos = totalActivos - conCuota,
+                SociosVencidos = vencidos,
+                SociosSinPlan = sinPlan,
                 CuotasPorVencer = porVencer,
                 DiasPorVencer,
                 SociosSinRutina = sinRutina,

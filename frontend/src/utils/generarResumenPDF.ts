@@ -61,6 +61,7 @@ export function generarResumenPDF(datos: ResumenInicio) {
     ['Socios con cuota al día', g.sociosConCuotaAlDia],
     [`Cuotas que vencen en ${g.diasPorVencer} días`, g.cuotasPorVencer],
     ['Socios con cuota vencida', g.sociosVencidos],
+    ['Socios sin plan (todavía no pagaron)', g.sociosSinPlan],
     ['Socios al día y sin rutina', g.sociosSinRutina],
     ['Rutinas vencidas', g.rutinasVencidas],
   ], [1]);

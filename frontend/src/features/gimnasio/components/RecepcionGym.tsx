@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, CreditCard } from "lucide-react";
+import { Search, CreditCard, MessageCircle } from "lucide-react";
 import {
   createColumnHelper,
   flexRender,
@@ -7,6 +7,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ModalCobrarCuota } from "./ModalCobrarCuota";
+import { datosDelNegocio } from "../../../utils/pdfComun";
+import { hoyLocal } from "../../../utils/formatters";
+import { enlaceWhatsApp, estadoDeCuota, mensajeDeCuota } from "../../../utils/whatsapp";
 
 interface SocioDto {
   id: string;
@@ -22,11 +25,14 @@ interface SocioDto {
 
 const columnHelper = createColumnHelper<SocioDto>();
 
+type FiltroCuota = "todos" | "porVencer" | "vencidos";
+
 export function RecepcionGym() {
   const [socios, setSocios] = useState<SocioDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [socioSeleccionado, setSocioSeleccionado] = useState<SocioDto | null>(null);
+  const [filtro, setFiltro] = useState<FiltroCuota>("todos");
 
   const fetchSocios = async () => {
     setIsLoading(true);
@@ -47,13 +53,21 @@ export function RecepcionGym() {
     fetchSocios();
   }, []);
 
+  const hoy = hoyLocal();
+  const cantidades = useMemo(() => ({
+    porVencer: socios.filter((s) => estadoDeCuota(s.fechaVencimiento, hoy) === "PorVencer").length,
+    vencidos: socios.filter((s) => estadoDeCuota(s.fechaVencimiento, hoy) === "Vencida").length,
+  }), [socios, hoy]);
+
   const filteredSocios = useMemo(() => {
     return socios.filter((s) => {
       const search = searchTerm.toLowerCase();
       const fullName = `${s.nombre} ${s.apellido}`.toLowerCase();
-      return fullName.includes(search) || s.dni.includes(search);
+      if (!(fullName.includes(search) || s.dni.includes(search))) return false;
+      const estado = estadoDeCuota(s.fechaVencimiento, hoy);
+      return filtro === "todos" || (filtro === "porVencer" ? estado === "PorVencer" : estado === "Vencida");
     });
-  }, [socios, searchTerm]);
+  }, [socios, searchTerm, filtro, hoy]);
 
   // Validar si la fecha es mayor o igual a hoy
   const isAlDia = (fechaStr: string | null | undefined) => {
@@ -152,12 +166,43 @@ export function RecepcionGym() {
       columnHelper.display({
         id: "acciones",
         header: () => <div className="text-right">Acciones</div>,
-        cell: (info) => (
-          <div className="flex justify-end">
+        cell: (info) => {
+          const socio = info.row.original;
+          const mensaje = mensajeDeCuota({
+            nombre: socio.nombre,
+            gimnasio: datosDelNegocio().nombreFantasia || datosDelNegocio().razonSocial,
+            vencimiento: socio.fechaVencimiento,
+            hoy: hoyLocal(),
+          });
+          const enlace = mensaje ? enlaceWhatsApp(socio.telefono, mensaje) : null;
+          return (
+          <div className="flex justify-end gap-2">
+            {mensaje && (
+              enlace ? (
+                <a
+                  href={enlace}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir WhatsApp con el aviso de cuota ya escrito"
+                  className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
+                  Avisar
+                </a>
+              ) : (
+                <span
+                  title={socio.telefono ? "El teléfono cargado no es válido: corregilo en Socios" : "Este socio no tiene teléfono cargado"}
+                  className="inline-flex cursor-not-allowed items-center justify-center rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-400"
+                >
+                  <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
+                  Sin teléfono
+                </span>
+              )
+            )}
             <button
               type="button"
               onClick={() => {
-                setSocioSeleccionado(info.row.original);
+                setSocioSeleccionado(socio);
               }}
               className="inline-flex items-center justify-center rounded-md bg-marca-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-marca-700 transition-colors"
             >
@@ -165,7 +210,8 @@ export function RecepcionGym() {
               Cobrar Cuota
             </button>
           </div>
-        ),
+          );
+        },
       }),
     ];
   }, []);
@@ -189,6 +235,23 @@ export function RecepcionGym() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-slate-200 text-base focus:border-indigo-500 focus:outline-none focus:ring-0 transition-colors"
           />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado de la cuota">
+          {([
+            ["todos", "Todos"],
+            ["porVencer", `Por vencer en 7 días (${cantidades.porVencer})`],
+            ["vencidos", `Vencidos (${cantidades.vencidos})`],
+          ] as [FiltroCuota, string][]).map(([valor, texto]) => (
+            <button
+              key={valor}
+              type="button"
+              onClick={() => setFiltro(valor)}
+              aria-pressed={filtro === valor}
+              className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${filtro === valor ? "border-marca-600 bg-marca-50 text-marca-700" : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"}`}
+            >
+              {texto}
+            </button>
+          ))}
         </div>
       </div>
 

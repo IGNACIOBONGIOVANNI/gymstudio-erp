@@ -27,6 +27,7 @@ export interface FinanzasDelMes {
 export interface GimnasioResumen {
   sociosConCuotaAlDia: number;
   sociosVencidos: number;
+  sociosSinPlan: number;
   cuotasPorVencer: number;
   diasPorVencer: number;
   sociosSinRutina: number;

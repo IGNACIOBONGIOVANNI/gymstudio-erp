@@ -136,6 +136,20 @@ public class DashboardTests(ApiFixture api)
         Assert.Equal(antes, (int)(await Resumen(jefe, "2025-03", "2030-12-15"))["gimnasio"]!["rutinasVencidas"]!);       // todavía vigente
     }
 
+    [Fact]
+    public async Task Un_socio_que_nunca_pago_cuenta_como_sin_plan_y_no_como_vencido()
+    {
+        var jefe = await api.Jefe();
+        var antes = (await Resumen(jefe, "2025-03", "2025-03-20"))["gimnasio"]!;
+
+        var creado = await jefe.PostAsJsonAsync("/api/socios", new { nombre = "Nuevo", apellido = "SinCuota", dni = Random.Shared.Next(20_000_000, 49_999_999).ToString(), telefono = "" });
+        Assert.True(creado.IsSuccessStatusCode, await creado.Detalle());
+
+        var despues = (await Resumen(jefe, "2025-03", "2025-03-20"))["gimnasio"]!;
+        Assert.Equal((int)antes["sociosSinPlan"]! + 1, (int)despues["sociosSinPlan"]!);
+        Assert.Equal((int)antes["sociosVencidos"]!, (int)despues["sociosVencidos"]!);
+    }
+
     [Theory]
     [InlineData("2025-13")]
     [InlineData("octubre")]
