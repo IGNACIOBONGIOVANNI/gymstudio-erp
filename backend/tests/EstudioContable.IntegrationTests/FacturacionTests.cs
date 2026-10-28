@@ -230,6 +230,76 @@ public class FacturacionTests(ApiFixture api)
         Assert.Equal(HttpStatusCode.Created, aceptada.StatusCode);
     }
 
+    private static object CompraSinNumero(string proveedor, decimal neto = 100, string tipo = "A") => new
+    {
+        fecha = "2026-10-20T12:00:00Z",
+        tipoOperacion = "Compra",
+        condicionPago = "ContadoCaja",
+        tipoComprobante = tipo,
+        cliente = proveedor,
+        subtotal = neto,
+        iva = tipo == "C" ? 0m : neto * 0.21m,          // la factura C no discrimina IVA
+        total = tipo == "C" ? neto : neto * 1.21m,
+        items = new[] { new { productoId = 0, descripcion = "Insumos", cantidad = 1, precioUnitario = neto, subtotal = neto } }
+    };
+
+    [Fact]
+    public async Task Una_compra_sin_numero_del_proveedor_recibe_un_numero_interno_consecutivo()
+    {
+        var jefe = await api.Jefe();
+        // Un tipo de comprobante propio de este test (C) para que la secuencia empiece en 1.
+        async Task<JsonObject> Cargar(string proveedor)
+        {
+            var r = await jefe.PostAsJsonAsync("/api/facturas", CompraSinNumero(proveedor, tipo: "C"));
+            Assert.Equal(HttpStatusCode.Created, r.StatusCode);
+            var id = (long)(await r.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+            return (await jefe.GetJson("/api/facturas")).AsArray().Select(f => f!.AsObject()).Single(f => (long)f["id"]! == id);
+        }
+
+        var primera = await Cargar("Proveedor uno");
+        var segunda = await Cargar("Proveedor dos");
+        var tercera = await Cargar("Proveedor uno");        // el mismo proveedor puede tener varias sin número
+
+        Assert.Equal(new[] { "9999-00000001", "9999-00000002", "9999-00000003" },
+            new[] { primera, segunda, tercera }.Select(f => (string)f["numeroFactura"]!));
+    }
+
+    [Fact]
+    public async Task Cargar_solo_la_mitad_del_numero_del_proveedor_se_rechaza_y_el_numero_real_sigue_validandose()
+    {
+        var jefe = await api.Jefe();
+
+        var soloPunto = await jefe.PostAsJsonAsync("/api/facturas", new
+        {
+            fecha = "2026-10-20T12:00:00Z", tipoOperacion = "Compra", condicionPago = "ContadoCaja", tipoComprobante = "A", cliente = "Prov mitad",
+            puntoVenta = 3, subtotal = 100m, iva = 21m, total = 121m,
+            items = new[] { new { productoId = 0, descripcion = "Insumos", cantidad = 1, precioUnitario = 100m, subtotal = 100m } }
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, soloPunto.StatusCode);
+        Assert.Contains("dos vacíos", await soloPunto.Detalle());
+
+        // Con número real se sigue evitando cargar dos veces la misma factura del proveedor.
+        var real = Compra(numero: 9301);
+        Assert.Equal(HttpStatusCode.Created, (await jefe.PostAsJsonAsync("/api/facturas", real)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await jefe.PostAsJsonAsync("/api/facturas", real)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Editar_una_compra_con_numero_interno_sin_tocar_el_numero_lo_conserva()
+    {
+        var jefe = await api.Jefe();
+        var creada = await jefe.PostAsJsonAsync("/api/facturas", CompraSinNumero("Proveedor editado", tipo: "B"));
+        var id = (long)(await creada.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        string Numero(JsonNode lista) => (string)lista.AsArray().Select(f => f!.AsObject()).Single(f => (long)f["id"]! == id)["numeroFactura"]!;
+        var antes = Numero(await jefe.GetJson("/api/facturas"));
+
+        var edicion = await jefe.PutAsJsonAsync($"/api/facturas/{id}", CompraSinNumero("Proveedor editado", neto: 250, tipo: "B"));
+        Assert.Equal(HttpStatusCode.NoContent, edicion.StatusCode);
+
+        Assert.Equal(antes, Numero(await jefe.GetJson("/api/facturas")));
+        Assert.StartsWith("9999-", antes);
+    }
+
     [Fact]
     public async Task La_razon_social_se_completa_desde_el_cliente_elegido()
     {

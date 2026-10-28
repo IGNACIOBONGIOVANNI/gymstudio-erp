@@ -107,6 +107,13 @@ Otras medidas: límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto
 10 por defecto), CORS restringido a los orígenes de `Cors:OrigenesPermitidos` y
 sesión de 8 horas (`Jwt:ExpiracionMinutos`).
 
+## Numeración de comprobantes
+
+- **Ventas:** el sistema las numera solo, correlativas por tipo de comprobante y punto de venta (ej. `0001-00000007`).
+- **Compras:** el número de la factura del proveedor es **opcional**. Si se deja vacío, el sistema asigna un número
+  interno consecutivo con el punto de venta reservado `9999` (ej. `9999-00000001`), pensado para ejercicios y
+  demostraciones. Si se escribe el número real, no se puede cargar dos veces la misma factura del mismo proveedor.
+
 ## Anulación de facturas (trazabilidad contable)
 
 Las facturas y los asientos confirmados **no se borran**:

@@ -5,6 +5,12 @@ namespace EstudioContable.Domain.Entities
 {
     public class Factura
     {
+        /// <summary>
+        /// Punto de venta reservado para los números internos: lo usa el sistema cuando se carga una compra
+        /// sin el número de la factura del proveedor (por ejemplo, ejercicios o demostraciones).
+        /// </summary>
+        public const int PuntoVentaInterno = 9999;
+
         public long Id { get; set; }
         public DateTime Fecha { get; set; }
         public string TipoOperacion { get; set; } = string.Empty;

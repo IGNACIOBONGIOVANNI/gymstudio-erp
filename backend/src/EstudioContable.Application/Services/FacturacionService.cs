@@ -70,6 +70,14 @@ namespace EstudioContable.Application.Services
 
             ValidarYNormalizarImportes(datosNuevos);
 
+            // Editar una compra dejando vacío el número no se lo cambia: conserva el que tenía.
+            if (datosNuevos.TipoOperacion == Compra && factura.TipoOperacion == Compra
+                && datosNuevos.PuntoVenta == null && datosNuevos.NumeroComprobante == null)
+            {
+                datosNuevos.PuntoVenta = factura.PuntoVenta;
+                datosNuevos.NumeroComprobante = factura.NumeroComprobante;
+            }
+
             await OperacionesContables.EnTransaccionAsync(_context, async () =>
             {
                 await RevertirEfectosAsync(factura, $"Modificación factura N° {factura.Id}", cancellationToken);
@@ -340,8 +348,19 @@ namespace EstudioContable.Application.Services
                 return;
             }
 
+            // Una compra sin el número del proveedor recibe un número interno consecutivo (punto de venta 9999).
+            if (factura.PuntoVenta == null && factura.NumeroComprobante == null)
+            {
+                factura.PuntoVenta = Factura.PuntoVentaInterno;
+                var ultimoInterno = await _context.Facturas
+                    .Where(f => f.TipoOperacion == Compra && f.TipoComprobante == factura.TipoComprobante
+                                && f.PuntoVenta == Factura.PuntoVentaInterno && f.Id != idExcluido)
+                    .MaxAsync(f => f.NumeroComprobante, cancellationToken);
+                factura.NumeroComprobante = (ultimoInterno ?? 0) + 1;
+                return;
+            }
             if (factura.PuntoVenta == null || factura.NumeroComprobante == null)
-                throw new ArgumentException("Indicá el punto de venta y el número de la factura del proveedor (ej. 0003-00001234).");
+                throw new ArgumentException("Completá el punto de venta y el número de la factura del proveedor, o dejá los dos vacíos para que el sistema asigne un número interno.");
 
             var duplicada = await _context.Facturas.AnyAsync(f =>
                 f.TipoOperacion == Compra && !f.Anulada && f.Id != idExcluido

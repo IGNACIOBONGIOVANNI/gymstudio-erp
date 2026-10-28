@@ -68,9 +68,11 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
 
     const puntoVentaNum = Number(puntoVentaCompra);
     const numeroNum = Number(numeroCompra);
-    if (tipoOperacion === "Compra" && !(Number.isInteger(puntoVentaNum) && puntoVentaNum >= 1 && puntoVentaNum <= 99999
+    // Con los dos campos vacíos la compra conserva el número que tenía (o recibe uno interno).
+    const sinNumero = puntoVentaCompra === "" && numeroCompra === "";
+    if (tipoOperacion === "Compra" && !sinNumero && !(Number.isInteger(puntoVentaNum) && puntoVentaNum >= 1 && puntoVentaNum <= 99999
         && Number.isInteger(numeroNum) && numeroNum >= 1 && numeroNum <= 99999999))
-      return void toast.error("Cargá el número de la factura del proveedor: punto de venta (1 a 99999) y número (1 a 99999999)");
+      return void toast.error("Completá el punto de venta y el número de la factura del proveedor, o dejá los dos vacíos");
     // Una venta conserva su número; si cambia el tipo de comprobante, el sistema le asigna uno nuevo.
     const mismaNumeracion = tipoOperacion === factura.tipoOperacion && tipoComprobante === factura.tipoComprobante;
 
@@ -80,8 +82,8 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
       tipoComprobante,
       cliente,
       condicionPago,
-      puntoVenta: tipoOperacion === "Compra" ? puntoVentaNum : (factura.puntoVenta ?? null),
-      numeroComprobante: tipoOperacion === "Compra" ? numeroNum : (mismaNumeracion ? factura.numeroComprobante ?? null : null),
+      puntoVenta: tipoOperacion === "Compra" ? (sinNumero ? null : puntoVentaNum) : (factura.puntoVenta ?? null),
+      numeroComprobante: tipoOperacion === "Compra" ? (sinNumero ? null : numeroNum) : (mismaNumeracion ? factura.numeroComprobante ?? null : null),
       subtotal: Number(subtotalItems),
       iva: Number(ivaItems),
       total: Number(subtotalItems + ivaItems),
@@ -158,13 +160,13 @@ export function ModalEditarFactura({ factura, onClose }: { factura: any; onClose
             <div className="flex flex-wrap items-end gap-3">
               <div>
                 <label htmlFor="editarPuntoVenta" className="mb-1 block text-sm font-medium text-slate-700">Punto de venta</label>
-                <input id="editarPuntoVenta" inputMode="numeric" maxLength={5} value={puntoVentaCompra} disabled={enviando} required
+                <input id="editarPuntoVenta" inputMode="numeric" maxLength={5} value={puntoVentaCompra} disabled={enviando} placeholder="Automático"
                   onChange={(e) => setPuntoVentaCompra(e.target.value.replace(/\D/g, ""))}
                   className="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm tabular-nums focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white" />
               </div>
               <div>
                 <label htmlFor="editarNumero" className="mb-1 block text-sm font-medium text-slate-700">Número del proveedor</label>
-                <input id="editarNumero" inputMode="numeric" maxLength={8} value={numeroCompra} disabled={enviando} required
+                <input id="editarNumero" inputMode="numeric" maxLength={8} value={numeroCompra} disabled={enviando} placeholder="Automático"
                   onChange={(e) => setNumeroCompra(e.target.value.replace(/\D/g, ""))}
                   className="w-32 rounded-md border border-slate-300 px-3 py-2 text-sm tabular-nums focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white" />
               </div>

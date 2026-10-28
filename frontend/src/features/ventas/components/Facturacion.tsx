@@ -167,11 +167,13 @@ export function Facturacion() {
     if (!tercero)
       return void toast.error(tipoOperacion === 'Venta' ? "Seleccioná el cliente" : "Seleccioná el proveedor");
 
+    // El número del proveedor es opcional: con los dos campos vacíos el sistema asigna un número interno.
     const puntoVentaNum = Number(puntoVentaCompra);
     const numeroNum = Number(numeroCompra);
-    if (tipoOperacion === 'Compra' && !(Number.isInteger(puntoVentaNum) && puntoVentaNum >= 1 && puntoVentaNum <= 99999
+    const sinNumero = puntoVentaCompra === "" && numeroCompra === "";
+    if (tipoOperacion === 'Compra' && !sinNumero && !(Number.isInteger(puntoVentaNum) && puntoVentaNum >= 1 && puntoVentaNum <= 99999
         && Number.isInteger(numeroNum) && numeroNum >= 1 && numeroNum <= 99999999))
-      return void toast.error("Cargá el número de la factura del proveedor: punto de venta (1 a 99999) y número (1 a 99999999)");
+      return void toast.error("Completá el punto de venta (1 a 99999) y el número (1 a 99999999) de la factura del proveedor, o dejá los dos vacíos para que el sistema asigne un número interno");
 
     const subtotalItems = itemsCargados.reduce((acc, i) => acc + Number(i.cantidad) * Number(i.precioUnitario), 0);
     const ivaItems = (tipoComprobante === "A" || tipoComprobante === "B") ? Math.round(subtotalItems * porcentajeIva) / 100 : 0;
@@ -184,8 +186,8 @@ export function Facturacion() {
       clienteId: tipoOperacion === 'Venta' ? (clienteId === "" ? null : Number(clienteId)) : null,
       proveedorId: tipoOperacion === 'Compra' ? (proveedorId === "" ? null : Number(proveedorId)) : null,
       condicionPago,
-      puntoVenta: tipoOperacion === 'Compra' ? puntoVentaNum : PUNTO_VENTA_PROPIO(),
-      numeroComprobante: tipoOperacion === 'Compra' ? numeroNum : null,
+      puntoVenta: tipoOperacion === 'Compra' ? (sinNumero ? null : puntoVentaNum) : PUNTO_VENTA_PROPIO(),
+      numeroComprobante: tipoOperacion === 'Compra' ? (sinNumero ? null : numeroNum) : null,
       subtotal: Number(subtotalItems),
       iva: Number(ivaItems),
       total: Number(subtotalItems + ivaItems),
@@ -315,19 +317,18 @@ export function Facturacion() {
 
       {tipoOperacion === 'Compra' ? (
         <fieldset className="flex flex-wrap items-end gap-3">
-          <legend className="mb-1 text-sm font-medium text-slate-700">Número de la factura del proveedor</legend>
+          <legend className="mb-1 text-sm font-medium text-slate-700">Número de la factura del proveedor (opcional)</legend>
           <div>
             <label htmlFor="puntoVentaCompra" className="mb-1 block text-xs text-slate-500">Punto de venta</label>
             <input
               id="puntoVentaCompra"
               inputMode="numeric"
-              placeholder="0003"
+              placeholder="Automático"
               maxLength={5}
               disabled={enviando}
               value={puntoVentaCompra}
               onChange={(e) => setPuntoVentaCompra(e.target.value.replace(/\D/g, ""))}
               onBlur={() => puntoVentaCompra && setPuntoVentaCompra(puntoVentaCompra.padStart(4, "0"))}
-              required
               className="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm tabular-nums focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </div>
@@ -337,17 +338,18 @@ export function Facturacion() {
             <input
               id="numeroCompra"
               inputMode="numeric"
-              placeholder="00001234"
+              placeholder="Automático"
               maxLength={8}
               disabled={enviando}
               value={numeroCompra}
               onChange={(e) => setNumeroCompra(e.target.value.replace(/\D/g, ""))}
               onBlur={() => numeroCompra && setNumeroCompra(numeroCompra.padStart(8, "0"))}
-              required
               className="w-32 rounded-md border border-slate-300 px-3 py-2 text-sm tabular-nums focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </div>
-          <p className="pb-2 text-xs text-slate-500">Tal como figura en el comprobante recibido.</p>
+          <p className="max-w-sm pb-2 text-xs text-slate-500">
+            Dejalos vacíos y el sistema asigna un número interno (punto de venta 9999). Si tenés la factura del proveedor, escribí su número tal como figura.
+          </p>
         </fieldset>
       ) : (
         <p className="text-xs text-slate-500">
