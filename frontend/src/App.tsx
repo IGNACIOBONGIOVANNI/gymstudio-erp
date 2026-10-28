@@ -35,6 +35,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { Login } from './components/Login'
 import { LogoGym } from './components/LogoGym'
 import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
+import { Asistente } from './components/Asistente'
 import { useCuentas } from './asientos/hooks/useCuentas'
 
 const queryClient = new QueryClient()
@@ -343,6 +344,8 @@ function AppContent() {
       </main>
 
       {mostrarReportes && <ModalGenerarReporte onClose={() => setMostrarReportes(false)} />}
+
+      <Asistente />
     </div>
   )
 }

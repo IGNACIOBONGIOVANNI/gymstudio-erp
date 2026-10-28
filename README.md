@@ -142,6 +142,21 @@ Las facturas y los asientos confirmados **no se borran**:
   (ventas contra el mes anterior, deudas de más de 90 días con el nombre del cliente, productos sin stock,
   cuotas por vencer...). Primero lo que requiere atención. Recepción solo ve las del gimnasio.
 
+## Asistente
+
+El botón **Asistente** (abajo a la derecha, en todas las pantallas) contesta preguntas escritas con tus palabras, con
+los datos del sistema. Funciona **por reglas**: reconoce palabras clave y períodos, consulta la base y arma la
+respuesta; no usa internet ni inteligencia artificial externa, así que anda igual sin conexión. Es de solo lectura.
+
+- Entiende, por ejemplo: "¿cuánto vendí este mes?", "ventas de marzo de 2026", "¿cuánto gasté el mes pasado?",
+  "resultado de este año", "¿cuánto IVA tengo que pagar?", "¿cuánto hay en caja?", "¿quién me debe?", "¿a quién le
+  debo?", "¿cuál es el producto más vendido?", "¿cuánto stock hay de proteína?", "¿qué productos están sin stock?",
+  "¿cuántas cuotas vencen esta semana?", "¿quiénes no tienen rutina?", "¿está todo bien con la contabilidad?" y
+  "dame un resumen". Los períodos: hoy, este mes, el mes pasado, un mes con nombre (y año) y este año.
+- Ignora tildes, mayúsculas y signos. Si no entiende, lo dice y sugiere preguntas.
+- **Permisos en el servidor:** lo financiero (ventas, caja, deudas, IVA, contabilidad) solo se le contesta a
+  Administrador y Contador; Recepción recibe ayuda con socios, cuotas, rutinas y stock.
+
 ## Cuentas a cobrar y a pagar
 
 Menú **Cuentas a cobrar y pagar** (solo Administrador y Contador). Para cada cliente (o proveedor) muestra

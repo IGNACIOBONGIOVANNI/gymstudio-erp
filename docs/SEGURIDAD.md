@@ -58,6 +58,13 @@ Encontrado y corregido:
 
 Cubierto con tests automáticos (`RobustezTests` y los tests de cada módulo).
 
+### Asistente por reglas
+
+El asistente no usa internet ni modelos externos y no ejecuta nada que venga escrito en la pregunta: el texto solo se
+compara con palabras clave y nunca llega a una consulta SQL. El rol se decide en el servidor con el token (Recepción
+no recibe ningún importe, probado rompiendo la restricción a propósito), la pregunta tiene un máximo de 300 caracteres y
+las respuestas no repiten el texto del usuario más que normalizado (sin signos), por lo que no pueden contener HTML.
+
 ## Pendiente antes de usarlo con datos reales
 
 - Cambiar la contraseña del administrador inicial (`jefe@gym.com`, clave de desarrollo) y la clave `Jwt:Key` de `appsettings.Development.json`.
