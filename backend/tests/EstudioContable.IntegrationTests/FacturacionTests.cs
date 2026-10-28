@@ -195,6 +195,42 @@ public class FacturacionTests(ApiFixture api)
     }
 
     [Fact]
+    public async Task Un_dni_solo_vale_para_consumidor_final()
+    {
+        var jefe = await api.Jefe();
+        object Datos(string condicion) => new { razonSocial = "Persona con DNI", direccion = "Calle 3", localidad = "Ramos", cuit = "30111222", condicionIva = condicion };
+
+        var inscripto = await jefe.PostAsJsonAsync("/api/clientes", Datos("Responsable Inscripto"));
+        Assert.Equal(HttpStatusCode.BadRequest, inscripto.StatusCode);
+        Assert.Contains("CUIT", await inscripto.Detalle());
+        Assert.True((await jefe.PostAsJsonAsync("/api/clientes", Datos("Consumidor Final"))).IsSuccessStatusCode);
+    }
+
+    [Fact]
+    public async Task La_factura_A_solo_se_emite_a_responsables_inscriptos_o_monotributistas()
+    {
+        var jefe = await api.Jefe();
+        async Task<long> Cliente(string razon, string cuit, string condicion)
+            => (long)(await (await jefe.PostAsJsonAsync("/api/clientes", new { razonSocial = razon, direccion = "Calle 4", localidad = "Haedo", cuit, condicionIva = condicion }))
+                .Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        object FacturaA(long clienteId) => new
+        {
+            fecha = "2026-10-20T12:00:00Z", tipoOperacion = "Venta", condicionPago = "ContadoCaja", tipoComprobante = "A", clienteId,
+            subtotal = 150m, iva = 31.5m, total = 181.5m,
+            items = new[] { new { productoId = ProductoA, descripcion = "Producto A", cantidad = 1, precioUnitario = 150m, subtotal = 150m } }
+        };
+
+        var consumidor = await Cliente("Maria Consumidora", "27111222", "Consumidor Final");
+        var rechazada = await jefe.PostAsJsonAsync("/api/facturas", FacturaA(consumidor));
+        Assert.Equal(HttpStatusCode.BadRequest, rechazada.StatusCode);
+        Assert.Contains("factura B", await rechazada.Detalle());
+
+        var inscripto = await Cliente("Comercio RI SRL", "30-70707070-2", "Responsable Inscripto");
+        var aceptada = await jefe.PostAsJsonAsync("/api/facturas", FacturaA(inscripto));
+        Assert.Equal(HttpStatusCode.Created, aceptada.StatusCode);
+    }
+
+    [Fact]
     public async Task La_razon_social_se_completa_desde_el_cliente_elegido()
     {
         // Regresión: el formulario mandaba cliente vacío y ninguna factura se guardaba.

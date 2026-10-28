@@ -31,6 +31,8 @@ namespace EstudioContable.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            await ValidarTipoParaElClienteAsync(dto.TipoComprobante, dto.TipoOperacion, dto.ClienteId, cancellationToken);
+
             var factura = new Factura
             {
                 Fecha = dto.Fecha,
@@ -83,6 +85,19 @@ namespace EstudioContable.API.Controllers
         /// Nombre que se imprime en la factura: el que viene en el formulario o, si está
         /// vacío, la razón social del cliente (venta) o proveedor (compra) elegido.
         /// </summary>
+        // La factura A se emite a Responsables Inscriptos (y Monotributistas); a un Consumidor Final o
+        // un Exento le corresponde la B.
+        private async Task ValidarTipoParaElClienteAsync(string? tipoComprobante, string tipoOperacion, long? clienteId, CancellationToken cancellationToken)
+        {
+            if (tipoOperacion != "Venta" || clienteId is not long id || !string.Equals(tipoComprobante?.Trim(), "A", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var cliente = await _context.ClientesComerciales.AsNoTracking().Where(c => c.Id == id)
+                .Select(c => new { c.RazonSocial, c.CondicionIva }).FirstOrDefaultAsync(cancellationToken);
+            if (cliente is not null && cliente.CondicionIva != "Responsable Inscripto" && cliente.CondicionIva != "Monotributo")
+                throw new ArgumentException($"No se puede emitir una factura A a {cliente.RazonSocial}: es {cliente.CondicionIva}. Corresponde la factura B.");
+        }
+
         private async Task<string> NombreDelTerceroAsync(string? nombre, string tipoOperacion, long? clienteId, long? proveedorId, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(nombre))
@@ -162,6 +177,8 @@ namespace EstudioContable.API.Controllers
             var nombre = actual == null
                 ? dto.Cliente
                 : await NombreDelTerceroAsync(dto.Cliente, dto.TipoOperacion, actual.ClienteComercialId, actual.ProveedorId, cancellationToken);
+            if (actual != null)
+                await ValidarTipoParaElClienteAsync(dto.TipoComprobante, dto.TipoOperacion, actual.ClienteComercialId, cancellationToken);
 
             var datosNuevos = new Factura
             {

@@ -30,6 +30,10 @@ namespace EstudioContable.Application.Comercial
             if (!Domain.Cuit.EsDocumentoValido(Cuit))
                 throw new ArgumentException("El CUIT/DNI no es válido: un CUIT tiene 11 dígitos con dígito verificador correcto (ej. 20-12345678-6) y un DNI tiene 7 u 8 dígitos.");
 
+            // Un DNI no es un CUIT: quien es Responsable Inscripto, Monotributista o Exento tiene CUIT.
+            if (condicion != "Consumidor Final" && !Domain.Cuit.EsValido(Cuit))
+                throw new ArgumentException($"Para la condición {condicion} hace falta un CUIT válido (11 dígitos). El DNI solo se admite para Consumidor Final.");
+
             var direccion = (Direccion ?? string.Empty).Trim();
             var localidad = (Localidad ?? string.Empty).Trim();
             if (direccion.Length > 200 || localidad.Length > 100)
