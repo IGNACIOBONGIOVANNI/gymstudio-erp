@@ -170,6 +170,7 @@ builder.Services.AddScoped<EstudioContable.Application.Services.ITesoreriaServic
 builder.Services.AddScoped<EstudioContable.Application.Services.IControlIntegridadService, EstudioContable.Application.Services.ControlIntegridadService>();
 builder.Services.AddScoped<EstudioContable.Application.Services.ICuentasCorrientesService, EstudioContable.Application.Services.CuentasCorrientesService>();
 builder.Services.AddScoped<EstudioContable.Application.Services.IAsistenteService, EstudioContable.Application.Services.AsistenteService>();
+builder.Services.AddScoped<EstudioContable.Application.Services.IAsistenciasService, EstudioContable.Application.Services.AsistenciasService>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
 // Registro de MediatR (apuntando al Assembly de la capa Application)

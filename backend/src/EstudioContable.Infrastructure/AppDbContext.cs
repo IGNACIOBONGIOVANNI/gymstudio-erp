@@ -40,6 +40,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<RutinaEjercicio> RutinaEjercicios => Set<RutinaEjercicio>();
         public DbSet<AsignacionRutina> AsignacionesRutina => Set<AsignacionRutina>();
         public DbSet<MedicionSocio> MedicionesSocio => Set<MedicionSocio>();
+        public DbSet<AsistenciaSocio> AsistenciasSocio => Set<AsistenciaSocio>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -162,6 +163,16 @@ namespace EstudioContable.Infrastructure.Persistence
                         "(\"PechoCm\" IS NULL OR \"PechoCm\" BETWEEN 30 AND 250) AND (\"BrazoCm\" IS NULL OR \"BrazoCm\" BETWEEN 10 AND 100) AND " +
                         "(\"MusloCm\" IS NULL OR \"MusloCm\" BETWEEN 20 AND 150)");
                 });
+            });
+
+            // Ingresos al gimnasio: uno por socio y día (aunque pasen dos veces o dos recepcionistas lo carguen a la vez),
+            // y no se puede borrar un socio que tiene ingresos.
+            modelBuilder.Entity<AsistenciaSocio>(e =>
+            {
+                e.Property(x => x.RegistradaPor).HasMaxLength(100);
+                e.HasOne<Socio>().WithMany().HasForeignKey(x => x.SocioId).OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => new { x.SocioId, x.Fecha }).IsUnique().HasDatabaseName("ux_asistencias_socio_fecha");
+                e.HasIndex(x => x.Fecha).HasDatabaseName("ix_asistencias_fecha");
             });
 
             // Cobros y pagos a cuenta corriente: el cliente o proveedor al que corresponden. Un movimiento

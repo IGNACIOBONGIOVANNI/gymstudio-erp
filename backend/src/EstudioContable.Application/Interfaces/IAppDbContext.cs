@@ -34,6 +34,7 @@ namespace EstudioContable.Application.Interfaces
         DbSet<RutinaEjercicio> RutinaEjercicios { get; }
         DbSet<AsignacionRutina> AsignacionesRutina { get; }
         DbSet<MedicionSocio> MedicionesSocio { get; }
+        DbSet<AsistenciaSocio> AsistenciasSocio { get; }
 
         /// <summary>Vista contabilidad.v_libro_mayor: saldos por cuenta de los asientos confirmados.</summary>
         IQueryable<SaldoCuentaMayor> LibroMayor { get; }

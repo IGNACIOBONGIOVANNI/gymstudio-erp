@@ -67,3 +67,13 @@ export function mensajeDeCuota(datos: { nombre: string; gimnasio: string; vencim
   const cuando = dias === 0 ? 'vence hoy' : dias === 1 ? `vence mañana (${fecha})` : `vence el ${fecha} (en ${dias} días)`;
   return `${saludo} Te recordamos que tu cuota ${cuando}. Podés renovarla en recepción cuando quieras. ¡Gracias!`;
 }
+
+/** Mensaje para un socio con la cuota al día que hace tiempo no viene. `diasSinVenir` es null si todavía no vino nunca. */
+export function mensajeDeRegreso(datos: { nombre: string; gimnasio: string; diasSinVenir: number | null }): string {
+  const nombre = datos.nombre.trim().split(/\s+/)[0] || 'socio/a';
+  const saludo = `Hola ${nombre}, te escribimos de ${datos.gimnasio}.`;
+  const motivo = datos.diasSinVenir === null
+    ? 'Todavía no te vimos por el gimnasio'
+    : `Hace ${datos.diasSinVenir} ${datos.diasSinVenir === 1 ? 'día' : 'días'} que no te vemos por el gimnasio`;
+  return `${saludo} ${motivo}. ¿Todo bien? Si querés cambiar tu rutina o tus horarios, avisanos y lo vemos. ¡Te esperamos!`;
+}

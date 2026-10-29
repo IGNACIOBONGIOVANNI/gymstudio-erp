@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { diasEntre, enlaceWhatsApp, estadoDeCuota, mensajeDeCuota, telefonoParaWhatsApp } from '../src/utils/whatsapp.ts';
+import { diasEntre, enlaceWhatsApp, estadoDeCuota, mensajeDeCuota, mensajeDeRegreso, telefonoParaWhatsApp } from '../src/utils/whatsapp.ts';
 
 test('el teléfono se normaliza al formato de WhatsApp (549 + área + número)', () => {
   const casos: [string, string][] = [
@@ -58,4 +58,18 @@ test('el mensaje depende del estado y solo se arma si hay que avisar', () => {
   assert.match(mensajeDeCuota({ ...base, vencimiento: '2026-10-28' })!, /vence mañana \(28\/10\/2026\)/);
   assert.match(mensajeDeCuota({ ...base, vencimiento: '2026-10-30T10:00:00Z' })!, /vence el 30\/10\/2026 \(en 3 días\)/);
   assert.match(mensajeDeCuota({ ...base, vencimiento: '2026-10-20' })!, /Tu cuota venció el 20\/10\/2026/);
+});
+
+test('el mensaje para quien no viene dice cuántos días y usa solo el primer nombre', () => {
+  const m = mensajeDeRegreso({ nombre: 'María Laura', gimnasio: 'GymStudio', diasSinVenir: 21 });
+  assert.match(m, /^Hola María, te escribimos de GymStudio\./);
+  assert.match(m, /Hace 21 días que no te vemos/);
+  assert.match(mensajeDeRegreso({ nombre: 'Juan', gimnasio: 'GymStudio', diasSinVenir: 1 }), /Hace 1 día que no te vemos/);
+});
+
+test('el mensaje para quien todavía no vino nunca no inventa una cantidad de días', () => {
+  const m = mensajeDeRegreso({ nombre: '  ', gimnasio: 'GymStudio', diasSinVenir: null });
+  assert.match(m, /^Hola socio\/a,/);
+  assert.match(m, /Todavía no te vimos por el gimnasio/);
+  assert.doesNotMatch(m, /Hace \d+/);
 });

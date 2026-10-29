@@ -41,6 +41,7 @@ erDiagram
     Socios ||--o{ AsignacionesRutina : "entrena con"
     Rutinas ||--o{ AsignacionesRutina : "se asigna"
     Socios ||--o{ MedicionesSocio : "se mide"
+    Socios ||--o{ AsistenciasSocio : "ingresa"
 
     asientos_contables {
         bigint Id PK
@@ -98,6 +99,9 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 - `movimientos_caja` y `movimientos_banco` → `ClientesComerciales` / `Proveedores` (cobros y pagos a cuenta corriente) son
   `RESTRICT`: no se puede borrar un cliente o proveedor que tiene cobros o pagos registrados.
 - `MedicionesSocio (SocioId, Fecha)` único: una medición por socio y día.
+- `AsistenciasSocio (SocioId, Fecha)` único: un ingreso por socio y día, aunque dos recepciones lo carguen a la vez.
+  La FK a `Socios` es `RESTRICT`: no se puede borrar un socio que tiene ingresos. Esta tabla no tiene disparador de
+  auditoría (cada fila guarda quién la registró y cuándo).
 - `AsignacionesRutina (SocioId)` único **donde Activa**: un socio tiene una sola rutina activa.
 - `Ejercicios` y `Rutinas`: nombre único sin distinguir mayúsculas (`lower("Nombre")`).
 - Las FK `lineas_asiento → CuentasContables`, `Facturas → asientos_contables` y

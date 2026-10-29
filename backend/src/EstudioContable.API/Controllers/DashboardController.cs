@@ -8,6 +8,7 @@ using EstudioContable.API.Auth;
 using EstudioContable.Application.Common;
 using EstudioContable.Application.Interfaces;
 using EstudioContable.Application.Services;
+using EstudioContable.Domain;
 using EstudioContable.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,12 +32,15 @@ namespace EstudioContable.API.Controllers
         private readonly IAppDbContext _context;
         private readonly ICuentasCorrientesService _cuentas;
         private readonly IControlIntegridadService _integridad;
+        private readonly IAsistenciasService _asistencias;
 
-        public DashboardController(IAppDbContext context, ICuentasCorrientesService cuentas, IControlIntegridadService integridad)
+        public DashboardController(IAppDbContext context, ICuentasCorrientesService cuentas, IControlIntegridadService integridad,
+            IAsistenciasService asistencias)
         {
             _context = context;
             _cuentas = cuentas;
             _integridad = integridad;
+            _asistencias = asistencias;
         }
 
         /// <summary>Una novedad del resumen: nivel "atencion", "info" u "ok" y su texto.</summary>
@@ -154,6 +158,14 @@ namespace EstudioContable.API.Controllers
                 lista.Add(new("info", $"{g.SociosSinRutina} {Plural(g.SociosSinRutina, "socio al día no tiene", "socios al día no tienen")} rutina asignada."));
             if (g.RutinasVencidas > 0)
                 lista.Add(new("atencion", $"{g.RutinasVencidas} {Plural(g.RutinasVencidas, "rutina vencida", "rutinas vencidas")}: hay que renovarla{(g.RutinasVencidas == 1 ? "" : "s")}."));
+
+            // Socios que pagan pero no vienen: es lo que suele pasar antes de una baja.
+            var enRiesgo = await _asistencias.SociosEnRiesgoAsync(dia, ReglasDeAsistencia.DiasSinVenirPorDefecto, cancellationToken);
+            if (enRiesgo.Count > 0)
+            {
+                var nombres = string.Join(", ", enRiesgo.Take(3).Select(s => $"{s.Apellido} {s.Nombre}"));
+                lista.Add(new("atencion", $"{enRiesgo.Count} {Plural(enRiesgo.Count, "socio al día no viene", "socios al día no vienen")} hace {ReglasDeAsistencia.DiasSinVenirPorDefecto} días o más: {nombres}{(enRiesgo.Count > 3 ? " y otros" : "")}. Escribiles por WhatsApp desde Recepción."));
+            }
 
             var sinStock = stockBajo.Where(p => p.Stock <= 0).ToList();
             if (sinStock.Count > 0)

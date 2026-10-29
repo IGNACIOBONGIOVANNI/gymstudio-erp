@@ -209,6 +209,40 @@ namespace EstudioContable.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.AsistenciaSocio", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("RegistradaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RegistradaPor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long>("SocioId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha")
+                        .HasDatabaseName("ix_asistencias_fecha");
+
+                    b.HasIndex("SocioId", "Fecha")
+                        .IsUnique()
+                        .HasDatabaseName("ux_asistencias_socio_fecha");
+
+                    b.ToTable("AsistenciasSocio", "contabilidad");
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Cliente", b =>
                 {
                     b.Property<long>("Id")
@@ -1440,6 +1474,15 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Navigation("Rutina");
 
                     b.Navigation("Socio");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.AsistenciaSocio", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Socio", null)
+                        .WithMany()
+                        .HasForeignKey("SocioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Factura", b =>

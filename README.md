@@ -98,6 +98,8 @@ controlan en el backend; el frontend sólo oculta menús.
 | Crear, editar y eliminar rutinas modelo y ejercicios       | ✔ | ✔ | ✘ |
 | Registrar y corregir mediciones de peso y medidas          | ✔ | ✔ | ✔ |
 | Eliminar mediciones                                        | ✔ | ✔ | ✘ |
+| Registrar ingresos de socios y ver los socios en riesgo    | ✔ | ✔ | ✔ |
+| Deshacer un ingreso cargado por error                      | ✔ | ✔ | ✘ |
 | Crear, confirmar o anular asientos manuales; crear cuentas | ✔ | ✔ | ✘ |
 | Administrar usuarios y consultar la auditoría              | ✔ | ✘ | ✘ |
 
@@ -215,6 +217,24 @@ Menú **Rutinas** (y el botón de la pesa en **Socios**):
   anterior se cierra el día que empieza la nueva. Queda el historial.
 - **Imprimir PDF** de la rutina del socio, en blanco y negro, con una columna para anotar el peso.
 
+## Ingreso de socios y riesgo de abandono
+
+Pantalla **Recepción**, arriba de todo:
+
+- **Ingreso por DNI**: se escribe el DNI (con o sin puntos) y el sistema registra la visita y muestra, en grande,
+  el nombre, cómo está la cuota (al día, por vencer, vencida o sin plan, con ícono y texto) y **qué día de la rutina
+  le toca hoy** con sus ejercicios. Los días se rotan en orden, uno por cada visita desde que empezó la rutina.
+  Si la cuota no está al día aparece el botón para cobrarla ahí mismo.
+- **Una visita por socio y día**: si pasa dos veces, el sistema muestra lo mismo y no duplica (lo garantiza un índice
+  único en la base, también ante dos recepciones cargando a la vez). Un ingreso cargado por error lo deshace
+  Administrador o Contador.
+- **Ingresos de hoy**: quién entró, a qué hora, cómo estaba su cuota y quién lo registró.
+- **Socios en riesgo de abandono**: los que tienen la cuota al día pero hace 14 días o más (se puede cambiar a 7, 21
+  o 30) que no vienen. Cada uno tiene un botón que abre WhatsApp con el mensaje ya escrito. Los mismos aparecen en las
+  novedades del resumen y en la campanita. Un socio que nunca vino cuenta desde el día que se anotó.
+- Un socio con ingresos registrados no se puede eliminar, para conservar el historial.
+- No usa internet ni credenciales: funciona igual dentro de Docker.
+
 ## Seguimiento de socios, avisos y exportación
 
 - **Seguimiento** (botón de la curva en **Socios**): peso y, si se midieron, grasa corporal y
@@ -242,7 +262,8 @@ cd frontend && npm test
 
 - **Dominio** (`backend/tests/EstudioContable.Domain.Tests`, sin base de datos):
   partida doble, asientos anulados, CUIT, DNI, renovación de membresías, stock,
-  movimientos de caja y banco, usuarios, rutinas y su asignación a socios.
+  movimientos de caja y banco, usuarios, rutinas y su asignación a socios, y las
+  reglas del ingreso (estado de la cuota, día de rutina que toca, riesgo de abandono).
 - **Integración** (`backend/tests/EstudioContable.IntegrationTests`): levantan la
   API completa contra un PostgreSQL real y descartable (Testcontainers, requiere
   Docker abierto). Facturar, editar y anular dejando caja, Mayor y stock

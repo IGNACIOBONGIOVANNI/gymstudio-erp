@@ -7,6 +7,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ModalCobrarCuota } from "./ModalCobrarCuota";
+import { IngresoSocios } from "./IngresoSocios";
+import { SociosEnRiesgo } from "./SociosEnRiesgo";
 import { datosDelNegocio } from "../../../utils/pdfComun";
 import { hoyLocal } from "../../../utils/formatters";
 import { enlaceWhatsApp, estadoDeCuota, mensajeDeCuota } from "../../../utils/whatsapp";
@@ -33,6 +35,9 @@ export function RecepcionGym() {
   const [searchTerm, setSearchTerm] = useState("");
   const [socioSeleccionado, setSocioSeleccionado] = useState<SocioDto | null>(null);
   const [filtro, setFiltro] = useState<FiltroCuota>("todos");
+  // Contadores que avisan a las partes de la pantalla que tienen que volver a mirar: se cobró una cuota o cambió una visita.
+  const [cobros, setCobros] = useState(0);
+  const [visitas, setVisitas] = useState(0);
 
   const fetchSocios = async () => {
     setIsLoading(true);
@@ -224,6 +229,14 @@ export function RecepcionGym() {
 
   return (
     <div className="space-y-6">
+      <IngresoSocios
+        refrescar={cobros}
+        onIngreso={() => setVisitas((v) => v + 1)}
+        onCobrar={(s) => setSocioSeleccionado({ ...s, telefono: "", activo: true })}
+      />
+
+      <SociosEnRiesgo refrescar={visitas + cobros} />
+
       {/* Buscador Destacado */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
         <div className="relative max-w-2xl">
@@ -317,7 +330,8 @@ export function RecepcionGym() {
           onSuccess={() => {
             setSocioSeleccionado(null);
             fetchSocios();
-          }} 
+            setCobros((c) => c + 1);
+          }}
         />
       )}
     </div>
