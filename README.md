@@ -105,9 +105,27 @@ controlan en el backend; el frontend sólo oculta menús.
 
 El administrador principal no puede eliminarse, desactivarse ni perder el rol.
 
-Otras medidas: límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto`,
-10 por defecto), CORS restringido a los orígenes de `Cors:OrigenesPermitidos` y
-sesión de 8 horas (`Jwt:ExpiracionMinutos`).
+## Seguridad
+
+Resumen de lo que protege el sistema. El detalle, cómo se comprobó y los problemas que se
+encontraron y corrigieron están en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
+
+- **Sesión:** JWT firmado que vence a las 8 horas (`Jwt:ExpiracionMinutos`). En cada pedido se verifica en la base que el
+  usuario siga activo y con el mismo rol: una baja o un cambio de rol rigen al instante.
+- **Contraseñas:** guardadas con hash PBKDF2; las nuevas exigen mínimo 8 caracteres con letras y números (lo valida el servidor).
+- **Fuerza bruta:** límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto`, 10 por defecto) y cuenta bloqueada
+  15 minutos tras 5 claves incorrectas. El mensaje es el mismo para un email inexistente y para una clave errónea.
+- **Permisos:** los decide el servidor (tabla de arriba); ocultar un menú en pantalla no es una medida de seguridad.
+- **Navegador:** CORS restringido a `Cors:OrigenesPermitidos` y cabeceras de seguridad en la API
+  (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Content-Security-Policy`, `Cache-Control: no-store`).
+- **Datos:** consultas parametrizadas, partida doble e inmutabilidad de asientos controladas por la propia base de datos,
+  y registro de auditoría de quién cambió qué (solo lectura desde la API).
+- **Red:** los puertos de Docker solo escuchan en `127.0.0.1` (ver arriba) y los errores internos no muestran trazas.
+- **Copias de respaldo:** verificadas con huella SHA-256 (ver *Copias de seguridad*).
+
+Antes de usarlo con datos reales hay que cambiar las contraseñas iniciales y la clave de PostgreSQL, correr en modo
+`Production` (así Swagger no queda publicado) y servirlo por HTTPS con un proxy; ver *Configuración fuera de desarrollo*
+y la sección *Pendiente* de `docs/SEGURIDAD.md`.
 
 ## Precio de los productos al facturar
 
