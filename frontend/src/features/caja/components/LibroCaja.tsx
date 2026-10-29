@@ -78,7 +78,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
   return (
     <div className="space-y-6">
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-xl border border-slate-200/80 shadow-sm">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="p-2 bg-slate-100 rounded-lg text-slate-500 shrink-0">
             <Search className="h-4 w-4" />
@@ -123,11 +123,11 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
-        {/* Columna Izquierda: Ingresos */}
-        <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+        {/* Columna Izquierda: Ingresos. Debajo de xl las tablas van una arriba de la otra y el resumen al final (order). */}
+        <div className="contents xl:block xl:min-w-0 xl:space-y-4">
+          <div className="order-1 xl:order-none rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
               <h3 className="text-sm font-bold text-slate-800">Ingresos (Ventas)</h3>
             </div>
@@ -205,7 +205,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div className="order-3 xl:order-none rounded-xl border border-slate-200/80 bg-white p-6 shadow-sm">
             <h3 className="mb-4 text-lg font-bold text-slate-900">Resumen de Caja</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center text-slate-600">
@@ -229,7 +229,7 @@ export function LibroCaja({ clienteId = "1" }: LibroCajaProps) {
         </div>
 
         {/* Columna Derecha: Egresos */}
-        <div className="space-y-4">
+        <div className="order-2 xl:order-none min-w-0 space-y-4">
           <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
               <h3 className="text-sm font-bold text-slate-800">Egresos (Compras)</h3>

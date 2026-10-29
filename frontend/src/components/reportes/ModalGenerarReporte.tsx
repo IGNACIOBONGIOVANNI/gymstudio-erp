@@ -64,6 +64,7 @@ export function ModalGenerarReporte({ onClose }: Props) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="text-slate-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
@@ -74,10 +75,11 @@ export function ModalGenerarReporte({ onClose }: Props) {
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="reporteTipo" className="block text-sm font-medium text-slate-700 mb-1">
                 Tipo de Libro
               </label>
               <select
+                id="reporteTipo"
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-shadow"
@@ -96,10 +98,11 @@ export function ModalGenerarReporte({ onClose }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="reporteDesde" className="block text-sm font-medium text-slate-700 mb-1">
                 Fecha Desde (Opcional)
               </label>
               <input
+                id="reporteDesde"
                 type="date"
                 value={desde}
                 onChange={(e) => setDesde(e.target.value)}
@@ -108,10 +111,11 @@ export function ModalGenerarReporte({ onClose }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="reporteHasta" className="block text-sm font-medium text-slate-700 mb-1">
                 Fecha Hasta (Opcional)
               </label>
               <input
+                id="reporteHasta"
                 type="date"
                 value={hasta}
                 onChange={(e) => setHasta(e.target.value)}

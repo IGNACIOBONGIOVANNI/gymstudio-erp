@@ -390,6 +390,7 @@ export function Facturacion() {
                 <td className="p-2">
                   <input
                     type="number"
+                    aria-label="Cantidad"
                     min="1"
                     step="1"
                     value={item.cantidad || ""}
@@ -444,6 +445,7 @@ export function Facturacion() {
                 <td className="p-2">
                   <input
                     type="number"
+                    aria-label="Precio unitario"
                     min="0"
                     step="0.01"
                     value={item.precioUnitario || ""}
@@ -466,6 +468,8 @@ export function Facturacion() {
                   <button
                     type="button"
                     onClick={() => handleEliminarItem(item.id)}
+                    aria-label="Quitar ítem"
+                    title="Quitar ítem"
                     disabled={enviando || items.length === 1}
                     className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 disabled:opacity-50 transition-colors"
                   >
