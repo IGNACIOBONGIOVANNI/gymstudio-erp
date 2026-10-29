@@ -141,6 +141,10 @@ Las facturas y los asientos confirmados **no se borran**:
 - **Novedades** (pantalla de inicio): frases automáticas calculadas con los propios datos, sin servicios externos
   (ventas contra el mes anterior, deudas de más de 90 días con el nombre del cliente, productos sin stock,
   cuotas por vencer...). Primero lo que requiere atención. Recepción solo ve las del gimnasio.
+- **Campanita de avisos** (arriba a la derecha, en todas las pantallas): muestra las mismas novedades y un número con
+  las que requieren atención. Al entrar avisa una vez cuántas hay y, mientras se trabaja, solo muestra un cartel
+  cuando aparece un aviso nuevo. Se actualiza sola cada minuto y al cambiar de pantalla. No usa internet ni
+  credenciales, así que funciona igual dentro de Docker.
 
 ## Asistente
 

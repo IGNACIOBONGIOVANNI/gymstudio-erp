@@ -36,6 +36,7 @@ import { Login } from './components/Login'
 import { LogoGym } from './components/LogoGym'
 import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
 import { Asistente } from './components/Asistente'
+import { Campanita } from './components/Campanita'
 import { LimiteDeErrores } from './components/LimiteDeErrores'
 import { useCuentas } from './asientos/hooks/useCuentas'
 
@@ -349,6 +350,7 @@ function AppContent() {
       {mostrarReportes && <ModalGenerarReporte onClose={() => setMostrarReportes(false)} />}
 
       <Asistente />
+      <Campanita vistaActual={vista.id} onVerResumen={() => irA('inicio')} />
     </div>
   )
 }
@@ -357,7 +359,8 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <Toaster position="top-right" />
+        {/* Los avisos aparecen debajo de la campanita, que está fija arriba a la derecha. */}
+        <Toaster position="top-right" containerStyle={{ top: 64 }} />
         <AppContent />
       </QueryClientProvider>
     </AuthProvider>
