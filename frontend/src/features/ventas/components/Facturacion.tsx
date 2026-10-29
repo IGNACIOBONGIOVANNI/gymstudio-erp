@@ -5,6 +5,7 @@ import { useCrearFactura } from "../hooks/useCrearFactura";
 import { useProductos } from "../../../hooks/useProductos";
 import { obtenerConfiguracion } from "../../configuracion/configuracionStorage";
 import { hoyLocal } from "../../../utils/formatters";
+import { precioSugerido, preciosAlCambiarOperacion } from "../../../utils/precios";
 import { VistaPreviaAsiento } from "./VistaPreviaAsiento";
 
 interface FacturaItem {
@@ -14,6 +15,8 @@ interface FacturaItem {
   cantidad: number;
   precioUnitario: number;
   agregarAlInventario: boolean;
+  /** Verdadero si la persona escribió el precio: al cambiar entre Venta y Compra ese no se reemplaza. */
+  precioManual?: boolean;
 }
 
 // "Martillo", "martillo " y "MARTILLO" son el mismo producto.
@@ -116,15 +119,18 @@ export function Facturacion() {
       if (item.id === id) {
         if (field === "descripcion") {
           const prod = productos.find(p => normalizar(p.nombre) === normalizar(String(value)));
-          const precioSugerido = prod ? (tipoOperacion === 'Venta' ? prod.precioVenta : prod.precioUnitario) : 0;
+          const sugerido = precioSugerido(prod, tipoOperacion);
           return {
             ...item,
             descripcion: value as string,
             productoId: prod ? prod.id : 0,
             // Si el producto no tiene precio cargado se respeta el que se escribió.
-            precioUnitario: precioSugerido > 0 ? precioSugerido : item.precioUnitario
+            precioUnitario: sugerido > 0 ? sugerido : item.precioUnitario,
+            precioManual: sugerido > 0 ? false : item.precioManual
           };
         }
+        // Un precio escrito a mano no se reemplaza si después se cambia entre Venta y Compra.
+        if (field === "precioUnitario") return { ...item, precioUnitario: value as number, precioManual: true };
         return { ...item, [field]: value };
       }
       return item;
@@ -237,7 +243,10 @@ export function Facturacion() {
             disabled={enviando}
             value={tipoOperacion}
             onChange={(e) => {
-              setTipoOperacion(e.target.value as 'Venta' | 'Compra');
+              const operacion = e.target.value as 'Venta' | 'Compra';
+              setTipoOperacion(operacion);
+              // Los productos ya elegidos pasan al precio de la nueva operación: de venta al vender, de compra al comprar.
+              setItems((actuales) => preciosAlCambiarOperacion(actuales, productos, operacion));
               // Limpiamos los selectores al cambiar el tipo de operación
               setClienteId("");
               setProveedorId("");
@@ -403,7 +412,20 @@ export function Facturacion() {
                     className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
                   />
                   {item.descripcion.trim() !== "" && (item.productoId ? (
-                    <span className="mt-0.5 block text-[11px] text-slate-500">Producto del inventario: mueve stock</span>
+                    <span className="mt-0.5 block text-[11px] text-slate-500">
+                      Producto del inventario: mueve stock.{" "}
+                      {(() => {
+                        const sugerido = precioSugerido(productos.find(p => p.id === item.productoId), tipoOperacion);
+                        const cual = tipoOperacion === 'Venta' ? 'venta' : 'compra';
+                        if (sugerido <= 0)
+                          return tipoOperacion === 'Venta'
+                            ? "Todavía no tiene precio de venta: escribilo acá y queda guardado con la primera venta."
+                            : "Todavía no tiene precio de compra: escribilo acá.";
+                        return Number(item.precioUnitario) === sugerido
+                          ? `Precio de ${cual} cargado en Productos: ${currencyFormatter.format(sugerido)}.`
+                          : `Lo cambiaste a mano (el precio de ${cual} en Productos es ${currencyFormatter.format(sugerido)}).`;
+                      })()}
+                    </span>
                   ) : tipoOperacion === 'Compra' ? (
                     <label className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-600">
                       <input

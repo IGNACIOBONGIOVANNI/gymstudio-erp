@@ -109,6 +109,14 @@ Otras medidas: límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto
 10 por defecto), CORS restringido a los orígenes de `Cors:OrigenesPermitidos` y
 sesión de 8 horas (`Jwt:ExpiracionMinutos`).
 
+## Precio de los productos al facturar
+
+Al elegir un producto en **Facturar**, el sistema propone su **precio de venta** si la operación es una venta y su
+**precio de compra** (costo) si es una compra. Si después se cambia entre Venta y Compra, los productos ya elegidos
+pasan al precio de la nueva operación; un precio escrito a mano no se pisa. Debajo de cada producto se aclara de dónde
+salió el precio. Un producto que nació de una compra no tiene precio de venta hasta su primera venta: ahí se escribe
+a mano y queda guardado.
+
 ## Numeración de comprobantes
 
 - **Ventas:** el sistema las numera solo, correlativas por tipo de comprobante y punto de venta (ej. `0001-00000007`).
