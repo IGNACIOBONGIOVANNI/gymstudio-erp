@@ -47,9 +47,11 @@ namespace EstudioContable.Domain.Asistente
         public static bool TieneFrase(string textoNormalizado, params string[] frases)
             => frases.Any(f => (" " + textoNormalizado).Contains(" " + f, StringComparison.Ordinal));
 
+        private static DateOnly LunesDe(DateOnly dia) => dia.AddDays(-(((int)dia.DayOfWeek + 6) % 7));
+
         /// <summary>
-        /// Período de la pregunta: hoy, este año, el mes pasado, un mes con nombre (con año opcional) o, si no dice nada,
-        /// el mes actual. El texto debe venir normalizado.
+        /// Período de la pregunta: hoy, ayer, esta semana o la pasada (de lunes a domingo), este año, el mes pasado,
+        /// un mes con nombre (con año opcional) o, si no dice nada, el mes actual. El texto debe venir normalizado.
         /// </summary>
         public static Periodo InterpretarPeriodo(string textoNormalizado, DateOnly hoy)
         {
@@ -57,6 +59,21 @@ namespace EstudioContable.Domain.Asistente
 
             if (TieneFrase(textoNormalizado, "hoy"))
                 return new Periodo(hoy, hoy.AddDays(1), "hoy");
+
+            if (TieneFrase(textoNormalizado, "ayer"))
+                return new Periodo(hoy.AddDays(-1), hoy, "ayer");
+
+            if (TieneFrase(textoNormalizado, "semana pasada", "semana anterior"))
+            {
+                var lunes = LunesDe(hoy).AddDays(-7);
+                return new Periodo(lunes, lunes.AddDays(7), "la semana pasada");
+            }
+
+            if (TieneFrase(textoNormalizado, "esta semana", "la semana", "en la semana", "de la semana"))
+            {
+                var lunes = LunesDe(hoy);
+                return new Periodo(lunes, lunes.AddDays(7), "esta semana");
+            }
 
             if (TieneFrase(textoNormalizado, "este ano", "en el ano", "del ano", "anual", "en lo que va del ano"))
                 return new Periodo(new DateOnly(hoy.Year, 1, 1), new DateOnly(hoy.Year + 1, 1, 1), $"este año ({hoy.Year})");
@@ -82,6 +99,57 @@ namespace EstudioContable.Domain.Asistente
             }
 
             return new Periodo(primero, primero.AddMonths(1), $"este mes ({NombreDelMes(primero.Month)} de {primero.Year})");
+        }
+
+        /// <summary>El período de igual tipo que va justo antes: el mes anterior, la semana pasada, ayer o el año anterior.</summary>
+        public static Periodo PeriodoAnterior(Periodo p)
+        {
+            var dias = p.Hasta.DayNumber - p.Desde.DayNumber;
+            if (dias == 1)
+                return new Periodo(p.Desde.AddDays(-1), p.Desde, p.Etiqueta == "hoy" ? "ayer" : p.Etiqueta == "ayer" ? "anteayer" : "el día anterior");
+            if (p.Desde.Day == 1 && p.Hasta == p.Desde.AddMonths(1))
+                return DelMes(p.Desde.AddMonths(-1));
+            if (p.Desde.Month == 1 && p.Desde.Day == 1 && p.Hasta == p.Desde.AddYears(1))
+                return new Periodo(p.Desde.AddYears(-1), p.Desde, $"el año {p.Desde.Year - 1}");
+            if (dias == 7)
+                return new Periodo(p.Desde.AddDays(-7), p.Desde, p.Etiqueta == "esta semana" ? "la semana pasada" : "la semana anterior");
+            return new Periodo(p.Desde.AddDays(-dias), p.Desde, "el período anterior");
+        }
+
+        /// <summary>
+        /// Qué se compara con qué. En "vendí más que el mes pasado" el mes pasado es la base de la comparación y se mira
+        /// el actual; sin otra aclaración se compara el período de la pregunta con el que va justo antes.
+        /// </summary>
+        public static (Periodo Actual, Periodo Anterior) InterpretarComparacion(string textoNormalizado, DateOnly hoy)
+        {
+            var actual = TieneFrase(textoNormalizado, "mes pasado", "mes anterior", "ultimo mes", "el mes que paso")
+                ? InterpretarPeriodo(string.Empty, hoy)
+                : TieneFrase(textoNormalizado, "semana pasada", "semana anterior")
+                    ? InterpretarPeriodo("esta semana", hoy)
+                    : TieneFrase(textoNormalizado, "que ayer")
+                        ? InterpretarPeriodo("hoy", hoy)
+                        : InterpretarPeriodo(textoNormalizado, hoy);
+            return (actual, PeriodoAnterior(actual));
+        }
+
+        /// <summary>
+        /// Cantidad de días que menciona la pregunta: "hace 30 días", "2 semanas", "un mes". Si no dice ninguna (o es
+        /// cero) devuelve <paramref name="porDefecto"/>; nunca más de un año.
+        /// </summary>
+        public static int DiasDeLaPregunta(string textoNormalizado, int porDefecto)
+        {
+            var palabras = textoNormalizado.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i + 1 < palabras.Length; i++)
+            {
+                if (!int.TryParse(palabras[i], NumberStyles.None, CultureInfo.InvariantCulture, out var n) || n <= 0) continue;
+                var unidad = palabras[i + 1];
+                if (unidad.StartsWith("dia", StringComparison.Ordinal)) return (int)Math.Min(n, 365L);
+                if (unidad.StartsWith("semana", StringComparison.Ordinal)) return (int)Math.Min(n * 7L, 365L);
+                if (unidad.StartsWith("mes", StringComparison.Ordinal)) return (int)Math.Min(n * 30L, 365L);
+            }
+            if (TieneFrase(textoNormalizado, "una semana")) return 7;
+            if (TieneFrase(textoNormalizado, "un mes")) return 30;
+            return porDefecto;
         }
 
         private static Periodo DelMes(DateOnly primerDia)

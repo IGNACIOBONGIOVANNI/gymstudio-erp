@@ -259,4 +259,244 @@ public class AsistenteTests(ApiFixture api)
         var anonimo = api.ClienteAnonimo();
         Assert.Equal(HttpStatusCode.Unauthorized, (await anonimo.PostAsJsonAsync("/api/asistente/preguntar", new { texto = "hola" })).StatusCode);
     }
+
+    // --- Ingresos al gimnasio, ficha de un socio, planes, socios nuevos y comparaciones ---------------------
+
+    private static DateOnly Real => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3));      // el día de hoy según el servidor
+    private static string Iso(DateOnly d) => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private static string Rotulo(string apellido) => $"{apellido}, Socio";
+
+    private async Task<(long Id, string Dni, string Apellido)> NuevoSocio(HttpClient c, string prefijo = "Fichero")
+    {
+        var dni = Random.Shared.Next(20_000_000, 49_999_999).ToString();
+        var apellido = prefijo + Guid.NewGuid().ToString("N")[..8];          // una sola palabra y única
+        var r = await c.PostAsJsonAsync("/api/socios", new { nombre = "Socio", apellido, dni, telefono = "" });
+        Assert.True(r.IsSuccessStatusCode, await r.Detalle());
+        return ((long)(await r.Content.ReadFromJsonAsync<JsonObject>())!["id"]!, dni, apellido);
+    }
+
+    private static async Task PagarPlan(HttpClient c, long socioId)
+    {
+        var plan = await c.PostAsJsonAsync("/api/planes", new { nombre = $"Plan asistente {Guid.NewGuid():N}"[..30], precioMensual = 1000, duracionMeses = 1 });
+        plan.EnsureSuccessStatusCode();
+        var planId = (long)(await plan.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
+        var cobro = await c.PostAsJsonAsync("/api/membresias/asignar-y-cobrar", new { socioId, planId, metodoPago = "caja" });
+        Assert.True(cobro.IsSuccessStatusCode, await cobro.Detalle());
+    }
+
+    private async Task VisitaEn(long socioId, DateOnly fecha)
+    {
+        await using var conexion = new Npgsql.NpgsqlConnection(api.ConnectionString);
+        await conexion.OpenAsync();
+        await using var cmd = new Npgsql.NpgsqlCommand("""INSERT INTO contabilidad."AsistenciasSocio" ("SocioId","Fecha","RegistradaEn","RegistradaPor") VALUES (@s,@f,now(),'prueba')""", conexion);
+        cmd.Parameters.AddWithValue("s", socioId);
+        cmd.Parameters.AddWithValue("f", fecha);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    [Fact]
+    public async Task Contesta_quien_vino_hoy_y_ayer_y_cuantas_visitas_hubo_a_cualquier_perfil()
+    {
+        var jefe = await api.Jefe();
+        var recepcion = await api.Recepcion();
+        var (id, dni, apellido) = await NuevoSocio(jefe);
+        Assert.True((await jefe.PostAsJsonAsync("/api/asistencias/ingreso", new { dni })).IsSuccessStatusCode);
+        await VisitaEn(id, Real.AddDays(-1));
+
+        foreach (var pregunta in new[] { "¿Quién vino hoy?", "quien vino", "¿Qué socios ingresaron hoy?", "asistencia de hoy" })
+        {
+            var r = await Preguntar(recepcion, pregunta, Iso(Real));
+            Assert.StartsWith("Hoy hubo ", Texto(r));
+            Assert.Matches(@"^\d{2}:\d{2}$", Fila(r, Rotulo(apellido)));                  // la hora a la que entró
+        }
+
+        var ayer = await Preguntar(jefe, "¿quién vino ayer?", Iso(Real));
+        Assert.StartsWith("Ayer hubo ", Texto(ayer));
+        Assert.Contains(ayer["filas"]!.AsArray(), f => (string?)f!["etiqueta"] == Rotulo(apellido));
+
+        var mes = await Preguntar(jefe, "¿cuántas visitas hubo este mes?", Iso(Real));
+        Assert.Contains("ingresos de", Texto(mes));
+        Assert.Contains("Los que más vinieron", Texto(mes));
+    }
+
+    [Fact]
+    public async Task Lista_los_socios_al_dia_que_no_vienen_hace_tiempo_y_entiende_cuantos_dias()
+    {
+        var jefe = await api.Jefe();
+        var (id, _, apellido) = await NuevoSocio(jefe, "Aaa");            // "Aaa" lo deja primero entre los empatados
+        await PagarPlan(jefe, id);
+
+        var lejos = Iso(Real.AddDays(20));                                // veinte días después: al día, pero sin haber venido nunca
+        foreach (var pregunta in new[] { "¿Quiénes no vienen hace tiempo?", "socios que dejaron de venir", "¿quién está en riesgo de abandono?" })
+        {
+            var r = await Preguntar(jefe, pregunta, lejos);
+            Assert.Contains("hace 14 días o más", Texto(r));
+            Assert.Contains("todavía no vino", Fila(r, Rotulo(apellido)));
+        }
+
+        Assert.Contains("hace 14 días o más", Texto(await Preguntar(await api.Recepcion(), "no vienen hace 2 semanas", lejos)));
+        var masAlto = await Preguntar(jefe, "quiénes no vienen hace 30 días", lejos);
+        Assert.Contains("30 días", Texto(masAlto));
+        Assert.DoesNotContain(masAlto["filas"]!.AsArray(), f => (string?)f!["etiqueta"] == Rotulo(apellido));    // con 20 días todavía no llega a 30
+    }
+
+    [Fact]
+    public async Task Contesta_con_la_ficha_de_un_socio_por_apellido_nombre_o_dni()
+    {
+        var jefe = await api.Jefe();
+        var (id, dni, apellido) = await NuevoSocio(jefe);
+        var (sinPlan, _, apellidoSinPlan) = await NuevoSocio(jefe);
+        await PagarPlan(jefe, id);
+        await jefe.PostAsJsonAsync("/api/asistencias/ingreso", new { dni });
+
+        foreach (var pregunta in new[] { $"¿Cuándo vence la cuota de {apellido}?", $"ficha del dni {dni}", $"¿cuándo vino Socio {apellido}?", $"como esta {apellido}" })
+        {
+            var r = await Preguntar(await api.Recepcion(), pregunta, Iso(Real));         // los datos del gimnasio los ve cualquier perfil
+            Assert.StartsWith($"{apellido}, Socio tiene la cuota al día, vence el ", Texto(r));
+            Assert.Equal(dni, Fila(r, "DNI"));
+            Assert.StartsWith("Plan asistente", Fila(r, "Plan"));
+            Assert.Equal("sin rutina asignada", Fila(r, "Rutina"));
+            Assert.Equal("hoy", Fila(r, "Última visita"));
+            Assert.Equal("1", Fila(r, "Visitas este mes"));
+        }
+
+        var sin = await Preguntar(jefe, $"cuota de {apellidoSinPlan}", Iso(Real));
+        Assert.Contains("todavía no pagó ninguna cuota", Texto(sin));
+        Assert.Equal("todavía no vino", Fila(sin, "Última visita"));
+
+        Assert.Contains("No encontré ningún socio con el DNI 10000002", Texto(await Preguntar(jefe, "ficha del dni 10000002", Iso(Real))));
+    }
+
+    [Fact]
+    public async Task Una_pregunta_de_plata_con_el_nombre_de_un_socio_no_se_confunde_con_su_ficha()
+    {
+        var jefe = await api.Jefe();
+        var (_, _, apellido) = await NuevoSocio(jefe);
+
+        var r = await Preguntar(jefe, $"¿cuánto vendí a {apellido}?", Iso(Real));
+
+        Assert.DoesNotContain("cuota", Texto(r));
+        Assert.DoesNotContain(apellido, Texto(r), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Dos_socios_con_el_mismo_apellido_se_desambiguan_por_el_nombre_o_piden_el_dni()
+    {
+        var jefe = await api.Jefe();
+        var apellido = "Repetido" + Guid.NewGuid().ToString("N")[..8];
+        var dnis = new List<string>();
+        foreach (var nombre in new[] { "Alicia", "Bruno" })
+        {
+            var dni = Random.Shared.Next(20_000_000, 49_999_999).ToString();
+            dnis.Add(dni);
+            Assert.True((await jefe.PostAsJsonAsync("/api/socios", new { nombre, apellido, dni, telefono = "" })).IsSuccessStatusCode);
+        }
+
+        var ambigua = await Preguntar(jefe, $"cuota de {apellido}", Iso(Real));
+        Assert.Contains("Encontré 2 socios", Texto(ambigua));
+        Assert.Equal($"DNI {dnis[0]}", Fila(ambigua, $"{apellido}, Alicia"));
+
+        var precisa = await Preguntar(jefe, $"cuota de Bruno {apellido}", Iso(Real));
+        Assert.StartsWith($"{apellido}, Bruno", Texto(precisa));
+    }
+
+    [Fact]
+    public async Task Contesta_los_planes_con_sus_precios_a_cualquier_perfil()
+    {
+        var jefe = await api.Jefe();
+        var nombre = $"Plan barato {Guid.NewGuid():N}"[..24];
+        Assert.True((await jefe.PostAsJsonAsync("/api/planes", new { nombre, precioMensual = 1, duracionMeses = 3 })).IsSuccessStatusCode);
+
+        foreach (var pregunta in new[] { "¿Qué planes hay?", "¿cuánto cuesta el plan?", "precios de los planes" })
+        {
+            var r = await Preguntar(await api.Recepcion(), pregunta, Iso(Real));
+            Assert.Contains("planes activos", Texto(r));
+            Assert.Equal($"{Pesos(1)} por mes, dura 3 meses", Fila(r, nombre));
+        }
+    }
+
+    [Fact]
+    public async Task Cuenta_los_socios_nuevos_del_periodo()
+    {
+        var jefe = await api.Jefe();
+        var (_, _, apellido) = await NuevoSocio(jefe);
+
+        var r = await Preguntar(jefe, "¿cuántos socios nuevos hay este mes?", Iso(Real));
+
+        Assert.Matches("se anotaron|se anotó", Texto(r));
+        Assert.Matches(@"^\d{2}/\d{2}/\d{4}$", Fila(r, Rotulo(apellido)));
+    }
+
+    [Fact]
+    public async Task Compara_ventas_compras_y_resultado_con_el_periodo_anterior()
+    {
+        var jefe = await api.Jefe();
+        await Factura(jefe, "Venta", "2021-11-10T12:00:00Z", 1000);
+        await Factura(jefe, "Venta", "2021-12-10T12:00:00Z", 1500);
+        await Factura(jefe, "Compra", "2021-11-12T12:00:00Z", 800);
+        await Factura(jefe, "Compra", "2021-12-12T12:00:00Z", 200);
+        const string hoy = "2021-12-20";
+
+        var ventas = await Preguntar(jefe, "¿Vendí más que el mes pasado?", hoy);
+        Assert.Contains($"de este mes (diciembre de 2021): {Pesos(1500)}; de noviembre de 2021: {Pesos(1000)}", Texto(ventas));
+        Assert.Contains($"{Pesos(500)} más (+50 %)", Texto(ventas));
+        Assert.Equal(Pesos(500), Fila(ventas, "Diferencia"));
+
+        var compras = await Preguntar(jefe, "¿gasté menos que el mes pasado?", hoy);
+        Assert.Contains($"{Pesos(600)} menos (-75 %)", Texto(compras));
+
+        var resultado = await Preguntar(jefe, "comparame el resultado de este mes con el anterior", hoy);
+        Assert.Contains($"de este mes (diciembre de 2021): {Pesos(1300)}; de noviembre de 2021: {Pesos(200)}", Texto(resultado));
+
+        // Una pregunta normal sobre el mes pasado no se vuelve una comparación.
+        Assert.StartsWith("En noviembre de 2021 vendiste", Texto(await Preguntar(jefe, "¿cuánto vendí el mes pasado?", hoy)));
+    }
+
+    [Fact]
+    public async Task El_asistente_no_confunde_su_propio_nombre_con_una_pregunta_de_asistencia()
+    {
+        var r = await Preguntar(await api.Jefe(), "¿para qué sirve el asistente?", Iso(Real));
+        Assert.DoesNotContain("ingreso", Texto(r));
+        Assert.Contains("No entendí", Texto(r));
+    }
+
+    [Fact]
+    public async Task Las_comparaciones_son_financieras_y_Recepcion_no_las_recibe()
+    {
+        var r = await Preguntar(await api.Recepcion(), "¿Vendí más que el mes pasado?", Iso(Real));
+        Assert.Contains("solo Administración o Contaduría", Texto(r));
+        Assert.Empty(r["filas"]!.AsArray());
+    }
+
+    [Fact]
+    public async Task Contesta_cuanto_debe_un_cliente_y_cuanto_se_le_debe_a_un_proveedor_en_particular()
+    {
+        var jefe = await api.Jefe();
+        var nombreCliente = $"Cliente asistente {Guid.NewGuid():N}"[..28];
+        var nombreProveedor = $"Proveedor asistente {Guid.NewGuid():N}"[..30];
+        var cliente = await (await jefe.PostAsJsonAsync("/api/clientes", new { razonSocial = nombreCliente, direccion = "Calle 1", localidad = "Haedo", cuit = CuitNuevo(), condicionIva = "Responsable Inscripto" })).Content.ReadFromJsonAsync<JsonNode>();
+        var proveedor = await (await jefe.PostAsJsonAsync("/api/proveedores", new { razonSocial = nombreProveedor, direccion = "Calle 2", localidad = "Haedo", cuit = CuitNuevo(), condicionIva = "Responsable Inscripto" })).Content.ReadFromJsonAsync<JsonNode>();
+        await Factura(jefe, "Venta", "2021-10-01T12:00:00Z", 7_000_000m, "CuentaCorriente", (long)cliente!["id"]!);
+        await Factura(jefe, "Compra", "2021-10-01T12:00:00Z", 3_000_000m, "CuentaCorriente", (long)proveedor!["id"]!);
+
+        var debe = await Preguntar(jefe, $"¿Cuánto me debe {nombreCliente}?", "2021-10-20");
+        Assert.StartsWith($"{nombreCliente} te debe {Pesos(8_470_000m)}", Texto(debe));
+        Assert.Equal(Pesos(8_470_000m), Fila(debe, "Saldo"));
+
+        var debo = await Preguntar(jefe, $"¿cuánto le debo a {nombreProveedor}?", "2021-10-20");
+        Assert.StartsWith($"Le debés {Pesos(3_630_000m)} a {nombreProveedor}", Texto(debo));
+
+        // Una pregunta general sigue dando la lista de todos.
+        Assert.Contains("Los clientes te deben", Texto(await Preguntar(jefe, "¿cuánto me deben los clientes?", "2021-10-20")));
+    }
+
+    [Fact]
+    public async Task Ayer_y_esta_semana_se_entienden_en_las_ventas()
+    {
+        var jefe = await api.Jefe();
+        // El 20/12/2021 fue lunes: ayer (domingo 19) y esta semana (20 al 26) no tienen ventas cargadas; el mes pasado sí.
+        Assert.StartsWith("Ayer no hay ventas", Texto(await Preguntar(jefe, "¿cuánto vendí ayer?", "2021-12-20")));
+        Assert.StartsWith("Esta semana no hay ventas", Texto(await Preguntar(jefe, "¿cuánto vendí esta semana?", "2021-12-20")));
+        Assert.StartsWith("La semana pasada no hay ventas", Texto(await Preguntar(jefe, "¿cuánto vendí la semana pasada?", "2021-12-20")));
+    }
 }

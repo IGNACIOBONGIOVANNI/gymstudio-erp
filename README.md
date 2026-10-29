@@ -158,10 +158,18 @@ respuesta; no usa internet ni inteligencia artificial externa, así que anda igu
   "resultado de este año", "¿cuánto IVA tengo que pagar?", "¿cuánto hay en caja?", "¿quién me debe?", "¿a quién le
   debo?", "¿cuál es el producto más vendido?", "¿cuánto stock hay de proteína?", "¿qué productos están sin stock?",
   "¿cuántas cuotas vencen esta semana?", "¿quiénes no tienen rutina?", "¿está todo bien con la contabilidad?" y
-  "dame un resumen". Los períodos: hoy, este mes, el mes pasado, un mes con nombre (y año) y este año.
+  "dame un resumen". Los períodos: hoy, ayer, esta semana, la semana pasada, este mes, el mes pasado, un mes con
+  nombre (y año) y este año.
+- **Gimnasio** (todos los perfiles): "¿quién vino hoy?", "¿cuántas visitas hubo este mes?", "¿quiénes no vienen hace
+  tiempo?" (o "hace 30 días", "hace 2 semanas"), "¿cuántos socios nuevos hay este mes?", "¿qué planes hay?" y la
+  **ficha de un socio** por apellido, nombre o DNI: "¿cuándo vence la cuota de Gimnez?" o "ficha del DNI 23232323"
+  (cuota, plan, rutina, última visita y visitas del mes). Si hay dos socios con el mismo apellido, pide el DNI.
+- **Comparaciones** (solo Administrador y Contador): "¿vendí más que el mes pasado?", "¿gasté menos que ayer?",
+  "comparame el resultado de este mes con el anterior" (diferencia en pesos y en %).
+- **Un cliente o proveedor puntual:** "¿cuánto me debe Ferretería Sur?", "¿cuánto le debo a Distribuidora Norte?".
 - Ignora tildes, mayúsculas y signos. Si no entiende, lo dice y sugiere preguntas.
 - **Permisos en el servidor:** lo financiero (ventas, caja, deudas, IVA, contabilidad) solo se le contesta a
-  Administrador y Contador; Recepción recibe ayuda con socios, cuotas, rutinas y stock.
+  Administrador y Contador; Recepción recibe ayuda con socios, cuotas, rutinas, ingresos, planes y stock.
 
 ## Cuentas a cobrar y a pagar
 

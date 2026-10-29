@@ -9,8 +9,8 @@ interface Respuesta { texto: string; filas: Fila[]; sugerencias: string[] }
 interface Mensaje { de: "yo" | "asistente"; texto: string; filas?: Fila[]; error?: boolean }
 
 const SUGERENCIAS_INICIALES: Record<string, string[]> = {
-  gestion: ["¿Cuánto vendí este mes?", "¿Quién me debe?", "¿Está todo bien con la contabilidad?", "¿Qué productos están sin stock?"],
-  recepcion: ["¿Cuántas cuotas vencen esta semana?", "¿Qué socios tienen la cuota vencida?", "¿Quiénes no tienen rutina?", "¿Qué productos están sin stock?"],
+  gestion: ["¿Cuánto vendí este mes?", "¿Vendí más que el mes pasado?", "¿Quién me debe?", "¿Quién vino hoy?"],
+  recepcion: ["¿Quién vino hoy?", "¿Quiénes no vienen hace tiempo?", "¿Cuántas cuotas vencen esta semana?", "¿Qué socios tienen la cuota vencida?"],
 };
 
 /**
