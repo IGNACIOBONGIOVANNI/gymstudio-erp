@@ -83,6 +83,21 @@ La contraseña inicial sale de `UsuariosIniciales:Password` en
 `appsettings.Development.json`. Sólo se usa la primera vez (tabla vacía): después
 se cambian desde **Admin de Usuarios**, y el sistema nunca las pisa.
 
+## Manual de usuario y Acerca de
+
+Al pie del menú lateral hay dos accesos que ven todos los usuarios:
+
+- **Manual:** abre la guía de uso en **otra ventana** (`/manual`, o http://localhost:5173/manual). Explica pantalla por
+  pantalla cómo cargar socios, cobrar cuotas, facturar ventas y compras, usar Caja y Banco, leer los libros y administrar
+  usuarios, con un índice que acompaña la lectura, un glosario y una tabla de «Si algo no sale». No pide iniciar sesión, se
+  adapta al celular y se imprime en blanco y negro (botón *Imprimir o guardar en PDF*). Se puede abrir en una sección
+  puntual, por ejemplo `/manual#facturar`.
+- **Acerca de:** diálogo con la versión, lo que incluye el sistema, la tecnología, las materias del proyecto y quién tiene
+  la sesión abierta. La versión, los autores y la institución que se muestran se cambian en `frontend/src/acercaDe.ts`.
+
+El texto del manual está en `frontend/src/features/manual/secciones.tsx` (y su índice en `indice.ts`): si se agrega o se
+cambia una pantalla, se actualiza ahí.
+
 ## Roles y permisos
 
 Toda la API exige iniciar sesión, salvo `POST /api/auth/login`. Los permisos se

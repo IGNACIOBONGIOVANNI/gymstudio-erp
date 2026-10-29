@@ -5,6 +5,7 @@ import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
   Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins, ListChecks,
+  BookOpen, Info,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -35,6 +36,8 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { Login } from './components/Login'
 import { LogoGym } from './components/LogoGym'
 import { ModalGenerarReporte } from './components/reportes/ModalGenerarReporte'
+import { AcercaDe } from './components/AcercaDe'
+import { abrirManual } from './acercaDe'
 import { Asistente } from './components/Asistente'
 import { Campanita } from './components/Campanita'
 import { LimiteDeErrores } from './components/LimiteDeErrores'
@@ -173,6 +176,7 @@ function AppContent() {
   const [vistaId, setVistaId] = useState<string>('inicio')
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [mostrarReportes, setMostrarReportes] = useState(false)
+  const [mostrarAcerca, setMostrarAcerca] = useState(false)
 
   // Si el rol cambia (otro usuario inicia sesión) y la vista ya no está permitida, volver al inicio.
   useEffect(() => {
@@ -281,6 +285,32 @@ function AppContent() {
         ))}
       </nav>
 
+      <div className="flex gap-1 border-t border-slate-800 px-3 py-2">
+        <a
+          href="/manual"
+          target="manual-gymstudio"
+          onClick={(e) => {
+            // Un clic común abre el manual en su propia ventana; con Ctrl o el botón del medio, el navegador decide.
+            if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return
+            e.preventDefault()
+            abrirManual()
+            setMenuAbierto(false)
+          }}
+          title="Manual de usuario (se abre en otra ventana)"
+          className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+        >
+          <BookOpen className={icono} aria-hidden="true" />
+          Manual
+        </a>
+        <button
+          onClick={() => { setMostrarAcerca(true); setMenuAbierto(false) }}
+          className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+        >
+          <Info className={icono} aria-hidden="true" />
+          Acerca de
+        </button>
+      </div>
+
       <div className="flex items-center gap-3 border-t border-slate-800 px-4 py-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-marca-700 text-xs font-semibold text-white">
           {iniciales(user.nombre || '?')}
@@ -348,6 +378,12 @@ function AppContent() {
       </main>
 
       {mostrarReportes && <ModalGenerarReporte onClose={() => setMostrarReportes(false)} />}
+      {mostrarAcerca && (
+        <AcercaDe
+          usuario={`${user.nombre} (${ETIQUETA_ROL[user.rol] ?? user.rol})`}
+          onClose={() => setMostrarAcerca(false)}
+        />
+      )}
 
       <Asistente />
       <Campanita vistaActual={vista.id} onVerResumen={() => irA('inicio')} />
