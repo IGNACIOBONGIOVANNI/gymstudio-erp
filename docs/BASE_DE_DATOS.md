@@ -129,7 +129,8 @@ una factura; ya no genera contraasientos (`asiento_revertido_id` solo conserva l
 ## Auditoría
 
 ```
-Usuario logueado ──JWT──▶ API ──▶ interceptor de EF: set_config('app.usuario', email)
+Usuario logueado ──JWT──▶ API ──▶ interceptor de EF: set_config('app.usuario', email),
+                                         set_config('app.ip' / 'app.sistema_operativo' / 'app.navegador')
                                          │
                                          ▼
                INSERT/UPDATE/DELETE en tabla auditada ──▶ trigger fn_auditar()
@@ -144,8 +145,17 @@ Usuario logueado ──JWT──▶ API ──▶ interceptor de EF: set_config(
   conexión ([`AuditoriaConnectionInterceptor`](../backend/src/EstudioContable.Infrastructure/Persistence/AuditoriaConnectionInterceptor.cs)).
   Si el cambio se hace desde un cliente SQL, se registra el usuario de PostgreSQL.
   Como el trigger está en la base, audita cualquier cambio, venga de donde venga.
+- Desde qué equipo se hizo el cambio: `ip`, `sistema_operativo` y `navegador` (columnas opcionales, agregadas por la migración
+  `AuditoriaConEquipo`; quedan vacías en los registros anteriores y en los cambios hechos desde un cliente SQL). La API las
+  informa en `app.ip`, `app.sistema_operativo` y `app.navegador`; el trigger las recorta a 45, 60 y 60 caracteres, así un dato de
+  equipo nunca puede hacer fallar el cambio que se audita. La IP sale de la conexión, o de `X-Forwarded-For` si el pedido llega
+  de una red de confianza; el sistema operativo y el navegador, del `User-Agent` (que el propio equipo informa).
 - Nunca se guarda el hash de la contraseña. Un cambio de contraseña figura como
-  campo `Contraseña`, y los inicios de sesión no generan registros.
+  campo `Contraseña`. El último acceso de un usuario no genera registro de cambio.
+- Los **inicios de sesión** sí quedan registrados, pero por otro camino: los escribe el login, no el trigger, con
+  `tabla = 'acceso'` y `operacion` `INGRESO`, `FALLIDO` (clave incorrecta, cuenta inexistente o inactiva) o `BLOQUEADO` (intento
+  sobre una cuenta bloqueada). En `usuario` va el email que se probó, sin caracteres de control y de hasta 254 caracteres; nunca
+  se guarda la contraseña. Si el registro falla, el login sigue: la auditoría no puede impedir entrar.
 - Se consulta desde la pantalla **Auditoría** (solo administradores) o con
   `GET /api/auditoria`.
 

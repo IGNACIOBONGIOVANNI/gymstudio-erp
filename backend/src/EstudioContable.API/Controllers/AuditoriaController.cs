@@ -56,6 +56,9 @@ namespace EstudioContable.API.Controllers
                 a.Operacion,
                 a.RegistroId,
                 a.CamposModificados,
+                a.Ip,
+                a.SistemaOperativo,
+                a.Navegador,
                 datosAnteriores = Parsear(a.DatosAnteriores),
                 datosNuevos = Parsear(a.DatosNuevos)
             }));

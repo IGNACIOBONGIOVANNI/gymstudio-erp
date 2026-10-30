@@ -48,15 +48,24 @@ namespace EstudioContable.API.Controllers
         /// </summary>
         [Authorize(Roles = Roles.Gestion)]
         [HttpPost("import")]
+        // Un poco más que el archivo: el resto del formulario también cuenta. Lo demás lo corta Kestrel antes de leerlo.
+        [RequestSizeLimit(6_291_456)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 6_291_456)]
         public async Task<IActionResult> Importar([FromQuery] long? clienteId, IFormFile file, CancellationToken cancellationToken)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No se proporcionó un archivo válido.");
+            if (clienteId is <= 0)
+                return BadRequest("El cliente no es válido.");
+            if (file.Length > EstudioContable.Application.Common.ArchivoExcelSeguro.BytesMaximos)
+                return BadRequest("El archivo supera los 5 MB permitidos.");
+            if (!string.Equals(Path.GetExtension(file.FileName), ".xlsx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("El archivo tiene que ser un Excel (.xlsx).");
 
             using var stream = file.OpenReadStream();
-            var cantInsertadas = await _mediator.Send(new ImportarLibroVentaCommand(clienteId, stream), cancellationToken);
+            var resultado = await _mediator.Send(new ImportarLibroVentaCommand(clienteId, stream), cancellationToken);
 
-            return Ok(new { FacturasImportadas = cantInsertadas });
+            return Ok(new { FacturasImportadas = resultado.Importadas, FilasOmitidas = resultado.Omitidas });
         }
 
         /// <summary>

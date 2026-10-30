@@ -1230,6 +1230,16 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasColumnName("fecha")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("Ip")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("ip");
+
+                    b.Property<string>("Navegador")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("navegador");
+
                     b.Property<string>("Operacion")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -1240,6 +1250,11 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("registro_id");
+
+                    b.Property<string>("SistemaOperativo")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("sistema_operativo");
 
                     b.Property<string>("Tabla")
                         .IsRequired()

@@ -11,6 +11,7 @@ export function useImportarLibroVenta() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['libro-venta'] });
       toast.success(`Se importaron ${data.facturasImportadas} facturas exitosamente.`);
+      if (data.filasOmitidas) toast(`${data.filasOmitidas} filas se omitieron porque sus datos no eran válidos (fecha, tipo, número, CUIT o importes).`, { icon: '⚠️', duration: 8000 });
     },
     onError: (error: any) => {
       toast.error(error?.message || 'Error al importar el archivo Excel');

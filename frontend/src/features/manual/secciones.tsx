@@ -372,8 +372,17 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Sub>Auditoría</Sub>
       <p>
         Registra automáticamente <strong>quién cambió qué y cuándo</strong>: fecha, usuario, tabla, operación, registro y los campos
-        modificados. Es de solo lectura: nadie, ni el administrador, puede editarla desde el sistema. <B>Actualizar</B> trae lo último.
+        modificados, y además <strong>desde qué equipo</strong> se hizo: la <B>IP</B>, el sistema operativo y el navegador (columna
+        <B>Equipo</B>). Es de solo lectura: nadie, ni el administrador, puede editarla desde el sistema. <B>Actualizar</B> trae lo último.
       </p>
+      <p>
+        También quedan registrados los <strong>inicios de sesión</strong> (elegí <B>Accesos</B> en el filtro de tablas): los correctos,
+        los intentos fallidos (con el email que se probó) y los intentos sobre una cuenta bloqueada. La contraseña nunca se guarda.
+      </p>
+      <Nota>
+        El sistema operativo y el navegador los informa el propio equipo, así que sirven para saber desde dónde se trabajó, pero no como
+        prueba. Si el sistema corre en una sola PC con Docker, la IP que se ve es la de Docker (algo como 172.18.0.1), no la de internet.
+      </Nota>
     </>
   ),
 
@@ -419,14 +428,24 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Hacer una copia ahora (queda en la carpeta backups)', <code key="a" className="text-[13px]">.\scripts\backup.ps1</code>],
           ['Que se haga sola todos los días a las 22:00', <code key="b" className="text-[13px]">.\scripts\programar-backup.ps1</code>],
           [
+            'Ver si una copia coincide con el sistema actual (no modifica nada)',
+            <code key="d" className="break-all text-[13px]">.\scripts\comparar-backup.ps1 -Archivo .\backups\gymstudio_AAAAMMDD_HHMMSS.dump</code>,
+          ],
+          [
             'Restaurar una copia',
             <code key="c" className="break-all text-[13px]">.\scripts\restaurar.ps1 -Archivo .\backups\gymstudio_AAAAMMDD_HHMMSS.dump -Confirmar</code>,
           ],
         ]}
       />
+      <p>
+        Cada copia se verifica y trae su huella SHA-256 y un manifiesto con la versión del sistema y la huella de los datos de cada
+        tabla. Con <B>comparar-backup.ps1</B> ves si el archivo está sano, de qué versión es y qué cambió desde que se hizo (o que es
+        idéntica al sistema actual). Al restaurar se hace la misma comparación antes de reemplazar nada, y no se restaura una copia
+        de una versión más nueva que el sistema instalado.
+      </p>
       <Nota tipo="ojo">
-        Cada copia se verifica y trae su huella SHA-256. Guardá también la carpeta <strong>backups</strong> en un pendrive o en la
-        nube: si se rompe la PC, las copias que están en ella se pierden también. Restaurar reemplaza los datos actuales.
+        Guardá también la carpeta <strong>backups</strong> en un pendrive o en la nube: si se rompe la PC, las copias que están en
+        ella se pierden también. Restaurar reemplaza los datos actuales (antes se hace una copia de lo que hay, por si te arrepentís).
       </Nota>
       <p>El detalle completo está en la pestaña <B>Copia de Seguridad</B> de Configuración.</p>
     </>
@@ -468,6 +487,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['La Caja me quedó en negativo', 'Es un aviso, no un error: revisá que los cobros estén cargados antes de las compras de contado.'],
           ['Un total no coincide con otro', 'Entrá a Control de integridad y apretá Verificar de nuevo: señala qué control no cierra y por cuánto.'],
           ['Una pantalla muestra un error al cargar', 'Revisá que Docker esté abierto y el sistema encendido. Al volver a levantarlo, los datos siguen ahí.'],
+          ['Veo intentos fallidos de ingreso en Auditoría que no hice yo', 'Elegí Accesos en el filtro de Auditoría: ahí figura cada intento con el email que se probó y el equipo. Si alguien probó con tu cuenta, cambiá la contraseña y avisale al administrador.'],
           ['Cargué algo por error', 'Una factura se edita o se anula desde su libro; un movimiento de Caja o Banco se edita o se elimina; un ingreso de un socio lo deshace el Administrador o el Contador.'],
         ]}
       />

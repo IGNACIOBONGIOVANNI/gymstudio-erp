@@ -173,9 +173,15 @@ namespace EstudioContable.Domain.Entities
 
         public CuentaContable(long clienteId, string codigo, string nombre, NaturalezaCuenta naturaleza)
         {
+            var codigoLimpio = (codigo ?? string.Empty).Trim();
+            if (!ReglasDeDatos.EsCodigoDeCuenta(codigoLimpio))
+                throw new ArgumentException("El código de la cuenta tiene que ser números separados por puntos, por ejemplo 1.1.1.01.");
+            if (!Enum.IsDefined(naturaleza))
+                throw new ArgumentException("La naturaleza de la cuenta no es válida.");
+
             ClienteId = clienteId;
-            Codigo = codigo;
-            Nombre = nombre;
+            Codigo = codigoLimpio;
+            Nombre = ReglasDeDatos.TextoRequerido(nombre, "El nombre de la cuenta", 150);
             Naturaleza = naturaleza;
         }
     }

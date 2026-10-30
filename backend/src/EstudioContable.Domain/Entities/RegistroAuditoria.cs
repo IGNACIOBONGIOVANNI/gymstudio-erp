@@ -27,6 +27,13 @@ namespace EstudioContable.Domain.Entities
         public string Usuario { get; private set; } = default!;
         public DateTimeOffset Fecha { get; private set; }
 
+        // Equipo desde el que se hizo el cambio: IP, sistema operativo y navegador (los dos últimos salen
+        // del User-Agent, que el propio equipo informa). Vacíos si el cambio no vino de la API, y en los
+        // registros anteriores a que se guardaran.
+        public string? Ip { get; private set; }
+        public string? SistemaOperativo { get; private set; }
+        public string? Navegador { get; private set; }
+
         protected RegistroAuditoria() { }
     }
 }

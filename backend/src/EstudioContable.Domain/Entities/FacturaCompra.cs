@@ -28,17 +28,14 @@ namespace EstudioContable.Domain.Entities
         // Constructor para facturas con ítems (las nuevas)
         public FacturaCompra(long clienteId, DateTime fecha, string tipoFactura, string numeroFactura, string proveedorNombre, string cuit, CondicionPago condicionPago = CondicionPago.CuentaCorriente)
         {
-            if (string.IsNullOrWhiteSpace(tipoFactura)) throw new ArgumentException("El tipo de factura es requerido.");
-            if (string.IsNullOrWhiteSpace(numeroFactura)) throw new ArgumentException("El número de factura es requerido.");
-            if (string.IsNullOrWhiteSpace(proveedorNombre)) throw new ArgumentException("El nombre del proveedor es requerido.");
-            if (string.IsNullOrWhiteSpace(cuit)) throw new ArgumentException("El CUIT es requerido.");
+            Validar(fecha, tipoFactura, numeroFactura, proveedorNombre, cuit, condicionPago);
 
             ClienteId = clienteId;
             Fecha = fecha;
-            TipoFactura = tipoFactura;
-            NumeroFactura = numeroFactura;
-            ProveedorNombre = proveedorNombre;
-            Cuit = cuit;
+            TipoFactura = ReglasDeComprobante.NormalizarTipo(tipoFactura);
+            NumeroFactura = numeroFactura.Trim();
+            ProveedorNombre = proveedorNombre.Trim();
+            Cuit = EstudioContable.Domain.Cuit.FormatearDocumento(cuit);   // sólo dígitos (y guiones del CUIT)
             CondicionPago = condicionPago;
             Neto = 0;
             Iva = 0;
@@ -48,21 +45,27 @@ namespace EstudioContable.Domain.Entities
         // Constructor para importaciones legacy sin detalle
         public FacturaCompra(long clienteId, DateTime fecha, string tipoFactura, string numeroFactura, string proveedorNombre, string cuit, decimal neto, decimal iva, decimal total, CondicionPago condicionPago = CondicionPago.CuentaCorriente)
         {
-            if (string.IsNullOrWhiteSpace(tipoFactura)) throw new ArgumentException("El tipo de factura es requerido.");
-            if (string.IsNullOrWhiteSpace(numeroFactura)) throw new ArgumentException("El número de factura es requerido.");
-            if (string.IsNullOrWhiteSpace(proveedorNombre)) throw new ArgumentException("El nombre del proveedor es requerido.");
-            if (string.IsNullOrWhiteSpace(cuit)) throw new ArgumentException("El CUIT es requerido.");
+            Validar(fecha, tipoFactura, numeroFactura, proveedorNombre, cuit, condicionPago);
 
             ClienteId = clienteId;
             Fecha = fecha;
-            TipoFactura = tipoFactura;
-            NumeroFactura = numeroFactura;
-            ProveedorNombre = proveedorNombre;
-            Cuit = cuit;
+            TipoFactura = ReglasDeComprobante.NormalizarTipo(tipoFactura);
+            NumeroFactura = numeroFactura.Trim();
+            ProveedorNombre = proveedorNombre.Trim();
+            Cuit = EstudioContable.Domain.Cuit.FormatearDocumento(cuit);   // sólo dígitos (y guiones del CUIT)
+            var errorImportes = ReglasDeComprobante.ValidarImportes(neto, iva, total);
+            if (errorImportes != null) throw new ArgumentException(errorImportes);
             Neto = neto;
             Iva = iva;
             Total = total;
             CondicionPago = condicionPago;
+        }
+
+        private static void Validar(DateTime fecha, string? tipoFactura, string? numeroFactura, string? nombre, string? documento, CondicionPago condicionPago)
+        {
+            var error = ReglasDeComprobante.ValidarCabecera(fecha, tipoFactura, numeroFactura, nombre, documento);
+            if (error != null) throw new ArgumentException(error);
+            if (!Enum.IsDefined(condicionPago)) throw new ArgumentException("La condición de pago no es válida.");
         }
 
         public void AgregarDetalle(Producto producto, int cantidad)

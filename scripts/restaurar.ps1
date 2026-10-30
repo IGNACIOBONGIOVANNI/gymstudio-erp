@@ -3,9 +3,10 @@
   Restaura la base de datos desde una copia hecha con backup.ps1.
 
 .DESCRIPTION
-  REEMPLAZA todos los datos actuales por los de la copia. Antes de tocar nada hace una copia
-  de seguridad de lo que hay ("antes-de-restaurar"), verifica la huella del archivo y, si el
-  sistema corre con docker-compose, reinicia el backend al terminar.
+  REEMPLAZA todos los datos actuales por los de la copia. Antes de tocar nada verifica la huella del
+  archivo, lo compara con el sistema actual (versión, esquema y datos que cambiarían), hace una copia
+  de seguridad de lo que hay ("antes-de-restaurar") y, si el sistema corre con docker-compose, reinicia
+  el backend al terminar. Una copia de una versión MÁS NUEVA que el código no se restaura (con -Forzar sí).
 
 .EXAMPLE
   .\scripts\restaurar.ps1 -Archivo .\backups\gymstudio_20261027_120000.dump -Confirmar
@@ -13,12 +14,14 @@
 param(
     [Parameter(Mandatory)][string]$Archivo,
     [switch]$Confirmar,                     # sin este parámetro sólo muestra qué haría
+    [switch]$Forzar,                        # restaura aunque la copia sea de una versión más nueva que el código
     [string]$Contenedor,
     [string]$BaseDeDatos = 'estudio_contable',
     [string]$Usuario = 'postgres'
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot '_comun.ps1')
 function Falla($mensaje) { Write-Host "ERROR: $mensaje" -ForegroundColor Red; exit 1 }
 
 if (-not (Test-Path $Archivo)) { Falla "No existe el archivo: $Archivo" }
@@ -32,15 +35,13 @@ if (-not $Contenedor) {
     if (-not $Contenedor) { Falla 'No encontré el contenedor de la base de datos. Levantá el sistema con "docker compose up".' }
 }
 
-# 1) El archivo tiene que ser el mismo que se guardó.
-$archivoHuella = "$Archivo.sha256"
-if (Test-Path $archivoHuella) {
-    $esperada = ((Get-Content $archivoHuella -TotalCount 1) -split '\s+')[0]
-    $real = (Get-FileHash $Archivo -Algorithm SHA256).Hash
-    if ($esperada -ne $real) { Falla "El archivo está dañado o fue modificado (la huella SHA-256 no coincide). No se restauró nada." }
-    Write-Host 'Huella SHA-256 verificada.' -ForegroundColor Green
-} else {
-    Write-Host 'Aviso: no hay archivo .sha256 junto a la copia, no se puede verificar su integridad.' -ForegroundColor Yellow
+# 1) El archivo tiene que ser el mismo que se guardó, y se compara con el sistema actual: qué versión es,
+#    qué esquema trae y qué datos cambiarían al restaurarla.
+try { $comparacion = Comparar-ConElSistema -Archivo $Archivo -Contenedor $Contenedor -BaseDeDatos $BaseDeDatos -Usuario $Usuario }
+catch { Falla $_.Exception.Message }
+if ($comparacion.Estado -eq 'danada') { Falla 'El archivo está dañado o fue modificado (la huella SHA-256 no coincide). No se restauró nada.' }
+if ($comparacion.CopiaMasNuevaQueElCodigo -and -not $Forzar) {
+    Falla 'La copia es de una versión MÁS NUEVA del sistema que el código que está instalado: restaurarla dejaría una base que este código no entiende. Actualizá el sistema primero (o repetí con -Forzar si sabés lo que hacés). No se restauró nada.'
 }
 
 if (-not $Confirmar) {

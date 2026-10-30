@@ -2,8 +2,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 
 namespace EstudioContable.IntegrationTests;
@@ -38,6 +40,7 @@ public sealed class ApiFixture : IAsyncLifetime
             builder.UseEnvironment("Development");
             builder.UseSetting("ConnectionStrings:DefaultConnection", ConnectionString);
             builder.UseSetting("Auth:IntentosLoginPorMinuto", "10000");
+            builder.ConfigureServices(servicios => servicios.AddTransient<IStartupFilter, SimularIpDeConexion>());
         });
 
         // Fuerza el arranque (migraciones y usuarios iniciales).
@@ -51,6 +54,30 @@ public sealed class ApiFixture : IAsyncLifetime
     }
 
     public HttpClient ClienteAnonimo() => _factory.CreateClient();
+
+    /// <summary>
+    /// Cliente que se presenta como un equipo concreto: su User-Agent, la IP desde la que "llega" la
+    /// conexión (el servidor de pruebas no tiene dirección remota) y, si hay un proxy, lo que éste reenvía
+    /// en X-Forwarded-For. Los encabezados quedan en todos sus pedidos, también en el login.
+    /// </summary>
+    public HttpClient ClienteDesde(string userAgent, string? ipDeConexion = null, string? reenviado = null)
+    {
+        var cliente = _factory.CreateClient();
+        cliente.DefaultRequestHeaders.UserAgent.Clear();
+        cliente.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
+        if (ipDeConexion != null) cliente.DefaultRequestHeaders.Add(SimularIpDeConexion.Encabezado, ipDeConexion);
+        if (reenviado != null) cliente.DefaultRequestHeaders.TryAddWithoutValidation("X-Forwarded-For", reenviado);
+        return cliente;
+    }
+
+    public async Task<HttpClient> IniciarSesion(HttpClient cliente, string email, string? clave = null)
+    {
+        var respuesta = await cliente.PostAsJsonAsync("/api/auth/login", new { email, password = clave ?? Clave });
+        respuesta.EnsureSuccessStatusCode();
+        var cuerpo = await respuesta.Content.ReadFromJsonAsync<JsonObject>();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (string)cuerpo!["token"]!);
+        return cliente;
+    }
 
     /// <summary>Cliente HTTP ya autenticado con el usuario indicado.</summary>
     public async Task<HttpClient> ClienteComo(string email, string? clave = null)
@@ -66,6 +93,26 @@ public sealed class ApiFixture : IAsyncLifetime
     public Task<HttpClient> Jefe() => ClienteComo("jefe@gym.com");
     public Task<HttpClient> Contador() => ClienteComo("contador@gymstudio.com");
     public Task<HttpClient> Recepcion() => ClienteComo("recepcion@gymstudio.com");
+}
+
+/// <summary>
+/// Solo para las pruebas: el servidor en memoria no tiene dirección remota, así que este filtro la toma del
+/// encabezado X-Test-Remote-Ip. Va antes que el resto del pipeline, igual que la conexión real de un proxy.
+/// </summary>
+public sealed class SimularIpDeConexion : IStartupFilter
+{
+    public const string Encabezado = "X-Test-Remote-Ip";
+
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> siguiente) => app =>
+    {
+        app.Use(async (contexto, continuar) =>
+        {
+            if (contexto.Request.Headers.TryGetValue(Encabezado, out var valor) && System.Net.IPAddress.TryParse(valor.ToString(), out var ip))
+                contexto.Connection.RemoteIpAddress = ip;
+            await continuar();
+        });
+        siguiente(app);
+    };
 }
 
 [CollectionDefinition(Nombre)]

@@ -20,6 +20,9 @@ namespace EstudioContable.Infrastructure.Persistence.Configurations
             builder.Property(a => a.CamposModificados).HasColumnName("campos_modificados").HasColumnType("text[]");
             builder.Property(a => a.Usuario).HasColumnName("usuario").HasMaxLength(254).IsRequired();
             builder.Property(a => a.Fecha).HasColumnName("fecha").HasDefaultValueSql("now()");
+            builder.Property(a => a.Ip).HasColumnName("ip").HasMaxLength(45);
+            builder.Property(a => a.SistemaOperativo).HasColumnName("sistema_operativo").HasMaxLength(60);
+            builder.Property(a => a.Navegador).HasColumnName("navegador").HasMaxLength(60);
 
             builder.HasIndex(a => a.Fecha);
             builder.HasIndex(a => new { a.Tabla, a.RegistroId });

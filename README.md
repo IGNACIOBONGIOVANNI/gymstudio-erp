@@ -38,10 +38,17 @@ Los datos viven en el volumen de Docker: se pierden con `docker compose down -v`
 Para copiarlos y restaurarlos (en PowerShell, con el sistema levantado):
 
 ```powershell
-.\scripts\backup.ps1                # copia en la carpeta backups\ (verificada, con huella SHA-256)
+.\scripts\backup.ps1                # copia en la carpeta backups\ (verificada, con huella SHA-256 y manifiesto)
 .\scripts\programar-backup.ps1      # la hace sola todos los días
+.\scripts\comparar-backup.ps1 -Archivo .\backups\gymstudio_AAAAMMDD_HHMMSS.dump   # ¿coincide con el sistema actual?
 .\scripts\restaurar.ps1 -Archivo .\backups\gymstudio_AAAAMMDD_HHMMSS.dump -Confirmar
 ```
+
+Cada copia trae junto al archivo `.dump` su huella SHA-256 y un **manifiesto** (`.manifiesto.json`) con la versión del
+sistema, la migración de la base y una huella de los datos de cada tabla. `comparar-backup.ps1` no modifica nada: verifica
+que el archivo no esté dañado, compara la versión y el esquema con los de ahora y dice, tabla por tabla, qué cambió desde
+la copia (o que es **idéntica** al sistema actual). `restaurar.ps1` hace esa misma comparación antes de reemplazar nada y se
+niega a restaurar una copia de una versión más nueva que el código instalado (salvo `-Forzar`).
 
 Detalles y recomendaciones en [`docs/BACKUPS.md`](docs/BACKUPS.md).
 
@@ -129,14 +136,26 @@ encontraron y corrigieron están en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
   usuario siga activo y con el mismo rol: una baja o un cambio de rol rigen al instante.
 - **Contraseñas:** guardadas con hash PBKDF2; las nuevas exigen mínimo 8 caracteres con letras y números (lo valida el servidor).
 - **Fuerza bruta:** límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto`, 10 por defecto) y cuenta bloqueada
-  15 minutos tras 5 claves incorrectas. El mensaje es el mismo para un email inexistente y para una clave errónea.
+  15 minutos tras 5 claves incorrectas. El mensaje es el mismo para un email inexistente y para una clave errónea, y también
+  tarda lo mismo (no se puede descubrir qué emails existen midiendo el tiempo). Los emails y claves absurdos (muy largos o con
+  caracteres de control) se rechazan sin consultar la base ni gastar CPU.
 - **Permisos:** los decide el servidor (tabla de arriba); ocultar un menú en pantalla no es una medida de seguridad.
 - **Navegador:** CORS restringido a `Cors:OrigenesPermitidos` y cabeceras de seguridad en la API
   (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Content-Security-Policy`, `Cache-Control: no-store`).
 - **Datos:** consultas parametrizadas, partida doble e inmutabilidad de asientos controladas por la propia base de datos,
   y registro de auditoría de quién cambió qué (solo lectura desde la API).
+- **Validaciones:** los números, códigos, tipos y documentos tienen forma y tope en el dominio (por ejemplo, un plan dura de 1 a
+  120 meses, un CUIT tiene que ser válido y un código de cuenta son números separados por puntos), así que valen por cualquier
+  camino. El texto libre se acepta tal cual, sin caracteres de control, porque se guarda con parámetros y se muestra escapado.
+- **Archivos:** la importación de Excel acepta solo `.xlsx` de hasta 5 MB, corta las bombas zip descomprimiendo hasta un tope,
+  limita las filas y omite (contándolas) las que no tienen forma de factura.
+- **Auditoría del equipo:** cada cambio registra desde qué **IP**, **sistema operativo** y **navegador** se hizo, y cada inicio
+  de sesión (correcto, fallido o sobre una cuenta bloqueada) también queda registrado, sin guardar nunca la contraseña. La IP solo
+  se toma de `X-Forwarded-For` si el pedido llega de una red de confianza (`Proxy:RedesDeConfianza`, por defecto las redes
+  privadas), así nadie puede falsearla con el encabezado. Sistema operativo y navegador salen del `User-Agent`, que el propio
+  equipo informa: sirve para saber desde dónde se trabajó, no como prueba.
 - **Red:** los puertos de Docker solo escuchan en `127.0.0.1` (ver arriba) y los errores internos no muestran trazas.
-- **Copias de respaldo:** verificadas con huella SHA-256 (ver *Copias de seguridad*).
+- **Copias de respaldo:** verificadas con huella SHA-256 y comparables con el sistema actual (ver *Copias de seguridad*).
 
 Antes de usarlo con datos reales hay que cambiar las contraseñas iniciales y la clave de PostgreSQL, correr en modo
 `Production` (así Swagger no queda publicado) y servirlo por HTTPS con un proxy; ver *Configuración fuera de desarrollo*

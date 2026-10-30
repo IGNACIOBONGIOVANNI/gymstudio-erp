@@ -77,7 +77,7 @@ export async function exportarExcel(clienteId?: string): Promise<void> {
 }
 
 /** Importa el Libro Venta desde Excel */
-export async function importarExcel(clienteId: string, file: File): Promise<{ facturasImportadas: number }> {
+export async function importarExcel(clienteId: string, file: File): Promise<{ facturasImportadas: number; filasOmitidas?: number }> {
   const url = `/api/ventas/import?clienteId=${clienteId}`;
   const formData = new FormData();
   formData.append("file", file);
@@ -86,7 +86,7 @@ export async function importarExcel(clienteId: string, file: File): Promise<{ fa
     method: "POST",
     body: formData, // No seteamos Content-Type, fetch lo hace automático con form-data
   });
-  return manejarRespuesta<{ facturasImportadas: number }>(res);
+  return manejarRespuesta<{ facturasImportadas: number; filasOmitidas?: number }>(res);
 }
 
 export interface CrearFacturaVentaCommand {

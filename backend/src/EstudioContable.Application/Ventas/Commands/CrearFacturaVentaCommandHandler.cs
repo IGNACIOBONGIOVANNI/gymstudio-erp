@@ -1,3 +1,4 @@
+using System.Linq;
 using EstudioContable.Application.Common.Exceptions;
 using System;
 using System.Threading;
@@ -23,6 +24,10 @@ namespace EstudioContable.Application.Ventas.Commands
 
         public async Task<long> Handle(CrearFacturaVentaCommand request, CancellationToken cancellationToken)
         {
+            var errorManual = EstudioContable.Domain.ReglasDeComprobante.ValidarFacturaManual(request.ClienteId, request.CondicionPago,
+                request.Items?.Select(i => (i.ProductoId, i.Cantidad)).ToList());
+            if (errorManual != null) throw new ArgumentException(errorManual);
+
             var factura = new FacturaVenta(
                 request.ClienteId,
                 request.Fecha,

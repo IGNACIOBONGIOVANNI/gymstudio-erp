@@ -5,6 +5,8 @@ namespace EstudioContable.Domain.Entities
 {
     public class Plan
     {
+        public const int LargoMaximoDelNombre = 100;
+
         public long Id { get; private set; }
         public string Nombre { get; private set; }
         public decimal PrecioMensual { get; private set; }
@@ -17,25 +19,17 @@ namespace EstudioContable.Domain.Entities
 
         public Plan(string nombre, decimal precioMensual, int duracionMeses = 1, bool activo = true)
         {
-            if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre del plan es requerido.");
-            if (precioMensual < 0) throw new ArgumentException("El precio mensual no puede ser negativo.");
-            if (duracionMeses <= 0) throw new ArgumentException("La duración en meses debe ser mayor a cero.");
-
-            Nombre = nombre;
-            PrecioMensual = precioMensual;
-            DuracionMeses = duracionMeses;
+            Nombre = ReglasDeDatos.TextoRequerido(nombre, "El nombre del plan", LargoMaximoDelNombre);
+            PrecioMensual = ReglasDeDatos.Importe(precioMensual, "El precio mensual");
+            DuracionMeses = ReglasDeDatos.Entero(duracionMeses, "La duración en meses", 1, ReglasDeDatos.MesesMaximosDeUnPlan);
             Activo = activo;
         }
 
         public void Actualizar(string nombre, decimal precioMensual, int duracionMeses)
         {
-            if (string.IsNullOrWhiteSpace(nombre)) throw new ArgumentException("El nombre del plan es requerido.");
-            if (precioMensual < 0) throw new ArgumentException("El precio mensual no puede ser negativo.");
-            if (duracionMeses <= 0) throw new ArgumentException("La duración en meses debe ser mayor a cero.");
-
-            Nombre = nombre;
-            PrecioMensual = precioMensual;
-            DuracionMeses = duracionMeses;
+            Nombre = ReglasDeDatos.TextoRequerido(nombre, "El nombre del plan", LargoMaximoDelNombre);
+            PrecioMensual = ReglasDeDatos.Importe(precioMensual, "El precio mensual");
+            DuracionMeses = ReglasDeDatos.Entero(duracionMeses, "La duración en meses", 1, ReglasDeDatos.MesesMaximosDeUnPlan);
         }
     }
 }

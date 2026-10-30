@@ -4,6 +4,10 @@ namespace EstudioContable.Domain.Entities
 {
     public class Producto
     {
+        // 200 es lo que admite el campo de descripción de Facturar, por donde también nacen productos.
+        public const int LargoMaximoDelNombre = 200;
+        public const int LargoMaximoDeMarcaYSabor = 100;
+
         public long Id { get; private set; }
         public string Nombre { get; private set; }
         public decimal PrecioUnitario { get; private set; }
@@ -34,16 +38,16 @@ namespace EstudioContable.Domain.Entities
             if (stockInicial < 0)
                 throw new ArgumentException("El stock inicial no puede ser negativo.", nameof(stockInicial));
 
-            Nombre = nombre;
-            PrecioUnitario = precioUnitario;
-            PrecioVenta = precioVenta;
-            StockActual = stockInicial;
-            Marca = marca;
-            Sabor = sabor;
-            Calorias = calorias;
-            Proteinas = proteinas;
-            Carbohidratos = carbohidratos;
-            Grasas = grasas;
+            Nombre = ReglasDeDatos.TextoRequerido(nombre, "El nombre", LargoMaximoDelNombre);
+            PrecioUnitario = ReglasDeDatos.Importe(precioUnitario, "El precio unitario");
+            PrecioVenta = ReglasDeDatos.Importe(precioVenta, "El precio de venta");
+            StockActual = ReglasDeDatos.Entero(stockInicial, "El stock inicial", 0, ReglasDeDatos.StockMaximo);
+            Marca = ReglasDeDatos.TextoOpcional(marca, "La marca", LargoMaximoDeMarcaYSabor);
+            Sabor = ReglasDeDatos.TextoOpcional(sabor, "El sabor", LargoMaximoDeMarcaYSabor);
+            Calorias = ReglasDeDatos.Nutricion(calorias, "Las calorías");
+            Proteinas = ReglasDeDatos.Nutricion(proteinas, "Las proteínas");
+            Carbohidratos = ReglasDeDatos.Nutricion(carbohidratos, "Los carbohidratos");
+            Grasas = ReglasDeDatos.Nutricion(grasas, "Las grasas");
         }
 
         public void ActualizarDatos(string nombre, decimal precioUnitario, decimal precioVenta, string? marca, string? sabor, decimal? calorias, decimal? proteinas, decimal? carbohidratos, decimal? grasas)
@@ -54,15 +58,15 @@ namespace EstudioContable.Domain.Entities
                 throw new ArgumentException("El precio unitario no puede ser negativo.", nameof(precioUnitario));
             if (precioVenta < 0)
                 throw new ArgumentException("El precio de venta no puede ser negativo.", nameof(precioVenta));
-            Nombre = nombre.Trim();
-            PrecioUnitario = precioUnitario;
-            PrecioVenta = precioVenta;
-            Marca = marca;
-            Sabor = sabor;
-            Calorias = calorias;
-            Proteinas = proteinas;
-            Carbohidratos = carbohidratos;
-            Grasas = grasas;
+            Nombre = ReglasDeDatos.TextoRequerido(nombre, "El nombre", LargoMaximoDelNombre);
+            PrecioUnitario = ReglasDeDatos.Importe(precioUnitario, "El precio unitario");
+            PrecioVenta = ReglasDeDatos.Importe(precioVenta, "El precio de venta");
+            Marca = ReglasDeDatos.TextoOpcional(marca, "La marca", LargoMaximoDeMarcaYSabor);
+            Sabor = ReglasDeDatos.TextoOpcional(sabor, "El sabor", LargoMaximoDeMarcaYSabor);
+            Calorias = ReglasDeDatos.Nutricion(calorias, "Las calorías");
+            Proteinas = ReglasDeDatos.Nutricion(proteinas, "Las proteínas");
+            Carbohidratos = ReglasDeDatos.Nutricion(carbohidratos, "Los carbohidratos");
+            Grasas = ReglasDeDatos.Nutricion(grasas, "Las grasas");
         }
 
         public void ActualizarStock(int cantidad)

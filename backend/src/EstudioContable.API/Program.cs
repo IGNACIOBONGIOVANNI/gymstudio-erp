@@ -27,6 +27,24 @@ builder.Services.AddDbContext<AppDbContext>((services, options) =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .AddInterceptors(services.GetRequiredService<AuditoriaConnectionInterceptor>()));
 
+// IP real del equipo. Detrás del proxy del frontend (Vite en Docker, o un Nginx/Caddy en producción) la
+// conexión llega desde el proxy: se toma la IP de X-Forwarded-For, pero SOLO si el pedido viene de una red
+// de confianza (por defecto, redes privadas y la propia máquina). Si no, cualquiera podría escribir el
+// encabezado a mano para falsear su IP en la auditoría y esquivar el límite de intentos de login.
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(opciones =>
+{
+    opciones.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor;
+    opciones.ForwardLimit = 1;   // se toma la dirección que agregó el proxy más cercano, no las anteriores
+    opciones.KnownIPNetworks.Clear();
+    opciones.KnownProxies.Clear();
+    var redes = builder.Configuration.GetSection("Proxy:RedesDeConfianza").Get<string[]>();
+    if (redes == null || redes.Length == 0)
+        redes = new[] { "127.0.0.0/8", "::1/128", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16" };
+    foreach (var red in redes)
+        if (System.Net.IPNetwork.TryParse(red, out var parseada))
+            opciones.KnownIPNetworks.Add(parseada);
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles)
     .ConfigureApiBehaviorOptions(options =>
@@ -210,6 +228,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Primero de todo: el límite de login y la auditoría usan la IP ya corregida.
+app.UseForwardedHeaders();
 
 app.UseMiddleware<EstudioContable.API.Middlewares.ExceptionMiddleware>();
 

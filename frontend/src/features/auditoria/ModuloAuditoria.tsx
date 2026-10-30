@@ -8,21 +8,41 @@ interface RegistroAuditoria {
   fecha: string;
   usuario: string;
   tabla: string;
-  operacion: 'INSERT' | 'UPDATE' | 'DELETE';
+  // INSERT, UPDATE y DELETE los escribe el trigger; INGRESO, FALLIDO y BLOQUEADO, el login (tabla "acceso").
+  operacion: string;
   registroId: string | null;
   camposModificados: string[];
+  // Equipo desde el que se hizo el cambio. Vacío en los registros anteriores a que se guardaran.
+  ip: string | null;
+  sistemaOperativo: string | null;
+  navegador: string | null;
   datosAnteriores: Record<string, unknown> | null;
   datosNuevos: Record<string, unknown> | null;
 }
 
-const OPERACIONES: Record<RegistroAuditoria['operacion'], { texto: string; clase: string }> = {
+const OPERACIONES: Record<string, { texto: string; clase: string }> = {
   INSERT: { texto: 'Alta', clase: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   UPDATE: { texto: 'Modificación', clase: 'bg-amber-50 text-amber-700 border-amber-200' },
   DELETE: { texto: 'Baja', clase: 'bg-red-50 text-red-700 border-red-200' },
+  INGRESO: { texto: 'Inicio de sesión', clase: 'bg-sky-50 text-sky-700 border-sky-200' },
+  FALLIDO: { texto: 'Intento fallido', clase: 'bg-red-50 text-red-700 border-red-200' },
+  BLOQUEADO: { texto: 'Cuenta bloqueada', clase: 'bg-red-100 text-red-800 border-red-300' },
 };
 
-// "contabilidad.Facturas" -> "Facturas"
-const nombreTabla = (tabla: string) => tabla.split('.').pop() ?? tabla;
+// Una operación que esta pantalla no conoce se muestra tal cual, sin romperla.
+const operacion = (codigo: string) =>
+  OPERACIONES[codigo] ?? { texto: codigo, clase: 'bg-slate-50 text-slate-700 border-slate-200' };
+
+const DESCRIPCION_ACCESO: Record<string, string> = {
+  INGRESO: 'Inició sesión correctamente.',
+  FALLIDO: 'Intento de ingreso con una clave incorrecta, una cuenta inexistente o una cuenta inactiva.',
+  BLOQUEADO: 'Intento de ingreso sobre una cuenta bloqueada por demasiados intentos fallidos.',
+};
+
+// "contabilidad.Facturas" -> "Facturas"; los inicios de sesión se guardan con la tabla "acceso".
+const nombreTabla = (tabla: string) => (tabla === 'acceso' ? 'Accesos' : tabla.split('.').pop() ?? tabla);
+
+const equipo = (r: RegistroAuditoria) => [r.sistemaOperativo, r.navegador].filter(Boolean).join(', ') || '—';
 
 function mostrarValor(valor: unknown): string {
   if (valor === null || valor === undefined || valor === '') return '—';
@@ -70,6 +90,14 @@ export default function ModuloAuditoria() {
   }, [tabla]);
 
   const detalleCambios = (r: RegistroAuditoria) => {
+    if (r.tabla === 'acceso') {
+      return [
+        <div key="acceso" className="text-slate-800">{DESCRIPCION_ACCESO[r.operacion] ?? r.operacion}</div>,
+        <div key="equipo" className="text-slate-600">
+          Equipo: IP {r.ip ?? '—'}, {r.sistemaOperativo ?? 'sistema desconocido'}, {r.navegador ?? 'navegador desconocido'}.
+        </div>,
+      ];
+    }
     if (r.operacion !== 'UPDATE') {
       const datos = r.datosNuevos ?? r.datosAnteriores ?? {};
       return Object.entries(datos).map(([campo, valor]) => (
@@ -149,12 +177,14 @@ export default function ModuloAuditoria() {
                 <th className="h-11 px-4 font-medium">Operación</th>
                 <th className="h-11 px-4 font-medium">Registro</th>
                 <th className="h-11 px-4 font-medium">Campos modificados</th>
+                <th className="h-11 px-4 font-medium">IP</th>
+                <th className="h-11 px-4 font-medium">Equipo</th>
               </tr>
             </thead>
             <tbody>
               {registros.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="h-24 text-center text-slate-500">
+                  <td colSpan={9} className="h-24 text-center text-slate-500">
                     {cargando ? 'Cargando…' : 'No hay registros de auditoría.'}
                   </td>
                 </tr>
@@ -174,17 +204,19 @@ export default function ModuloAuditoria() {
                     <td className="px-4 py-3 text-slate-700">{r.usuario}</td>
                     <td className="px-4 py-3 font-medium text-slate-900">{nombreTabla(r.tabla)}</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${OPERACIONES[r.operacion].clase}`}>
-                        {OPERACIONES[r.operacion].texto}
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${operacion(r.operacion).clase}`}>
+                        {operacion(r.operacion).texto}
                       </span>
                     </td>
                     <td className="px-4 py-3 tabular-nums text-slate-600">{r.registroId ?? '—'}</td>
                     <td className="px-4 py-3 text-slate-600">{r.camposModificados.join(', ') || '—'}</td>
+                    <td className="px-4 py-3 tabular-nums text-slate-600 whitespace-nowrap">{r.ip ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{equipo(r)}</td>
                   </tr>
                   {expandido === r.id && (
                     <tr className="bg-slate-50/60 border-b border-slate-100">
                       <td></td>
-                      <td colSpan={6} className="px-4 py-3 space-y-1 text-xs">
+                      <td colSpan={8} className="px-4 py-3 space-y-1 text-xs">
                         {detalleCambios(r)}
                       </td>
                     </tr>
