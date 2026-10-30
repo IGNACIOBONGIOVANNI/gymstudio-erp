@@ -27,6 +27,8 @@ const OPERACIONES: Record<string, { texto: string; clase: string }> = {
   INGRESO: { texto: 'Inicio de sesión', clase: 'bg-sky-50 text-sky-700 border-sky-200' },
   FALLIDO: { texto: 'Intento fallido', clase: 'bg-red-50 text-red-700 border-red-200' },
   BLOQUEADO: { texto: 'Cuenta bloqueada', clase: 'bg-red-100 text-red-800 border-red-300' },
+  DESCARGA: { texto: 'Copia descargada', clase: 'bg-sky-50 text-sky-700 border-sky-200' },
+  RESTAURADA: { texto: 'Copia restaurada', clase: 'bg-red-100 text-red-800 border-red-300' },
 };
 
 // Una operación que esta pantalla no conoce se muestra tal cual, sin romperla.
@@ -34,13 +36,15 @@ const operacion = (codigo: string) =>
   OPERACIONES[codigo] ?? { texto: codigo, clase: 'bg-slate-50 text-slate-700 border-slate-200' };
 
 const DESCRIPCION_ACCESO: Record<string, string> = {
+  DESCARGA: 'Descargó una copia de seguridad completa del sistema.',
+  RESTAURADA: 'Restauró una copia de seguridad: se reemplazaron todos los datos del sistema.',
   INGRESO: 'Inició sesión correctamente.',
   FALLIDO: 'Intento de ingreso con una clave incorrecta, una cuenta inexistente o una cuenta inactiva.',
   BLOQUEADO: 'Intento de ingreso sobre una cuenta bloqueada por demasiados intentos fallidos.',
 };
 
 // "contabilidad.Facturas" -> "Facturas"; los inicios de sesión se guardan con la tabla "acceso".
-const nombreTabla = (tabla: string) => (tabla === 'acceso' ? 'Accesos' : tabla.split('.').pop() ?? tabla);
+const nombreTabla = (tabla: string) => (tabla === 'acceso' ? 'Accesos' : tabla === 'copia' ? 'Copias de seguridad' : tabla.split('.').pop() ?? tabla);
 
 const equipo = (r: RegistroAuditoria) => [r.sistemaOperativo, r.navegador].filter(Boolean).join(', ') || '—';
 
@@ -90,7 +94,7 @@ export default function ModuloAuditoria() {
   }, [tabla]);
 
   const detalleCambios = (r: RegistroAuditoria) => {
-    if (r.tabla === 'acceso') {
+    if (r.tabla === 'acceso' || r.tabla === 'copia') {
       return [
         <div key="acceso" className="text-slate-800">{DESCRIPCION_ACCESO[r.operacion] ?? r.operacion}</div>,
         <div key="equipo" className="text-slate-600">

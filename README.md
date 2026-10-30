@@ -35,7 +35,14 @@ conectarse al sistema ni a la base. Para abrirlo a la red a propósito, sacar `1
 ### Copias de seguridad
 
 Los datos viven en el volumen de Docker: se pierden con `docker compose down -v` o con la PC.
-Para copiarlos y restaurarlos (en PowerShell, con el sistema levantado):
+
+**Desde el sistema** (solo Administrador): *Configuración › Copia de seguridad › Copia completa del sistema*.
+**Descargar copia completa (.zip)** guarda **todas las tablas** (facturas, asientos, caja, banco, stock, socios, usuarios y
+auditoría) con un manifiesto y una huella de cada una. **Seleccionar copia (.zip)** muestra una vista previa que la compara con el
+sistema actual, tabla por tabla, y desde ahí se puede restaurar: pide escribir `RESTAURAR`, descarga antes una copia de lo que hay y
+es todo o nada (si algo falla, no queda nada a medias). Descargar y restaurar quedan en la Auditoría.
+
+**Con scripts** (en PowerShell, con el sistema levantado; es lo que usa la copia diaria programada):
 
 ```powershell
 .\scripts\backup.ps1                # copia en la carpeta backups\ (verificada, con huella SHA-256 y manifiesto)
@@ -124,6 +131,7 @@ controlan en el backend; el frontend sólo oculta menús.
 | Deshacer un ingreso cargado por error                      | ✔ | ✔ | ✘ |
 | Crear, confirmar o anular asientos manuales; crear cuentas | ✔ | ✔ | ✘ |
 | Administrar usuarios y consultar la auditoría              | ✔ | ✘ | ✘ |
+| Descargar, comparar y restaurar copias de seguridad        | ✔ | ✘ | ✘ |
 
 El administrador principal no puede eliminarse, desactivarse ni perder el rol.
 
@@ -159,7 +167,12 @@ encontraron y corrigieron están en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
   privadas), así nadie puede falsearla con el encabezado. Sistema operativo y navegador salen del `User-Agent`, que el propio
   equipo informa: sirve para saber desde dónde se trabajó, no como prueba.
 - **Red:** los puertos de Docker solo escuchan en `127.0.0.1` (ver arriba) y los errores internos no muestran trazas.
-- **Copias de respaldo:** verificadas con huella SHA-256 y comparables con el sistema actual (ver *Copias de seguridad*).
+- **Copias de respaldo:** la copia completa del sistema se descarga, se compara y se restaura desde la pantalla (solo Administrador),
+  verificada con huellas SHA-256 por archivo y por tabla; la restauración es todo o nada, con confirmación escrita, y la copia
+  no puede apuntar a otras tablas ni inflarse (tope de 50 MB / 300 MB descomprimido). Ver *Copias de seguridad*.
+- **Política de seguridad:** [`docs/POLITICA_DE_SEGURIDAD.md`](docs/POLITICA_DE_SEGURIDAD.md) fija objetivo, alcance, roles, reglas
+  (cada una dice si la hace cumplir el sistema o dependen de las personas), gestión de incidentes y limitaciones conocidas. También
+  está en el manual y se abre desde *Configuración › Seguridad y Sistema › Ver política de seguridad*.
 
 Antes de usarlo con datos reales hay que cambiar las contraseñas iniciales y la clave de PostgreSQL, correr en modo
 `Production` (así Swagger no queda publicado) y servirlo por HTTPS con un proxy; ver *Configuración fuera de desarrollo*

@@ -56,6 +56,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Registrar y corregir mediciones de peso y medidas', SI, SI, SI],
           ['Crear, confirmar o anular asientos manuales; crear cuentas', SI, SI, NO],
           ['Administrar usuarios y consultar la auditoría', SI, NO, NO],
+          ['Descargar, comparar y restaurar copias de seguridad', SI, NO, NO],
         ]}
       />
       <Nota>
@@ -362,7 +363,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         <li><strong>Datos Fiscales y Empresa:</strong> razón social, nombre de fantasía, CUIT, condición frente al IVA, punto de venta, domicilio, teléfono y email. Estos datos salen en los PDF y en el menú.</li>
         <li><strong>Parámetros Contables y Facturación:</strong> valores por defecto como la alícuota de IVA.</li>
         <li><strong>Seguridad y Sistema:</strong> el tiempo de inactividad antes de cerrar la sesión y la exigencia de contraseñas seguras.</li>
-        <li><strong>Copia de Seguridad:</strong> cómo respaldar los datos (ver más abajo) y cómo descargar y cargar la configuración de la empresa. Al cargar un archivo, antes de aplicar nada ves una <strong>vista previa</strong> que compara la configuración actual con la del archivo, dato por dato, y elegís si cargar los cambios o cancelar.</li>
+        <li><strong>Copia de Seguridad:</strong> la <strong>copia completa del sistema</strong> (facturas, asientos y todos los datos: se descarga, se compara y se restaura desde acá; ver <B>Copias de seguridad</B>) y la descarga y carga de la configuración de la empresa. Al cargar cualquier archivo, antes de aplicar nada ves una <strong>vista previa</strong> que lo compara con lo que está en uso, y elegís si seguir o cancelar.</li>
+        <li><strong>Política de seguridad:</strong> el botón <B>Ver política de seguridad</B>, en la pestaña Seguridad y Sistema, abre las reglas del sistema en esta guía.</li>
       </Lista>
       <p>Apretá <B>Guardar Configuración</B> para conservar los cambios; <B>Valores por Defecto</B> vuelve a los iniciales.</p>
       <Nota tipo="ojo">
@@ -378,6 +380,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <p>
         También quedan registrados los <strong>inicios de sesión</strong> (elegí <B>Accesos</B> en el filtro de tablas): los correctos,
         los intentos fallidos (con el email que se probó) y los intentos sobre una cuenta bloqueada. La contraseña nunca se guarda.
+        Lo mismo pasa con las <strong>copias de seguridad</strong> que se descargan o se restauran (filtro <B>Copias de seguridad</B>).
       </p>
       <Nota>
         El sistema operativo y el navegador los informa el propio equipo, así que sirven para saber desde dónde se trabajó, pero no como
@@ -418,9 +421,44 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
 
   respaldo: (
     <>
+      <Quien quien="admin" />
       <p>
         Los datos viven en un volumen de Docker: se pierden si se borra con <B>docker compose down -v</B> o si se rompe la PC.
-        Por eso conviene hacer copias de seguridad, que se piden desde PowerShell, en la carpeta del sistema y con el sistema encendido:
+        Por eso conviene hacer copias de seguridad. Hay dos caminos y los dos sirven.
+      </p>
+      <Sub>Desde el sistema</Sub>
+      <p>
+        En <B>Configuración</B>, pestaña <B>Copia de Seguridad</B>, sección <B>Copia completa del sistema</B>:
+      </p>
+      <Tabla
+        columnas={['Para...', 'Qué hacer']}
+        filas={[
+          [
+            'Guardar todo el sistema',
+            <>Apretá <B>Descargar copia completa (.zip)</B>. El archivo incluye facturas, asientos, caja, banco, stock, socios, usuarios y auditoría.</>,
+          ],
+          [
+            'Comparar una copia con el sistema actual',
+            <>Con <B>Seleccionar copia (.zip)</B> elegís el archivo y ves una vista previa que compara, tabla por tabla, lo que hay en la copia con lo que hay ahora (cuántas filas y si cambian). No se modifica nada.</>,
+          ],
+          [
+            'Volver a una copia',
+            <>Desde esa vista previa, <B>Restaurar esta copia…</B>, escribí <B>RESTAURAR</B> para confirmar y <B>Restaurar ahora</B>. Antes de reemplazar nada, el sistema te descarga una copia de lo que hay.</>,
+          ],
+        ]}
+      />
+      <p>
+        La copia se verifica antes de usarla: se rechaza si está dañada, si fue alterada o si es de una versión más nueva que el
+        sistema. Restaurar es todo o nada: si algo falla, los datos quedan como estaban. Descargar y restaurar quedan en la
+        <B>Auditoría</B>.
+      </p>
+      <Nota tipo="ojo">
+        La copia incluye los datos de los socios y las contraseñas (en forma de hash), y no está cifrada: guardala en un lugar
+        privado. Restaurar reemplaza <strong>todos</strong> los datos actuales.
+      </Nota>
+      <Sub>Desde PowerShell</Sub>
+      <p>
+        También se pueden pedir desde PowerShell, en la carpeta del sistema y con el sistema encendido (lo que usa la copia programada de las 22:00):
       </p>
       <Tabla
         columnas={['Para...', 'Comando']}
@@ -448,6 +486,58 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         ella se pierden también. Restaurar reemplaza los datos actuales (antes se hace una copia de lo que hay, por si te arrepentís).
       </Nota>
       <p>El detalle completo está en la pestaña <B>Copia de Seguridad</B> de Configuración.</p>
+    </>
+  ),
+
+  politica: (
+    <>
+      <p>
+        Es el conjunto de reglas con las que se protege la información del negocio: que cada persona vea solo lo que necesita
+        (<strong>confidencialidad</strong>), que los datos no se alteren sin dejar rastro (<strong>integridad</strong>) y que se
+        puedan recuperar si algo sale mal (<strong>disponibilidad</strong>). Rige para todas las personas que usan el sistema.
+      </p>
+      <Sub>Lo que el sistema hace solo</Sub>
+      <Tabla
+        columnas={['Tema', 'Regla']}
+        filas={[
+          ['Contraseñas', 'Mínimo 8 caracteres con letras y números. Se guardan con hash, nunca en texto.'],
+          ['Bloqueo', 'Cinco claves incorrectas seguidas bloquean la cuenta 15 minutos. El mensaje no revela si el email existe.'],
+          ['Sesión', 'Vence a las 8 horas y se cierra sola tras un rato sin actividad (60 minutos por defecto).'],
+          ['Permisos', 'Cada rol hace solo lo suyo, y lo controla el servidor, no solo la pantalla. Una baja o un cambio de rol rigen al instante.'],
+          ['Datos', 'Todo lo que se escribe se valida (forma, largo y rango). Los asientos confirmados no se editan: se anulan.'],
+          ['Auditoría', 'Cada cambio y cada ingreso registran quién, cuándo y desde qué equipo (IP, sistema y navegador). No se puede editar.'],
+          ['Copias', 'Se verifican con una huella SHA-256 y un manifiesto. Restaurar pide confirmación escrita y todo se hace o no se hace.'],
+          ['Red', 'La base, la API y el sistema solo se alcanzan desde la propia PC, salvo que el Administrador los abra a propósito.'],
+        ]}
+      />
+      <Sub>Lo que te toca a vos</Sub>
+      <Lista>
+        <li>Usá solo tu cuenta y no compartas tu contraseña; cambiá la que te dieron al principio.</li>
+        <li>Cerrá la sesión cuando te vayas de la PC, sobre todo si la usa más gente.</li>
+        <li>Avisale al Administrador si ves un acceso que no hiciste o un dato que cambió solo.</li>
+        <li>Los datos de los socios (nombre, DNI, teléfono, email) son personales: usalos solo para gestionar el gimnasio.</li>
+      </Lista>
+      <Sub>Si sos Administrador</Sub>
+      <Lista>
+        <li>Antes de cargar datos reales, reemplazá la cuenta y la clave de ejemplo del sistema.</li>
+        <li>Dá de baja las cuentas que ya no se usan y asigná a cada persona el rol mínimo que necesita.</li>
+        <li>Revisá la <B>Auditoría</B> al menos una vez por semana, en especial los <B>Accesos</B> y las <B>Copias de seguridad</B>.</li>
+        <li>Hacé una copia todos los días y guardá al menos una <strong>fuera de la PC</strong> (pendrive o nube privada).</li>
+        <li>Una vez por mes, probá una copia: compará el archivo con el sistema. Una copia que nunca se probó no es una copia.</li>
+        <li>Con datos reales, ejecutá el sistema en modo <em>Production</em>, cambiá las claves de ejemplo y publicalo solo por HTTPS.</li>
+      </Lista>
+      <Sub>Si pasa algo raro</Sub>
+      <Pasos>
+        <li><strong>Frená</strong> el problema: desactivá la cuenta involucrada en <B>Usuarios</B> y cambiale la contraseña.</li>
+        <li><strong>Investigá</strong> en la <B>Auditoría</B> qué se hizo y desde qué equipo, y corré el <B>Control de integridad</B>.</li>
+        <li><strong>Recuperá</strong>: compará la última copia sana con el sistema y, si hace falta, restaurala.</li>
+        <li><strong>Avisá</strong> a quien corresponda y anotá qué pasó para que no se repita.</li>
+      </Pasos>
+      <Nota tipo="ojo">
+        Límites que conviene conocer: el sistema no tiene doble factor de autenticación y las copias no están cifradas. Por eso la
+        custodia de las contraseñas y de los archivos de copia depende de las personas. El texto completo de la política está en
+        el archivo <strong>docs/POLITICA_DE_SEGURIDAD.md</strong> del proyecto.
+      </Nota>
     </>
   ),
 

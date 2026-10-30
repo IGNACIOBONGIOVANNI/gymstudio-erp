@@ -18,6 +18,7 @@ export const SECCIONES = [
   { id: 'administracion', titulo: 'Administración: usuarios, configuración y auditoría' },
   { id: 'ayudas', titulo: 'Asistente y campanita de avisos' },
   { id: 'respaldo', titulo: 'Copias de seguridad' },
+  { id: 'politica', titulo: 'Política de seguridad' },
   { id: 'glosario', titulo: 'Glosario' },
   { id: 'problemas', titulo: 'Si algo no sale' },
 ] as const

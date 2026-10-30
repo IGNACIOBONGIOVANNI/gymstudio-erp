@@ -21,17 +21,14 @@ namespace EstudioContable.API.Controllers
         private readonly AppDbContext _context;
         private readonly IPasswordHasher<Usuario> _hasher;
         private readonly TokenService _tokenService;
-        private readonly IUsuarioActual _equipo;
-        private readonly ILogger<AuthController> _log;
+        private readonly IRegistroDeEventos _eventos;
 
-        public AuthController(AppDbContext context, IPasswordHasher<Usuario> hasher, TokenService tokenService,
-            IUsuarioActual equipo, ILogger<AuthController> log)
+        public AuthController(AppDbContext context, IPasswordHasher<Usuario> hasher, TokenService tokenService, IRegistroDeEventos eventos)
         {
             _context = context;
             _hasher = hasher;
             _tokenService = tokenService;
-            _equipo = equipo;
-            _log = log;
+            _eventos = eventos;
         }
 
         public class LoginRequest
@@ -149,40 +146,11 @@ namespace EstudioContable.API.Controllers
         }
 
         /// <summary>
-        /// Deja constancia en la auditoría de cada inicio de sesión: INGRESO, FALLIDO o BLOQUEADO, con el email
-        /// que se probó y el equipo (IP, sistema operativo y navegador). Nunca se guarda la contraseña. Si el
-        /// registro falla se anota en el log y el login sigue: la auditoría no puede impedir entrar.
+        /// Deja constancia en la auditoría de cada inicio de sesión: INGRESO, FALLIDO o BLOQUEADO, con el email que se probó y
+        /// el equipo (IP, sistema operativo y navegador). Nunca se guarda la contraseña. Si el registro falla, el login sigue.
         /// </summary>
-        private async Task RegistrarAccesoAsync(string operacion, string email, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var usuario = Sanear(email, LargoMaximoEmail);
-                await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                    INSERT INTO contabilidad.auditoria
-                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)
-                    VALUES
-                        ('acceso', {operacion}, NULL, '{{}}'::text[], {usuario}, now(),
-                         {_equipo.Ip}::varchar, {_equipo.SistemaOperativo}::varchar, {_equipo.Navegador}::varchar)", cancellationToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _log.LogWarning(ex, "No se pudo registrar el acceso ({Operacion}).", operacion);
-            }
-        }
-
-        /// <summary>Texto que viene del cliente, listo para guardar: sin caracteres de control y con tope de largo.</summary>
-        private static string Sanear(string? texto, int maximo)
-        {
-            if (string.IsNullOrWhiteSpace(texto)) return "(vacío)";
-            var sb = new System.Text.StringBuilder(Math.Min(texto.Length, maximo));
-            foreach (var c in texto)
-            {
-                if (sb.Length >= maximo) break;
-                sb.Append(char.IsControl(c) ? ' ' : c);
-            }
-            return sb.ToString().Trim();
-        }
+        private Task RegistrarAccesoAsync(string operacion, string email, CancellationToken cancellationToken)
+            => _eventos.RegistrarAsync("acceso", operacion, email, cancellationToken);
 
         /// <summary>Datos del usuario dueño del token (sirve para validar la sesión).</summary>
         [HttpGet("me")]

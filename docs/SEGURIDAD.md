@@ -16,7 +16,8 @@ Qué protege el sistema, cómo se comprobó y qué queda pendiente para un uso r
 | Validaciones | Los números, códigos, tipos y documentos tienen forma y tope en el dominio (valen por cualquier camino). El texto libre no admite caracteres de control ni largos absurdos. |
 | Archivos | Solo `.xlsx` de hasta 5 MB; se descomprime hasta un tope (bomba zip) y se limitan las filas. |
 | Auditoría del equipo | Cada cambio y cada inicio de sesión registran IP, sistema operativo y navegador. La IP solo se toma de `X-Forwarded-For` desde una red de confianza. |
-| Copias | SHA-256 y manifiesto por copia; `comparar-backup.ps1` la contrasta con el sistema actual y `restaurar.ps1` se niega a restaurar una versión más nueva. |
+| Copias | Copia completa descargable desde la pantalla (solo Administrador) con SHA-256 y manifiesto por tabla; vista previa que la compara con el sistema actual y restauración todo-o-nada con confirmación escrita. Los scripts (`backup.ps1`, `comparar-backup.ps1`, `restaurar.ps1`) hacen lo mismo desde PowerShell. |
+| Política | Reglas escritas de quién es responsable de qué, en [`POLITICA_DE_SEGURIDAD.md`](POLITICA_DE_SEGURIDAD.md) y en el manual (sección *Política de seguridad*). |
 | Errores | Los errores internos no muestran trazas ni datos de la base. |
 | Dependencias | Sin vulnerabilidades conocidas en NuGet ni en las dependencias de producción de npm. |
 
@@ -128,6 +129,35 @@ Límites que conviene tener presentes:
 
 Cubierto con tests automáticos (`AgenteDeUsuarioTests`, `ValidacionesTests`, `AuditoriaDeEquipoTests` y
 `ValidacionesYArchivosTests`).
+
+## Cuarta revisión (copia completa desde el sistema y política de seguridad)
+
+Hasta acá, la copia de seguridad de la pantalla guardaba solo los 19 datos de la configuración de la empresa; los datos contables
+(facturas, asientos...) solo se copiaban con scripts. Ahora el sistema descarga, compara y restaura **todas las tablas**, y
+eso agrega superficie que había que revisar: un archivo que sube el usuario y que puede reemplazar toda la base.
+
+Cómo se limitó el riesgo (cada punto tiene su test en `CopiasDeSeguridadTests`):
+
+1. **Solo el Administrador.** Descargar, comparar y restaurar dan 401 sin sesión y 403 al Contador y a Recepción.
+2. **El archivo no es de confianza.** Se verifica el SHA-256 de cada archivo y la huella de cada tabla; se rechaza un `.zip` dañado,
+   con archivos de más o de menos, sin manifiesto o que no es una copia. Tope de 50 MB comprimido, 300 MB descomprimido (se cuentan
+   los bytes reales: una bomba zip de 310 MB de ceros se corta) y 100 archivos.
+3. **El manifiesto no puede elegir tablas.** Los nombres de tabla del manifiesto solo se usan si existen en la base (forma validada y
+   pertenencia al catálogo, y siempre entre comillas): un manifiesto con `; DROP TABLE ...` o con otra tabla se rechaza.
+4. **Restaurar es todo o nada.** Una sola transacción: vaciar, cargar, reiniciar secuencias y comprobar la huella de cada tabla antes de
+   confirmar. Un archivo roto a mitad de la carga deja el sistema como estaba.
+5. **No se restaura por error.** Exige escribir `RESTAURAR` (también lo exige el servidor), descarga antes una copia de lo que hay, y
+   rechaza una copia de otra versión de la base.
+6. **Queda registrado.** Descargar y restaurar se guardan en la auditoría con el usuario y el equipo.
+
+Lo que **no** resuelve y conviene tener presente: la copia no está cifrada y trae los hashes de las contraseñas y los datos
+personales de los socios, por lo que su custodia depende de quien la guarda. La restauración necesita que la base le dé permisos de
+superusuario a la aplicación (lo hace así el Docker de este proyecto); si no, el sistema lo avisa y se restaura con
+`restaurar.ps1`.
+
+Agregado: la [**política de seguridad**](POLITICA_DE_SEGURIDAD.md): objetivo, alcance, roles, reglas (cada una dice si la cumple el
+sistema o dependen de las personas), gestión de incidentes y limitaciones conocidas. También está en el manual del sistema y se abre
+desde *Configuración › Seguridad y Sistema*.
 
 ### Asistente por reglas
 

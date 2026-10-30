@@ -12,6 +12,10 @@ import {
 import toast from 'react-hot-toast';
 import { compararConfiguracion, leerArchivoDeConfiguracion, type Comparacion, type ValorInvalido } from './compararConfiguracion';
 import { VistaPreviaDeConfiguracion } from './VistaPreviaDeConfiguracion';
+import { VistaPreviaDeCopia } from './VistaPreviaDeCopia';
+import { compararCopia, descargarCopia, guardarArchivo } from '../../api/copiasApi';
+import { nombreDeArchivoDeCopia, type ComparacionDeCopia } from './copiasUtil';
+import { abrirManual } from '../../acercaDe';
 
 // Lo que se muestra antes de cargar un archivo de configuración: qué cambiaría, sin haber cambiado nada todavía.
 interface VistaPrevia extends Comparacion {
@@ -29,6 +33,9 @@ export default function ModuloConfiguracion() {
   const [tabActiva, setTabActiva] = useState<'empresa' | 'contable' | 'seguridad' | 'backup'>('empresa');
   const [guardadoReciente, setGuardadoReciente] = useState(false);
   const [vistaPrevia, setVistaPrevia] = useState<VistaPrevia | null>(null);
+  const [copia, setCopia] = useState<{ archivo: File; comparacion: ComparacionDeCopia } | null>(null);
+  const [descargandoCopia, setDescargandoCopia] = useState(false);
+  const [comparandoCopia, setComparandoCopia] = useState(false);
 
   useEffect(() => {
     setConfig(obtenerConfiguracion());
@@ -81,6 +88,38 @@ export default function ModuloConfiguracion() {
     downloadAnchor.click();
     downloadAnchor.remove();
     toast.success('Configuración descargada (los datos contables se copian con scripts\\backup.ps1)');
+  };
+
+  // Copia completa del sistema (todas las tablas): se descarga, o se elige una para compararla con el sistema actual.
+  const handleDescargarCopia = async () => {
+    setDescargandoCopia(true);
+    try {
+      guardarArchivo(await descargarCopia(), nombreDeArchivoDeCopia(new Date()));
+      toast.success('Copia completa descargada. Guardala en un lugar privado: incluye las contraseñas (con hash).');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo generar la copia de seguridad.');
+    } finally {
+      setDescargandoCopia(false);
+    }
+  };
+
+  const handleElegirCopia = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const archivo = input.files?.[0];
+    input.value = '';
+    if (!archivo) return;
+    if (archivo.size > 50 * 1024 * 1024) {
+      toast.error('La copia supera los 50 MB permitidos.');
+      return;
+    }
+    setComparandoCopia(true);
+    try {
+      setCopia({ archivo, comparacion: await compararCopia(archivo) });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo comparar la copia.');
+    } finally {
+      setComparandoCopia(false);
+    }
   };
 
   // Elegir un archivo NO lo carga: primero se lee, se valida y se muestra qué cambiaría contra lo que está en uso.
@@ -512,6 +551,25 @@ export default function ModuloConfiguracion() {
                 </label>
               </div>
 
+              <div className="flex items-start justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Política de seguridad
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Las reglas con las que se protege la información: qué hace el sistema solo y qué le toca a cada persona.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => abrirManual('politica')}
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm transition-all active:scale-95"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Ver política de seguridad</span>
+                </button>
+              </div>
+
             </div>
 
           </div>
@@ -536,8 +594,8 @@ export default function ModuloConfiguracion() {
                 <div>
                   <h4 className="font-bold text-slate-900 text-sm">Datos contables (lo más importante)</h4>
                   <p className="text-xs text-slate-700 mt-1">
-                    Las facturas, los asientos y el resto de los datos están en la base de datos, no en esta pantalla.
-                    Se copian desde la carpeta del proyecto, en una terminal de PowerShell:
+                    Las facturas, los asientos y el resto de los datos están en la base de datos. Se copian desde esta pantalla
+                    (<strong>Copia completa del sistema</strong>, más abajo) o, también, desde la carpeta del proyecto, en una terminal de PowerShell:
                   </p>
                 </div>
               </div>
@@ -550,6 +608,54 @@ export default function ModuloConfiguracion() {
               <p className="text-xs text-slate-600">
                 Cada copia se verifica y trae su huella SHA-256 y un manifiesto con la versión del sistema y la huella de los datos de cada tabla: con <strong>comparar-backup.ps1</strong> ves si es idéntica al sistema actual o qué cambió. Al restaurar se hace la misma comparación antes de reemplazar nada. Guardá también la carpeta <strong>backups</strong> en un pendrive o en la nube: si se rompe la PC, las copias que están en ella se pierden también.
               </p>
+            </div>
+
+            <h4 className="font-bold text-slate-900 text-sm pt-2">Copia completa del sistema</h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                <div>
+                  <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg w-fit mb-3">
+                    <Database className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm">Descargar copia completa</h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Descarga un archivo .zip con <strong>todos los datos</strong>: facturas, asientos, caja, banco, stock, socios, usuarios y auditoría. Incluye las
+                    contraseñas (con hash): guardalo en un lugar privado.
+                  </p>
+                </div>
+                <div className="mt-5">
+                  <button
+                    type="button"
+                    onClick={handleDescargarCopia}
+                    disabled={descargandoCopia}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-marca-600 rounded-lg hover:bg-marca-700 shadow-sm transition-all active:scale-95 disabled:opacity-60"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>{descargandoCopia ? 'Generando la copia…' : 'Descargar copia completa (.zip)'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+                <div>
+                  <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg w-fit mb-3">
+                    <Upload className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-sm">Comparar y cargar una copia</h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Seleccioná una copia descargada antes. Primero ves una vista previa que la compara con el sistema actual, tabla por tabla (facturas, asientos,
+                    socios…). Recién después podés decidir si restaurarla.
+                  </p>
+                </div>
+                <div className="mt-5">
+                  <label className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm transition-all ${comparandoCopia ? 'opacity-60' : 'cursor-pointer'}`}>
+                    <Upload className="h-4 w-4" />
+                    <span>{comparandoCopia ? 'Comparando…' : 'Seleccionar copia (.zip)'}</span>
+                    <input type="file" accept=".zip" onChange={handleElegirCopia} disabled={comparandoCopia} className="sr-only" />
+                  </label>
+                </div>
+              </div>
             </div>
 
             <h4 className="font-bold text-slate-900 text-sm pt-2">Configuración de la empresa</h4>
@@ -621,6 +727,8 @@ export default function ModuloConfiguracion() {
         )}
 
       </form>
+
+      {copia && <VistaPreviaDeCopia archivo={copia.archivo} comparacion={copia.comparacion} onCerrar={() => setCopia(null)} />}
 
       {vistaPrevia && (
         <VistaPreviaDeConfiguracion

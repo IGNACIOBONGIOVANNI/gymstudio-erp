@@ -2,12 +2,50 @@
 
 Los datos contables (facturas, asientos, caja, banco, stock, socios, usuarios y auditoría) viven en
 PostgreSQL, dentro del volumen de Docker `postgres_data`. Ese volumen **se borra** con
-`docker compose down -v`, y se pierde con la PC. Por eso hay scripts propios.
+`docker compose down -v`, y se pierde con la PC. Por eso hay dos formas de copiarlos:
 
-La pestaña *Configuración > Copia de seguridad* solo guarda los datos de la empresa (razón social,
-CUIT, alícuota): esa configuración está en el navegador, no en la base.
+| | Desde el sistema (`.zip`) | Con los scripts (`.dump`) |
+|---|---|---|
+| Dónde | *Configuración › Copia de seguridad › Copia completa del sistema* | PowerShell, `scripts\backup.ps1` |
+| Quién | Solo el Administrador | Quien tenga acceso a la PC |
+| Sirve para | Sacar una copia en el momento, compararla con el sistema y restaurarla sin abrir una terminal | La copia diaria programada y la restauración si el sistema no arranca |
+| Formato | `.zip` con un archivo `.csv` por tabla y un `manifiesto.json` | Volcado de PostgreSQL (`pg_dump`) con `.sha256` y `.manifiesto.json` |
 
-## Hacer una copia
+Las dos incluyen **todas** las tablas. La otra parte, la *Configuración de la empresa* (razón social, CUIT, alícuota), está en el
+navegador y no en la base: se respalda con su propio archivo en la misma pestaña (con vista previa antes de cargarlo).
+
+## Desde el sistema: copia completa
+
+En *Configuración › Copia de seguridad › Copia completa del sistema* (solo Administrador):
+
+- **Descargar copia completa (.zip):** genera el archivo en el momento, con una foto consistente de la base (una sola transacción,
+  aunque alguien esté facturando). Trae `manifiesto.json` y `datos/<esquema>.<tabla>.csv` por cada una de las tablas (facturas,
+  asientos, caja, banco, stock, socios, usuarios y auditoría).
+- **Seleccionar copia (.zip):** verifica la copia y muestra una vista previa que la compara con el sistema actual, **tabla por
+  tabla** y agrupada por módulo: filas en la copia, filas ahora y si cambia, con la opción de ver solo lo que cambia. No modifica nada.
+  La auditoría se muestra aparte («se actualiza sola»): crece con cada acción, hasta con descargar la copia.
+- **Restaurar:** desde esa vista previa. Pide escribir `RESTAURAR`, descarga antes una copia de lo que hay
+  (`gymstudio_antes-de-restaurar_*.zip`) y reemplaza **todos** los datos.
+
+Qué hace el servidor, y por qué se puede confiar en el archivo:
+
+- El manifiesto trae la **versión del sistema**, la **migración** de la base y, por tabla, la cantidad de filas y la huella MD5 de su
+  contenido; cada archivo del `.zip` trae además su SHA-256. Un archivo dañado, alterado, con tablas de más o de menos o que no es una
+  copia se rechaza antes de tocar la base.
+- Solo se aceptan nombres de tabla que existen en la base: un manifiesto armado a mano no puede apuntar a otra tabla ni inyectar SQL.
+- Límites: el `.zip` de hasta 50 MB y hasta 300 MB ya descomprimido (el tamaño que declara el zip puede mentir, se cuentan los bytes
+  reales) y hasta 100 archivos.
+- Desde la pantalla solo se restaura una copia **de la misma versión de la base** (misma migración y mismas tablas) que el sistema
+  actual. Una de otra versión sí se compara en la vista previa, pero no se puede restaurar; para recuperar datos de una versión
+  distinta se usa una copia `.dump` con `restaurar.ps1`, que aplica las migraciones que faltan al arrancar.
+- Restaurar es **todo o nada**: vacía las tablas, carga la copia, reinicia las secuencias y verifica la huella de cada tabla dentro
+  de una sola transacción. Si algo falla en cualquier punto (un archivo roto a la mitad, una huella que no coincide), se deshace todo
+  y el sistema queda como estaba. Al terminar corre el *Control de integridad*.
+- Descargar y restaurar quedan en la **Auditoría** (tabla *Copias de seguridad*), con el usuario y el equipo.
+
+La copia incluye los datos de los socios y los hashes de las contraseñas, y no está cifrada: guardala en un lugar privado.
+
+## Con los scripts: hacer una copia
 
 Desde la carpeta del proyecto, con el sistema levantado (`docker compose up`), en PowerShell:
 
@@ -81,7 +119,13 @@ de los usuarios: guardalas en un lugar privado.
 
 ## Cómo se probó
 
-Contra una copia local con el ejercicio de la cátedra (30 facturas):
+**Copia completa desde el sistema:** 20 pruebas automáticas contra una PostgreSQL real (`CopiasDeSeguridadTests`): contenido y huellas
+del `.zip`; copia idéntica, con datos cambiados y de otra versión; ida y vuelta (se descarga, se cambian y borran datos, se restaura y
+quedan exactamente los de antes, con secuencias, auditoría e integridad); confirmación incorrecta; copia dañada; nombres de tabla
+inyectados; tabla desconocida; falla a mitad de la carga (se deshace todo); archivo que no es una copia; bomba zip (310 MB de ceros); y
+los permisos (401 sin sesión, 403 para Contador y Recepción).
+
+**Con los scripts**, contra una copia local con el ejercicio de la cátedra (30 facturas):
 
 - se hizo una copia, se cargó una factura, un cliente y un usuario, y se restauró;
 - las 21 tablas quedaron con exactamente los mismos registros que antes de alterarlos;
