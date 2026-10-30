@@ -101,4 +101,81 @@
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* Al imprimir no hay animaciones: lo impreso nunca puede salir a medio aparecer. */
+  @media print {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Los botones responden al clic con un leve hundimiento. */
+  button {
+    transition: transform 90ms ease-out;
+  }
+  button:not(:disabled):active {
+    transform: scale(0.97);
+  }
+}
+
+/*
+ * Animaciones. Son cortas (150 a 300 ms) y solo mueven opacidad, un desplazamiento de unos píxeles o un zoom leve:
+ * nunca cambian el contenido, el tamaño ni el orden de nada, y los importes se ven siempre con su valor real.
+ * Se apagan con "reducir movimiento" del sistema y al imprimir (ver arriba). Para quitarlas todas basta con borrar
+ * este bloque.
+ */
+@keyframes aparece {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes fundido {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialogo-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+@layer components {
+  /* Cada pantalla entra con un fundido al elegirla en el menú. */
+  .pantalla-entra {
+    animation: aparece 220ms ease-out backwards;
+  }
+
+  /* Las clases "animate-in" que ya usaban algunos paneles (sin efecto hasta ahora). */
+  .animate-in {
+    animation: fundido 200ms ease-out backwards;
+  }
+
+  /* Diálogos: el fondo aparece con un fundido y el panel con un fundido y un leve ascenso. */
+  .fixed.inset-0.z-50.items-center.justify-center {
+    animation: fundido 150ms ease-out backwards;
+  }
+  .fixed.inset-0.z-50.items-center.justify-center > :first-child {
+    animation: dialogo-entra 200ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+
+  /* Los hijos aparecen uno tras otro (tarjetas del Resumen). */
+  .escalonado > * {
+    animation: aparece 300ms ease-out backwards;
+  }
+  .escalonado > :nth-child(2) { animation-delay: 40ms; }
+  .escalonado > :nth-child(3) { animation-delay: 80ms; }
+  .escalonado > :nth-child(4) { animation-delay: 120ms; }
+  .escalonado > :nth-child(5) { animation-delay: 160ms; }
+  .escalonado > :nth-child(6) { animation-delay: 200ms; }
+  .escalonado > :nth-child(7) { animation-delay: 240ms; }
+  .escalonado > :nth-child(8) { animation-delay: 280ms; }
+  .escalonado > :nth-child(n + 9) { animation-delay: 320ms; }
 }

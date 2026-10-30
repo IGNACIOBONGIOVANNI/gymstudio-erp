@@ -367,13 +367,16 @@ function AppContent() {
       <main className="lg:pl-60">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <h1 className="mb-6 text-2xl font-semibold tracking-tight text-slate-900">{vista.titulo}</h1>
-          <LimiteDeErrores key={vista.id}>
-            {vista.tarjeta ? (
-              <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">{contenido}</div>
-            ) : (
-              contenido
-            )}
-          </LimiteDeErrores>
+          {/* Cada pantalla entra con un fundido (index.css). La clave hace que se repita al cambiar de pantalla. */}
+          <div key={vista.id} className="pantalla-entra">
+            <LimiteDeErrores key={vista.id}>
+              {vista.tarjeta ? (
+                <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">{contenido}</div>
+              ) : (
+                contenido
+              )}
+            </LimiteDeErrores>
+          </div>
         </div>
       </main>
 

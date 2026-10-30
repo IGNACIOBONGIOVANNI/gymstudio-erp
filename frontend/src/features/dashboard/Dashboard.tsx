@@ -169,7 +169,18 @@ export function Dashboard() {
       </div>
 
       {cargando && !datos ? (
-        <div className={`${tarjeta} text-center text-slate-500`}>Cargando...</div>
+        <div role="status" aria-label="Cargando el resumen" className="space-y-4">
+          <span className="sr-only">Cargando...</span>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-hidden="true">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div key={i} className={`${tarjeta} animate-pulse`}>
+                <div className="h-3 w-2/3 rounded bg-slate-200" />
+                <div className="mt-4 h-6 w-1/2 rounded bg-slate-200" />
+                <div className="mt-3 h-3 w-3/4 rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : datos && g ? (
         <>
           {(datos.novedades?.length ?? 0) > 0 && (
@@ -190,7 +201,7 @@ export function Dashboard() {
 
           {f && (
             <>
-              <section aria-label="Indicadores del mes" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <section aria-label="Indicadores del mes" className="escalonado grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <Indicador etiqueta={`Ventas de ${nombreDelMes(datos.mes)}`} valor={formatearPesos(f.ventas.neto)} nota={`${f.ventas.cantidad} comprobante(s), neto sin IVA`} />
                 <Indicador etiqueta="Compras del mes" valor={formatearPesos(f.compras.neto)} nota={`${f.compras.cantidad} comprobante(s), neto sin IVA`} />
                 <Indicador etiqueta="Resultado del mes" valor={formatearPesos(f.resultado)} nota="Ventas netas menos compras netas" />
@@ -238,7 +249,7 @@ export function Dashboard() {
             </>
           )}
 
-          <section aria-label="Gimnasio" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <section aria-label="Gimnasio" className="escalonado grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <Indicador etiqueta="Socios con cuota al día" valor={String(g.sociosConCuotaAlDia)} />
             <Indicador etiqueta={`Cuotas que vencen en ${g.diasPorVencer} días`} valor={String(g.cuotasPorVencer)} nota="Avisales por WhatsApp desde Recepción" alerta={g.cuotasPorVencer > 0} />
             <Indicador etiqueta="Socios con cuota vencida" valor={String(g.sociosVencidos)} nota="Pagaron antes y ya les venció" />
