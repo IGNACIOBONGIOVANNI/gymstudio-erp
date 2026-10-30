@@ -102,6 +102,7 @@ Encontrado y corregido:
 5. **El login permitía descubrir qué emails existen midiendo el tiempo**: con un email inexistente no se calculaba el hash
    y la respuesta era mucho más rápida. Ahora se calcula igual. Además, el registro de cuentas con fallos no puede crecer sin
    límite si alguien prueba miles de emails distintos.
+6. **Cargar un archivo de configuración aplicaba cualquier dato del archivo**, sin mostrarlo ni validarlo (`{ ...config, ...archivo }`): una clave inventada o un valor del tipo equivocado (una alícuota de «abc», un tiempo de inactividad negativo) quedaba guardado en el navegador. Ahora se lee con una lista de datos conocidos y su forma (tipo, largo, rango, formato), se muestra una **vista previa** que compara la configuración actual con la del archivo y solo se carga lo válido, al confirmar. Las claves peligrosas como `__proto__` se ignoran.
 
 Agregado:
 

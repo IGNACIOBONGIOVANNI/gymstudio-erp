@@ -362,7 +362,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         <li><strong>Datos Fiscales y Empresa:</strong> razón social, nombre de fantasía, CUIT, condición frente al IVA, punto de venta, domicilio, teléfono y email. Estos datos salen en los PDF y en el menú.</li>
         <li><strong>Parámetros Contables y Facturación:</strong> valores por defecto como la alícuota de IVA.</li>
         <li><strong>Seguridad y Sistema:</strong> el tiempo de inactividad antes de cerrar la sesión y la exigencia de contraseñas seguras.</li>
-        <li><strong>Copia de Seguridad:</strong> cómo respaldar los datos (ver más abajo).</li>
+        <li><strong>Copia de Seguridad:</strong> cómo respaldar los datos (ver más abajo) y cómo descargar y cargar la configuración de la empresa. Al cargar un archivo, antes de aplicar nada ves una <strong>vista previa</strong> que compara la configuración actual con la del archivo, dato por dato, y elegís si cargar los cambios o cancelar.</li>
       </Lista>
       <p>Apretá <B>Guardar Configuración</B> para conservar los cambios; <B>Valores por Defecto</B> vuelve a los iniciales.</p>
       <Nota tipo="ojo">

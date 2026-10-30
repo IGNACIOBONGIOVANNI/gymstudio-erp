@@ -149,6 +149,9 @@ encontraron y corrigieron están en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
   camino. El texto libre se acepta tal cual, sin caracteres de control, porque se guarda con parámetros y se muestra escapado.
 - **Archivos:** la importación de Excel acepta solo `.xlsx` de hasta 5 MB, corta las bombas zip descomprimiendo hasta un tope,
   limita las filas y omite (contándolas) las que no tienen forma de factura.
+  En *Configuración > Copia de seguridad*, **Cargar configuración** no aplica el archivo directo: muestra primero una vista previa
+  que compara la configuración actual con la del archivo (qué datos cambian, de qué valor a cuál), y solo carga, al confirmar,
+  los datos conocidos y con forma válida; lo que no es de la configuración se ignora y lo inválido se informa y no se carga.
 - **Auditoría del equipo:** cada cambio registra desde qué **IP**, **sistema operativo** y **navegador** se hizo, y cada inicio
   de sesión (correcto, fallido o sobre una cuenta bloqueada) también queda registrado, sin guardar nunca la contraseña. La IP solo
   se toma de `X-Forwarded-For` si el pedido llega de una red de confianza (`Proxy:RedesDeConfianza`, por defecto las redes

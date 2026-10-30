@@ -10,11 +10,25 @@ import {
   restablecerConfiguracionPorDefecto 
 } from './configuracionStorage';
 import toast from 'react-hot-toast';
+import { compararConfiguracion, leerArchivoDeConfiguracion, type Comparacion, type ValorInvalido } from './compararConfiguracion';
+import { VistaPreviaDeConfiguracion } from './VistaPreviaDeConfiguracion';
+
+// Lo que se muestra antes de cargar un archivo de configuración: qué cambiaría, sin haber cambiado nada todavía.
+interface VistaPrevia extends Comparacion {
+  nombreArchivo: string;
+  guardadoEl?: string;
+  ignorados: string[];
+  invalidos: ValorInvalido[];
+  nueva: Partial<ConfiguracionERP>;
+  actual: ConfiguracionERP;
+  hayCambiosSinGuardar: boolean;
+}
 
 export default function ModuloConfiguracion() {
   const [config, setConfig] = useState<ConfiguracionERP>(obtenerConfiguracion());
   const [tabActiva, setTabActiva] = useState<'empresa' | 'contable' | 'seguridad' | 'backup'>('empresa');
   const [guardadoReciente, setGuardadoReciente] = useState(false);
+  const [vistaPrevia, setVistaPrevia] = useState<VistaPrevia | null>(null);
 
   useEffect(() => {
     setConfig(obtenerConfiguracion());
@@ -69,27 +83,50 @@ export default function ModuloConfiguracion() {
     toast.success('Configuración descargada (los datos contables se copian con scripts\\backup.ps1)');
   };
 
+  // Elegir un archivo NO lo carga: primero se lee, se valida y se muestra qué cambiaría contra lo que está en uso.
   const handleImportarJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const input = event.target;
+    const file = input.files?.[0];
+    input.value = ''; // para poder elegir el mismo archivo otra vez
     if (!file) return;
+    if (file.size > 100_000) {
+      toast.error('El archivo es demasiado grande para ser una configuración.');
+      return;
+    }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const contenido = e.target?.result as string;
-        const parsed = JSON.parse(contenido);
-        if (parsed.razonSocial && parsed.cuit) {
-          const actualizada = guardarConfiguracion({ ...config, ...parsed });
-          setConfig(actualizada);
-          toast.success('Configuración importada exitosamente');
-        } else {
-          toast.error('El archivo no contiene un formato de configuración válido');
-        }
-      } catch (err) {
-        toast.error('Error al leer el archivo JSON');
+    reader.onerror = () => toast.error('No se pudo leer el archivo.');
+    reader.onload = () => {
+      const lectura = leerArchivoDeConfiguracion(String(reader.result ?? ''));
+      if (!lectura.ok) {
+        toast.error(lectura.error);
+        return;
       }
+      const enUso = obtenerConfiguracion();
+      setVistaPrevia({
+        ...compararConfiguracion(enUso, lectura.config),
+        nombreArchivo: file.name,
+        guardadoEl: lectura.guardadoEl,
+        ignorados: lectura.ignorados,
+        invalidos: lectura.invalidos,
+        nueva: lectura.config,
+        actual: enUso,
+        hayCambiosSinGuardar: compararConfiguracion(enUso, config).cambios.length > 0,
+      });
     };
     reader.readAsText(file);
+  };
+
+  const handleCargarArchivo = () => {
+    if (!vistaPrevia) return;
+    try {
+      const actualizada = guardarConfiguracion({ ...vistaPrevia.actual, ...vistaPrevia.nueva });
+      setConfig(actualizada);
+      toast.success(`Configuración cargada: ${vistaPrevia.cambios.length} ${vistaPrevia.cambios.length === 1 ? 'dato actualizado' : 'datos actualizados'}`);
+    } catch {
+      toast.error('Error al guardar la configuración');
+    }
+    setVistaPrevia(null);
   };
 
   return (
@@ -507,10 +544,11 @@ export default function ModuloConfiguracion() {
               <pre className="text-xs bg-white border border-amber-200 rounded-lg p-3 overflow-x-auto text-slate-800">{[
                 '.\\scripts\\backup.ps1                  # hace la copia en la carpeta "backups"',
                 '.\\scripts\\programar-backup.ps1        # la hace sola todos los días a las 22:00',
+                '.\\scripts\\comparar-backup.ps1 -Archivo .\\backups\\gymstudio_AAAAMMDD_HHMMSS.dump   # ¿coincide con el sistema actual?',
                 '.\\scripts\\restaurar.ps1 -Archivo .\\backups\\gymstudio_AAAAMMDD_HHMMSS.dump -Confirmar',
               ].join('\n')}</pre>
               <p className="text-xs text-slate-600">
-                Cada copia se verifica y trae su huella SHA-256. Guardá también la carpeta <strong>backups</strong> en un pendrive o en la nube: si se rompe la PC, las copias que están en ella se pierden también.
+                Cada copia se verifica y trae su huella SHA-256 y un manifiesto con la versión del sistema y la huella de los datos de cada tabla: con <strong>comparar-backup.ps1</strong> ves si es idéntica al sistema actual o qué cambió. Al restaurar se hace la misma comparación antes de reemplazar nada. Guardá también la carpeta <strong>backups</strong> en un pendrive o en la nube: si se rompe la PC, las copias que están en ella se pierden también.
               </p>
             </div>
 
@@ -553,7 +591,7 @@ export default function ModuloConfiguracion() {
                     Cargar configuración
                   </h4>
                   <p className="text-xs text-slate-500 mt-1">
-                    Seleccioná un archivo descargado antes para volver a esos datos de la empresa. No modifica facturas ni asientos.
+                    Seleccioná un archivo descargado antes para volver a esos datos de la empresa. Antes de cargarlo vas a ver una vista previa que compara la configuración actual con la del archivo. No modifica facturas ni asientos.
                   </p>
                 </div>
                 <div className="mt-5">
@@ -583,6 +621,22 @@ export default function ModuloConfiguracion() {
         )}
 
       </form>
+
+      {vistaPrevia && (
+        <VistaPreviaDeConfiguracion
+          nombreArchivo={vistaPrevia.nombreArchivo}
+          guardadoEl={vistaPrevia.guardadoEl}
+          actualizadaEl={vistaPrevia.actual.ultimaActualizacion}
+          cambios={vistaPrevia.cambios}
+          iguales={vistaPrevia.iguales}
+          sinDato={vistaPrevia.sinDato}
+          ignorados={vistaPrevia.ignorados}
+          invalidos={vistaPrevia.invalidos}
+          hayCambiosSinGuardar={vistaPrevia.hayCambiosSinGuardar}
+          onCancelar={() => setVistaPrevia(null)}
+          onCargar={handleCargarArchivo}
+        />
+      )}
 
     </div>
   );
