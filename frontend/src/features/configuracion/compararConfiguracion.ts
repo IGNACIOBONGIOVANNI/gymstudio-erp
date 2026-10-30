@@ -51,6 +51,19 @@ const TAMANO_MAXIMO = 100_000
 export interface ValorInvalido {
   campo: string
   motivo: string
+  /** Lo que traía el archivo, listo para mostrar: sin caracteres de control y cortado si es largo. */
+  valor?: string
+}
+
+/** Un valor cualquiera del archivo, como texto seguro para mostrarlo en la vista previa. */
+function describirValorCrudo(valor: unknown): string {
+  if (typeof valor === 'string') {
+    const limpio = [...valor].map((c) => (c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127 ? ' ' : c)).join('').trim()
+    return limpio.length === 0 ? '(vacío)' : limpio.length > 60 ? `${limpio.slice(0, 60)}…` : limpio
+  }
+  if (typeof valor === 'number' || typeof valor === 'boolean') return String(valor)
+  if (valor === null) return 'null'
+  return Array.isArray(valor) ? '(una lista)' : '(un objeto)'
 }
 
 export type LecturaDeArchivo =
@@ -118,7 +131,7 @@ export function leerArchivoDeConfiguracion(texto: string): LecturaDeArchivo {
     }
     const resultado = validar(clave as CampoConfiguracion, origen[clave])
     if (resultado.ok) config[clave] = resultado.valor
-    else invalidos.push({ campo: clave, motivo: resultado.motivo })
+    else invalidos.push({ campo: clave, motivo: resultado.motivo, valor: describirValorCrudo(origen[clave]) })
   }
 
   if (!tieneClave(config, 'razonSocial') || !tieneClave(config, 'cuit')) {
@@ -145,7 +158,26 @@ export interface Cambio {
   nuevo: string
 }
 
+/** Cómo queda cada dato al cargar el archivo: cambia, ya vale lo mismo, el archivo no lo trae o lo trae inválido. */
+export type EstadoDeFila = 'cambia' | 'igual' | 'sin-dato' | 'invalido'
+
+export interface Fila {
+  campo: CampoConfiguracion
+  etiqueta: string
+  seccion: string
+  /** Lo que vale ahora. */
+  actual: string
+  /** Lo que trae el archivo (null si no lo trae). */
+  archivo: string | null
+  estado: EstadoDeFila
+  /** Por qué no se carga, cuando el estado es "invalido". */
+  motivo?: string
+}
+
 export interface Comparacion {
+  /** Todos los datos de la configuración, en el orden de las pantallas, con su estado. */
+  filas: Fila[]
+  /** Los que cambiarían si se cargara el archivo. */
   cambios: Cambio[]
   /** Datos del archivo que ya valen lo mismo que ahora. */
   iguales: number
@@ -153,23 +185,36 @@ export interface Comparacion {
   sinDato: number
 }
 
-/** Qué cambiaría si se cargara `nueva` sobre `actual`, en el orden de las pantallas de configuración. */
-export function compararConfiguracion(actual: ConfiguracionERP, nueva: Partial<ConfiguracionERP>): Comparacion {
+/**
+ * Compara, dato por dato, la configuración actual con la del archivo. Devuelve una fila por cada dato (cambie o no),
+ * para poder mostrar la comparación completa, y aparte los que cambian.
+ */
+export function compararConfiguracion(actual: ConfiguracionERP, nueva: Partial<ConfiguracionERP>, invalidos: ValorInvalido[] = []): Comparacion {
+  const filas: Fila[] = []
   const cambios: Cambio[] = []
   let iguales = 0
   let sinDato = 0
   for (const campo of CLAVES) {
-    if (!tieneClave(nueva, campo)) {
-      sinDato++
+    const { etiqueta, seccion } = CAMPOS[campo]
+    const ahora = mostrarValor(actual[campo])
+    if (tieneClave(nueva, campo)) {
+      const despues = mostrarValor(nueva[campo])
+      if (actual[campo] === nueva[campo]) {
+        iguales++
+        filas.push({ campo, etiqueta, seccion, actual: ahora, archivo: despues, estado: 'igual' })
+      } else {
+        cambios.push({ campo, etiqueta, seccion, actual: ahora, nuevo: despues })
+        filas.push({ campo, etiqueta, seccion, actual: ahora, archivo: despues, estado: 'cambia' })
+      }
       continue
     }
-    const antes = actual[campo]
-    const despues = nueva[campo]
-    if (antes === despues) {
-      iguales++
+    const invalido = invalidos.find((v) => v.campo === campo)
+    if (invalido) {
+      filas.push({ campo, etiqueta, seccion, actual: ahora, archivo: invalido.valor ?? '(sin valor)', estado: 'invalido', motivo: invalido.motivo })
       continue
     }
-    cambios.push({ campo, etiqueta: CAMPOS[campo].etiqueta, seccion: CAMPOS[campo].seccion, actual: mostrarValor(antes), nuevo: mostrarValor(despues) })
+    sinDato++
+    filas.push({ campo, etiqueta, seccion, actual: ahora, archivo: null, estado: 'sin-dato' })
   }
-  return { cambios, iguales, sinDato }
+  return { filas, cambios, iguales, sinDato }
 }

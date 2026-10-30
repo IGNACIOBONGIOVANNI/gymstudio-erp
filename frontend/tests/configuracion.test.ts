@@ -103,3 +103,47 @@ test('la configuración inicial del sistema cumple todas las reglas de un archiv
   const r = leer(JSON.stringify(CONFIGURACION_INICIAL));
   assert.deepEqual(r.invalidos, []);
 });
+
+test('la comparación completa trae una fila por cada dato, también cuando el archivo es igual', () => {
+  const r = leer(archivo());
+  const { filas } = compararConfiguracion(actual, r.config, r.invalidos);
+  assert.equal(filas.length, Object.keys(CAMPOS).length);
+  assert.ok(filas.every((f) => f.estado === 'igual' && f.archivo !== null && f.etiqueta.length > 0 && f.actual === f.archivo));
+  assert.equal(filas[0].campo, 'razonSocial');            // el orden de las pantallas
+  assert.equal(filas[0].seccion, 'Datos fiscales y empresa');
+});
+
+test('cada fila dice si el dato cambia, queda igual, el archivo no lo trae o lo trae inválido', () => {
+  const sinPuntoDeVenta: Record<string, unknown> = { ...actual, razonSocial: 'OTRO GYM S.A.', email: 'sin-arroba' };
+  delete sinPuntoDeVenta.puntoVenta;
+  const r = leer(JSON.stringify(sinPuntoDeVenta));
+  const { filas, cambios, iguales, sinDato } = compararConfiguracion(actual, r.config, r.invalidos);
+  const estado = (campo: string) => filas.find((f) => f.campo === campo)!;
+
+  assert.equal(estado('razonSocial').estado, 'cambia');
+  assert.equal(estado('razonSocial').actual, 'GYM STUDIO S.R.L.');
+  assert.equal(estado('razonSocial').archivo, 'OTRO GYM S.A.');
+  assert.equal(estado('cuit').estado, 'igual');
+  assert.equal(estado('puntoVenta').estado, 'sin-dato');
+  assert.equal(estado('puntoVenta').archivo, null);
+  assert.equal(estado('email').estado, 'invalido');
+  assert.equal(estado('email').archivo, 'sin-arroba');
+  assert.ok((estado('email').motivo ?? '').length > 0);
+
+  // Los contadores coinciden con las filas, y un dato inválido no cuenta como "el archivo no lo trae".
+  assert.equal(cambios.length, 1);
+  assert.equal(sinDato, 1);
+  assert.equal(iguales + cambios.length + sinDato + 1, filas.length);
+});
+
+test('un valor inválido se muestra sin caracteres de control y cortado si es largo', () => {
+  const r = leer(archivo({ direccion: 'Calle\u0000 1\r\nOtra', nombreFantasia: 'x'.repeat(151), telefono: { malo: true }, puntoVenta: ['1'] }));
+  const { filas } = compararConfiguracion(actual, r.config, r.invalidos);
+  const valor = (campo: string) => filas.find((f) => f.campo === campo)!.archivo!;
+  assert.equal(valor('direccion'), 'Calle  1  Otra');
+  assert.equal(valor('nombreFantasia').length, 61);       // 60 y los puntos suspensivos
+  assert.ok(valor('nombreFantasia').endsWith('…'));
+  assert.equal(valor('telefono'), '(un objeto)');
+  assert.equal(valor('puntoVenta'), '(una lista)');
+  assert.ok(filas.filter((f) => f.estado === 'invalido').length === 4);
+});

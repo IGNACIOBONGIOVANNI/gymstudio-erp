@@ -104,7 +104,7 @@ export default function ModuloConfiguracion() {
       }
       const enUso = obtenerConfiguracion();
       setVistaPrevia({
-        ...compararConfiguracion(enUso, lectura.config),
+        ...compararConfiguracion(enUso, lectura.config, lectura.invalidos),
         nombreArchivo: file.name,
         guardadoEl: lectura.guardadoEl,
         ignorados: lectura.ignorados,
@@ -627,9 +627,7 @@ export default function ModuloConfiguracion() {
           nombreArchivo={vistaPrevia.nombreArchivo}
           guardadoEl={vistaPrevia.guardadoEl}
           actualizadaEl={vistaPrevia.actual.ultimaActualizacion}
-          cambios={vistaPrevia.cambios}
-          iguales={vistaPrevia.iguales}
-          sinDato={vistaPrevia.sinDato}
+          filas={vistaPrevia.filas}
           ignorados={vistaPrevia.ignorados}
           invalidos={vistaPrevia.invalidos}
           hayCambiosSinGuardar={vistaPrevia.hayCambiosSinGuardar}
