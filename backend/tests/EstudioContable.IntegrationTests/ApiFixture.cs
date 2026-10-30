@@ -23,8 +23,8 @@ public sealed class ApiFixture : IAsyncLifetime
     // Clave con la que el servidor firma las copias de seguridad en las pruebas (para poder armar copias firmadas a mano).
     public const string ClaveDeFirmaDePrueba = "clave-de-prueba-para-firmar-copias";
 
-    // Contraseña de los usuarios que crean los tests (cumple la política: 8+ con letras y números).
-    public const string ClaveNueva = "clave-de-prueba-123";
+    // Contraseña de los usuarios que crean los tests (cumple la política: ver ReglasDeClave).
+    public const string ClaveNueva = "Clave-De-Prueba-17!";
 
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:15-alpine")

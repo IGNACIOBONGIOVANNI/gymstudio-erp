@@ -64,7 +64,8 @@ solo) y no sacar del sistema datos personales de los socios para otros fines.
 |---|---|
 | Una cuenta por persona, con email propio. Las cuentas que ya no se usan se dan de baja (se desactivan, no se comparten). | Persona |
 | La baja, el cambio de rol y la desactivación rigen **al instante**, aunque la persona tenga la sesión abierta. | Sistema |
-| Contraseña de al menos 8 caracteres, con letras y números. Se exige en el servidor, no solo en la pantalla. | Sistema |
+| Contraseña de al menos 8 caracteres, con **una mayúscula, un número, un carácter especial** y **sin números consecutivos** (12, 45, 98, ascendentes o descendentes). Se exige en el servidor, no solo en la pantalla, y el formulario muestra en vivo qué falta. | Sistema |
+| No usar como contraseña datos personales, el nombre del sistema ni la misma clave que en otros servicios. El sistema no puede comprobarlo. | Persona |
 | Las contraseñas se guardan con un hash (PBKDF2 de ASP.NET Identity), nunca en texto. | Sistema |
 | La contraseña inicial que entrega el Administrador se cambia en el primer uso. La cuenta de ejemplo `jefe@gym.com` y su clave de desarrollo se reemplazan **antes** de cargar datos reales. | Persona |
 | Tras 5 contraseñas incorrectas seguidas, la cuenta se bloquea 15 minutos. El ingreso admite 10 intentos por minuto desde una misma PC. | Sistema |

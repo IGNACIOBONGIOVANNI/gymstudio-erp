@@ -537,14 +537,17 @@ export default function ModuloConfiguracion() {
                     Exigir Contraseñas Seguras
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Al crear o cambiar la clave de un usuario, exige al menos 8 caracteres con letras y números.
+                    Siempre activa: al crear o cambiar la clave de un usuario, el servidor exige al menos 8 caracteres, una mayúscula, un número,
+                    un carácter especial y que no haya números consecutivos (como 12 o 98).
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                <label className="relative inline-flex items-center cursor-not-allowed shrink-0 mt-1 opacity-70" title="No se puede desactivar: la exige el servidor">
                   <input
                     type="checkbox"
-                    checked={config.exigirPasswordSegura}
-                    onChange={(e) => handleChange('exigirPasswordSegura', e.target.checked)}
+                    checked
+                    disabled
+                    readOnly
+                    aria-label="Contraseñas seguras: siempre activa"
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>

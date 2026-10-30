@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.API.Auth;
 using EstudioContable.Application.Common.Exceptions;
+using EstudioContable.Domain;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,6 @@ namespace EstudioContable.API.Controllers
     [Authorize(Roles = Roles.Administrador)]
     public class UsuariosController : ControllerBase
     {
-        private const int LargoMinimoPassword = 8;
 
         private readonly AppDbContext _context;
         private readonly IPasswordHasher<Usuario> _hasher;
@@ -147,10 +147,7 @@ namespace EstudioContable.API.Controllers
                 return;
             }
 
-            if (password.Length < LargoMinimoPassword)
-                throw new ArgumentException($"La contraseña debe tener al menos {LargoMinimoPassword} caracteres.");
-            if (!password.Any(char.IsLetter) || !password.Any(char.IsDigit))
-                throw new ArgumentException("La contraseña debe combinar letras y números.");
+            ReglasDeClave.Validar(password);
         }
 
         private static RolUsuario ParsearRol(string rol)

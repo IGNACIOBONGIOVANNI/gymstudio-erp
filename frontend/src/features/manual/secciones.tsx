@@ -355,14 +355,15 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         ver su último acceso. Una baja o un cambio de rol rigen al instante, aunque la persona tenga la sesión abierta.
       </p>
       <Nota>
-        Las contraseñas nuevas necesitan al menos 8 caracteres, con letras y números. Cada persona debería cambiar la que le
-        dieron al principio.
+        Las contraseñas nuevas necesitan al menos 8 caracteres, una mayúscula, un número, un carácter especial (como ! ? # $ % &amp; * - _ .) y
+        que no haya números consecutivos (como 12, 45 o 98). Mientras escribís, el formulario marca en verde lo que ya cumple. Cada
+        persona debería cambiar la que le dieron al principio.
       </Nota>
       <Sub>Configuración</Sub>
       <Lista>
         <li><strong>Datos Fiscales y Empresa:</strong> razón social, nombre de fantasía, CUIT, condición frente al IVA, punto de venta, domicilio, teléfono y email. Estos datos salen en los PDF y en el menú.</li>
         <li><strong>Parámetros Contables y Facturación:</strong> valores por defecto como la alícuota de IVA.</li>
-        <li><strong>Seguridad y Sistema:</strong> el tiempo de inactividad antes de cerrar la sesión y la exigencia de contraseñas seguras.</li>
+        <li><strong>Seguridad y Sistema:</strong> el tiempo de inactividad antes de cerrar la sesión y la política de contraseñas (que siempre está activa).</li>
         <li><strong>Copia de Seguridad:</strong> la <strong>copia completa del sistema</strong> (facturas, asientos y todos los datos: se descarga, se compara y se restaura desde acá; ver <B>Copias de seguridad</B>) y la descarga y carga de la configuración de la empresa. Al cargar cualquier archivo, antes de aplicar nada ves una <strong>vista previa</strong> que lo compara con lo que está en uso, y elegís si seguir o cancelar.</li>
         <li><strong>Política de seguridad:</strong> el botón <B>Ver política de seguridad</B>, en la pestaña Seguridad y Sistema, abre las reglas del sistema en esta guía.</li>
       </Lista>
@@ -500,7 +501,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Tabla
         columnas={['Tema', 'Regla']}
         filas={[
-          ['Contraseñas', 'Mínimo 8 caracteres con letras y números. Se guardan con hash, nunca en texto.'],
+          ['Contraseñas', 'Mínimo 8 caracteres, con una mayúscula, un número, un carácter especial y sin números consecutivos (12, 98). Se guardan con hash, nunca en texto.'],
           ['Bloqueo', 'Cinco claves incorrectas seguidas bloquean la cuenta 15 minutos. El mensaje no revela si el email existe.'],
           ['Sesión', 'Vence a las 8 horas y se cierra sola tras un rato sin actividad (60 minutos por defecto).'],
           ['Permisos', 'Cada rol hace solo lo suyo, y lo controla el servidor, no solo la pantalla. Una baja o un cambio de rol rigen al instante.'],

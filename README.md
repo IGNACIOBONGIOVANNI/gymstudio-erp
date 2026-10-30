@@ -142,7 +142,9 @@ encontraron y corrigieron están en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
 
 - **Sesión:** JWT firmado que vence a las 8 horas (`Jwt:ExpiracionMinutos`). En cada pedido se verifica en la base que el
   usuario siga activo y con el mismo rol: una baja o un cambio de rol rigen al instante.
-- **Contraseñas:** guardadas con hash PBKDF2; las nuevas exigen mínimo 8 caracteres con letras y números (lo valida el servidor).
+- **Contraseñas:** guardadas con hash PBKDF2; las nuevas exigen mínimo 8 caracteres, una mayúscula, un número, un carácter especial y que no haya números consecutivos como 12 o 98
+  (lo valida el servidor, y el formulario de usuarios muestra en vivo qué falta). Los usuarios de ejemplo del README (clave `123456`) no la cumplen: son
+  solo para la demostración y hay que cambiarlos antes de usar datos reales.
 - **Fuerza bruta:** límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto`, 10 por defecto) y cuenta bloqueada
   15 minutos tras 5 claves incorrectas. El mensaje es el mismo para un email inexistente y para una clave errónea, y también
   tarda lo mismo (no se puede descubrir qué emails existen midiendo el tiempo). Los emails y claves absurdos (muy largos o con

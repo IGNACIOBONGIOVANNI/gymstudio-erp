@@ -3,7 +3,7 @@ import { X, User, Mail, Shield, Lock, Phone, CheckCircle2 } from 'lucide-react';
 import type { Usuario, RolUsuario, EstadoUsuario } from './types';
 import { guardarUsuario } from './usuariosApi';
 import toast from 'react-hot-toast';
-import { obtenerConfiguracion } from '../configuracion/configuracionStorage';
+import { REQUISITOS, claveValida } from './reglasDeClave';
 
 interface ModalUsuarioProps {
   usuarioAEditar?: Usuario | null;
@@ -57,10 +57,10 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
       toast.error('Ingresá una contraseña inicial para el usuario');
       return;
     }
-    // Configuración > Seguridad: contraseñas seguras (8+ caracteres con letras y números).
+    // Política de contraseñas (la exige también el servidor): 8+ caracteres, mayúscula, número, especial y sin números consecutivos.
     const clave = password.trim();
-    if (clave && obtenerConfiguracion().exigirPasswordSegura && !(clave.length >= 8 && /[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(clave) && /\d/.test(clave))) {
-      toast.error('La contraseña debe tener al menos 8 caracteres, con letras y números (se exige en Configuración > Seguridad)');
+    if (clave && !claveValida(clave)) {
+      toast.error('La contraseña no cumple la política de seguridad: revisá los requisitos debajo del campo');
       return;
     }
 
@@ -208,8 +208,23 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={esEdicion ? 'Dejar en blanco para no modificar' : '••••••••'}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                autoComplete="new-password"
+                aria-describedby="requisitos-clave"
               />
             </div>
+            {(!esEdicion || password.length > 0) && (
+              <ul id="requisitos-clave" className="mt-2 grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-2" aria-label="Requisitos de la contraseña">
+                {REQUISITOS.map((r) => {
+                  const ok = password.trim().length > 0 && r.cumple(password.trim());
+                  return (
+                    <li key={r.id} className={`flex items-center gap-1.5 ${ok ? 'text-emerald-700' : 'text-slate-500'}`}>
+                      <CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${ok ? 'text-emerald-600' : 'text-slate-300'}`} aria-hidden="true" />
+                      <span>{r.texto}<span className="sr-only">{ok ? ': cumple' : ': falta'}</span></span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           {/* Estado */}

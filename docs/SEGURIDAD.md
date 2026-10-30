@@ -9,7 +9,7 @@ Qué protege el sistema, cómo se comprobó y qué queda pendiente para un uso r
 | Autenticación | Inicio de sesión con JWT firmado (HS256, vence a las 8 h). Las contraseñas se guardan con el hash de ASP.NET Identity (PBKDF2). |
 | Sesión | En cada pedido se comprueba en la base que el usuario siga activo y con el mismo rol que dice el token: una baja, una eliminación o un cambio de rol rigen al instante. |
 | Fuerza bruta | Límite de intentos de login por IP y bloqueo de la cuenta 15 minutos tras 5 claves incorrectas. El mensaje es el mismo —y tarda lo mismo— para un email inexistente y para una clave incorrecta. Emails y claves absurdos se rechazan sin consultar la base. |
-| Contraseñas | Mínimo 8 caracteres con letras y números (se exige en el servidor, no solo en la pantalla). |
+| Contraseñas | Mínimo 8 caracteres, una mayúscula, un número, un carácter especial y sin números consecutivos (12, 45, 98). Se exige en el servidor (`ReglasDeClave`), no solo en la pantalla, al crear un usuario o cambiarle la clave; el formulario muestra en vivo lo que falta. Las cuentas que ya existen entran con la clave que tienen. |
 | Permisos | Toda la API exige sesión salvo el login. Tres roles: Administrador, Contador y Recepción. Recepción factura, cobra cuotas y gestiona socios; no mueve dinero (Caja, Banco, transferencias), no anula, no borra catálogos ni administra usuarios. |
 | Navegador | CORS limitado a los orígenes del frontend. Cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control: no-store` y `Content-Security-Policy` en la API. |
 | Datos | Consultas parametrizadas (EF Core). Restricciones en la base: partida doble, inmutabilidad de asientos, tabla de auditoría de solo lectura y auditoría automática de quién cambió qué. |

@@ -191,6 +191,12 @@ public class SeguridadTests(ApiFixture api)
     [InlineData("abc123")]        // corta
     [InlineData("12345678")]      // sólo números
     [InlineData("abcdefgh")]      // sólo letras
+    [InlineData("Abcdefg1")]      // sin carácter especial
+    [InlineData("abcdef1!")]      // sin mayúscula
+    [InlineData("Abcdefg!")]      // sin número
+    [InlineData("Abcd12!x")]      // números consecutivos
+    [InlineData("Abcd98!x")]      // números consecutivos, descendente
+    [InlineData("Ab1!")]          // corta
     public async Task Las_contrasenas_debiles_se_rechazan(string clave)
     {
         var jefe = await api.Jefe();
