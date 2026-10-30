@@ -139,7 +139,10 @@ eso agrega superficie que había que revisar: un archivo que sube el usuario y q
 Cómo se limitó el riesgo (cada punto tiene su test en `CopiasDeSeguridadTests`):
 
 1. **Solo el Administrador.** Descargar, comparar y restaurar dan 401 sin sesión y 403 al Contador y a Recepción.
-2. **El archivo no es de confianza.** Se verifica el SHA-256 de cada archivo y la huella de cada tabla; se rechaza un `.zip` dañado,
+2. **El archivo no es de confianza.** Se verifica el SHA-256 de cada archivo, la huella de cada tabla y la **firma HMAC-SHA256 del
+   manifiesto** (con una clave del servidor: quien edite un CSV y recalcule los SHA-256 no puede recalcular la firma, y una copia sin
+   firma o con otra firma no se restaura; si se cambia la clave, las copias anteriores dejan de restaurarse desde la pantalla, ver
+   `BACKUPS.md`); se rechaza un `.zip` dañado,
    con archivos de más o de menos, sin manifiesto o que no es una copia. Tope de 50 MB comprimido, 300 MB descomprimido (se cuentan
    los bytes reales: una bomba zip de 310 MB de ceros se corta) y 100 archivos.
 3. **El manifiesto no puede elegir tablas.** Los nombres de tabla del manifiesto solo se usan si existen en la base (forma validada y

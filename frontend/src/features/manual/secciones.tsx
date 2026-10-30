@@ -448,8 +448,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         ]}
       />
       <p>
-        La copia se verifica antes de usarla: se rechaza si está dañada, si fue alterada o si es de una versión más nueva que el
-        sistema. Restaurar es todo o nada: si algo falla, los datos quedan como estaban. Descargar y restaurar quedan en la
+        La copia se verifica antes de usarla: va firmada por el sistema, y se rechaza si está dañada, si fue modificada, si no tiene
+        firma o si es de una versión más nueva que el sistema (la vista previa muestra el estado de la <B>Firma de la copia</B>). Restaurar es todo o nada: si algo falla, los datos quedan como estaban. Descargar y restaurar quedan en la
         <B>Auditoría</B>.
       </p>
       <Nota tipo="ojo">

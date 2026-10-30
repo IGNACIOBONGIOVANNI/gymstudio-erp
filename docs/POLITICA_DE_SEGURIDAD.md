@@ -106,7 +106,8 @@ solo) y no sacar del sistema datos personales de los socios para otros fines.
 | Antes de actualizar el sistema, de cargar datos masivos o de restaurar, se descarga una copia completa desde *Configuración › Copia de seguridad*. | Persona |
 | Al menos una copia se guarda **fuera de la PC** (pendrive o nube privada). Una copia en el mismo disco no sirve si el disco se rompe. | Persona |
 | La copia incluye los hashes de las contraseñas y los datos personales de los socios: se guarda en un lugar privado y no se envía por canales abiertos. | Persona |
-| Cada copia trae su huella SHA-256 y un manifiesto con la versión, la migración y la huella de cada tabla; se rechaza una copia dañada, alterada o de una versión más nueva. | Sistema |
+| Cada copia trae su huella SHA-256, un manifiesto con la versión, la migración y la huella de cada tabla, y una **firma** hecha con una clave del servidor; se rechaza una copia dañada, alterada, sin firma o de una versión más nueva. | Sistema |
+| La clave de firma (`Copias__ClaveDeFirma`) se define una vez, se guarda aparte y no se cambia sin necesidad: si cambia, las copias anteriores ya no se restauran desde la pantalla. | Persona |
 | Antes de restaurar se compara la copia con el sistema actual (vista previa tabla por tabla). Restaurar exige escribir `RESTAURAR`, descarga antes una copia de lo que hay y se hace en una sola transacción: si algo falla, no queda nada a medias. | Sistema |
 | Solo el Administrador puede descargar, comparar y restaurar copias. | Sistema |
 | Las copias se **prueban**: una vez por mes se compara una copia con el sistema (o se restaura en una instalación de prueba) para comprobar que sirve. | Persona |
@@ -138,7 +139,8 @@ los que más incidentes producen en la práctica.
 Ante una sospecha (un acceso que nadie hizo, datos que cambiaron solos, una PC perdida, una copia extraviada):
 
 1. **Contener.** Desactivar la cuenta involucrada en *Usuarios* (rige al instante) y cambiar su contraseña. Si se sospecha de
-   toda la instalación, cambiar `Jwt:Key`: invalida todas las sesiones abiertas.
+   toda la instalación, cambiar `Jwt:Key`: invalida todas las sesiones abiertas (y las copias firmadas con esa clave, salvo que la
+   firma use su propia `Copias__ClaveDeFirma`; conviene definirla desde el principio).
 2. **Investigar.** Revisar la *Auditoría*: qué se hizo, con qué cuenta y desde qué IP, sistema y navegador. Ejecutar el
    *Control de integridad* para ver si algún total dejó de cerrar.
 3. **Recuperar.** Si hay datos dañados, comparar la última copia sana con el sistema y, si corresponde, restaurarla (queda una
@@ -156,8 +158,9 @@ Conviene tenerlas presentes; no se ocultan:
 - El sistema operativo y el navegador del registro los informa el propio equipo y pueden falsearse; sirven para saber desde dónde
   se trabajó, no como prueba. Dentro de Docker en una sola PC, la IP que se ve es la de Docker.
 - La demostración corre en modo *Development*, con claves de ejemplo. No es la configuración para datos reales (ver 5.6).
-- Las copias incluyen datos personales y hashes de contraseñas, pero **no están cifradas**: su custodia es responsabilidad de
-  quien las guarda.
+- Las copias incluyen datos personales y hashes de contraseñas, y están **firmadas** (no se pueden modificar sin que se note) pero
+  **no cifradas** (se pueden leer): su custodia es responsabilidad de quien las guarda. Para protegerlas en reposo, guardarlas en un
+  disco o una carpeta cifrada (por ejemplo, BitLocker).
 - La configuración de la empresa (razón social, CUIT, parámetros) vive en el navegador; se respalda con su propio archivo.
 
 ## 9. Revisión

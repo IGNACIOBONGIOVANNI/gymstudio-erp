@@ -32,6 +32,12 @@ Qué hace el servidor, y por qué se puede confiar en el archivo:
 - El manifiesto trae la **versión del sistema**, la **migración** de la base y, por tabla, la cantidad de filas y la huella MD5 de su
   contenido; cada archivo del `.zip` trae además su SHA-256. Un archivo dañado, alterado, con tablas de más o de menos o que no es una
   copia se rechaza antes de tocar la base.
+- El manifiesto va **firmado** (HMAC-SHA256 de todo lo que afirma: versión, migración y, por tabla, filas, huella y SHA-256) con una
+  clave del servidor que no está en el archivo. Los SHA-256 solos no alcanzan: quien edite un CSV puede recalcularlos. Sin la clave no
+  puede recalcular la firma, así que una copia modificada, de otra instalación con otra clave o sin firma **se compara pero no se restaura**
+  desde la pantalla. La clave es `Copias:ClaveDeFirma` y, si no se define, se usa `Jwt:Key`. **Ojo:** si se cambia esa clave (por ejemplo
+  al rotar `Jwt:Key` tras un incidente), las copias hechas antes dejan de poder restaurarse desde la pantalla; para evitarlo, definí una
+  `Copias__ClaveDeFirma` propia y no la cambies. Las copias `.dump` con `restaurar.ps1` no dependen de esta clave.
 - Solo se aceptan nombres de tabla que existen en la base: un manifiesto armado a mano no puede apuntar a otra tabla ni inyectar SQL.
 - Límites: el `.zip` de hasta 50 MB y hasta 300 MB ya descomprimido (el tamaño que declara el zip puede mentir, se cuentan los bytes
   reales) y hasta 100 archivos.
@@ -119,10 +125,10 @@ de los usuarios: guardalas en un lugar privado.
 
 ## Cómo se probó
 
-**Copia completa desde el sistema:** 20 pruebas automáticas contra una PostgreSQL real (`CopiasDeSeguridadTests`): contenido y huellas
+**Copia completa desde el sistema:** 23 pruebas automáticas contra una PostgreSQL real (`CopiasDeSeguridadTests`): contenido y huellas
 del `.zip`; copia idéntica, con datos cambiados y de otra versión; ida y vuelta (se descarga, se cambian y borran datos, se restaura y
 quedan exactamente los de antes, con secuencias, auditoría e integridad); confirmación incorrecta; copia dañada; nombres de tabla
-inyectados; tabla desconocida; falla a mitad de la carga (se deshace todo); archivo que no es una copia; bomba zip (310 MB de ceros); y
+inyectados; tabla desconocida; firma válida, firma que no coincide (atacante que recalcula los SHA-256 sin la clave) y firma quitada; falla a mitad de la carga (se deshace todo); archivo que no es una copia; bomba zip (310 MB de ceros); y
 los permisos (401 sin sesión, 403 para Contador y Recepción).
 
 Además se probó la pantalla de punta a punta en un Docker aparte levantado desde el `.zip` del proyecto: se descargó una copia, se

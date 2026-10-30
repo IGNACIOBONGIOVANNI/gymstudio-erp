@@ -20,6 +20,9 @@ public sealed class ApiFixture : IAsyncLifetime
     // Contraseña de los usuarios iniciales (appsettings.Development.json).
     public const string Clave = "123456";
 
+    // Clave con la que el servidor firma las copias de seguridad en las pruebas (para poder armar copias firmadas a mano).
+    public const string ClaveDeFirmaDePrueba = "clave-de-prueba-para-firmar-copias";
+
     // Contraseña de los usuarios que crean los tests (cumple la política: 8+ con letras y números).
     public const string ClaveNueva = "clave-de-prueba-123";
 
@@ -40,6 +43,7 @@ public sealed class ApiFixture : IAsyncLifetime
             builder.UseEnvironment("Development");
             builder.UseSetting("ConnectionStrings:DefaultConnection", ConnectionString);
             builder.UseSetting("Auth:IntentosLoginPorMinuto", "10000");
+            builder.UseSetting("Copias:ClaveDeFirma", ClaveDeFirmaDePrueba);
             builder.ConfigureServices(servicios => servicios.AddTransient<IStartupFilter, SimularIpDeConexion>());
         });
 

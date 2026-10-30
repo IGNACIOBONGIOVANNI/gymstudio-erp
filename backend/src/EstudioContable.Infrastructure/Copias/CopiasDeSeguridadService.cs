@@ -71,11 +71,16 @@ namespace EstudioContable.Infrastructure.Copias
 
         private readonly AppDbContext _context;
         private readonly string _version;
+        private readonly byte[]? _claveDeFirma;
 
         public CopiasDeSeguridadService(AppDbContext context, IConfiguration configuracion)
         {
             _context = context;
             _version = configuracion["Sistema:Version"] ?? "1.0.0";
+            // La firma usa su propia clave (Copias:ClaveDeFirma) o, si no hay, la de las sesiones (Jwt:Key): ninguna está en el archivo.
+            var clave = configuracion["Copias:ClaveDeFirma"];
+            if (string.IsNullOrWhiteSpace(clave)) clave = configuracion["Jwt:Key"];
+            _claveDeFirma = string.IsNullOrWhiteSpace(clave) ? null : SHA256.HashData(Utf8SinBom.GetBytes("gymstudio-copia-v1|" + clave));
         }
 
         // ------------------------------------------------------------------ modelos del archivo
@@ -88,6 +93,8 @@ namespace EstudioContable.Infrastructure.Copias
             public string Migracion { get; set; } = "";
             public int Migraciones { get; set; }
             public Dictionary<string, TablaDelManifiesto> Tablas { get; set; } = new();
+            /// <summary>HMAC-SHA256 del resto del manifiesto: detecta que alguien lo editó y recalculó los SHA-256 de los archivos.</summary>
+            public string? Firma { get; set; }
         }
 
         private sealed class TablaDelManifiesto
@@ -132,6 +139,7 @@ namespace EstudioContable.Infrastructure.Copias
                             Filas = datos.Filas, Huella = datos.Huella, Archivo = archivo, Sha256 = Convert.ToHexString(SHA256.HashData(csv)),
                         };
                     }
+                    manifiesto.Firma = Firmar(manifiesto);
                     var entradaManifiesto = zip.CreateEntry("manifiesto.json", CompressionLevel.Optimal);
                     await using (var salida = entradaManifiesto.Open())
                         await JsonSerializer.SerializeAsync(salida, manifiesto, OpcionesJson, cancellationToken);
@@ -174,12 +182,13 @@ namespace EstudioContable.Infrastructure.Copias
                 var veredicto = !mismoEsquema ? "otra-version"
                     : tablas.Any(t => !t.EsAuditoria && t.Estado != "igual") ? "anterior"
                     : "identica";
-                var motivo = MotivoQueImpideRestaurar(manifiesto, actual);
+                var firma = EstadoDeLaFirma(manifiesto);
+                var motivo = MotivoQueImpideRestaurar(manifiesto, actual, firma);
 
                 return new ComparacionDeCopia(
                     manifiesto.Fecha, new EstadoDeSistema(manifiesto.Version, manifiesto.Migracion, manifiesto.Migraciones),
                     new EstadoDeSistema(_version, actual.Migracion, actual.Migraciones),
-                    mismoEsquema, tablas, veredicto, motivo == null, motivo);
+                    mismoEsquema, tablas, veredicto, motivo == null, motivo, firma);
             }
             finally
             {
@@ -198,7 +207,7 @@ namespace EstudioContable.Infrastructure.Copias
                 // Todo en una transacción: si algo falla en cualquier punto, la base queda exactamente como estaba.
                 await using var transaccion = await conexion.BeginTransactionAsync(cancellationToken);
                 var actual = await LeerEstadoAsync(conexion, transaccion, cancellationToken);
-                var problema = MotivoQueImpideRestaurar(copia.Manifiesto, actual);
+                var problema = MotivoQueImpideRestaurar(copia.Manifiesto, actual, EstadoDeLaFirma(copia.Manifiesto));
                 if (problema != null) throw new InvalidOperationException(problema);
 
                 // Los datos de la copia ya son consistentes entre sí: se cargan sin que los disparadores y las claves foráneas
@@ -316,12 +325,34 @@ namespace EstudioContable.Infrastructure.Copias
         }
 
         /// <summary>Por qué esta copia no se puede restaurar en este sistema, o null si se puede.</summary>
-        private static string? MotivoQueImpideRestaurar(Manifiesto copia, EstadoDeBase actual)
+        // Lo que se firma: todo lo que el manifiesto afirma (versión, migración y, por tabla, filas, huella, archivo y SHA-256).
+        private static string Canonico(Manifiesto m)
+            => string.Join("\n",
+                new[] { m.Formato, m.Fecha.UtcDateTime.ToString("O", CultureInfo.InvariantCulture), m.Version, m.Migracion, m.Migraciones.ToString(CultureInfo.InvariantCulture) }
+                    .Concat(m.Tablas.OrderBy(t => t.Key, StringComparer.Ordinal)
+                        .Select(t => $"{t.Key}|{t.Value.Filas.ToString(CultureInfo.InvariantCulture)}|{t.Value.Huella}|{t.Value.Archivo}|{t.Value.Sha256}")));
+
+        private string? Firmar(Manifiesto m)
+            => _claveDeFirma == null ? null : Convert.ToHexString(HMACSHA256.HashData(_claveDeFirma, Utf8SinBom.GetBytes(Canonico(m))));
+
+        private string EstadoDeLaFirma(Manifiesto m)
+        {
+            if (_claveDeFirma == null) return "no-disponible";
+            if (string.IsNullOrEmpty(m.Firma)) return "sin-firma";
+            var esperada = Firmar(m)!;
+            return CryptographicOperations.FixedTimeEquals(Utf8SinBom.GetBytes(esperada), Utf8SinBom.GetBytes(m.Firma.ToUpperInvariant())) ? "valida" : "invalida";
+        }
+
+        private static string? MotivoQueImpideRestaurar(Manifiesto copia, EstadoDeBase actual, string firma)
         {
             if (copia.Migracion != actual.Migracion)
                 return $"La copia es de otra versión de la base de datos (migración {copia.Migracion}) y este sistema está en la {actual.Migracion}. Desde esta pantalla solo se restauran copias hechas con la misma versión del sistema.";
             if (!actual.Tablas.Keys.ToHashSet().SetEquals(copia.Tablas.Keys))
                 return "Las tablas de la copia no son las mismas que las del sistema actual.";
+            if (firma == "invalida")
+                return "La firma de la copia no coincide: el archivo se modificó después de hacerse o lo hizo otra instalación con otra clave. Por seguridad no se restaura.";
+            if (firma == "sin-firma")
+                return "La copia no está firmada por un sistema GymStudio, así que no se puede comprobar que nadie la modificó. Por seguridad no se restaura.";
             return null;
         }
 

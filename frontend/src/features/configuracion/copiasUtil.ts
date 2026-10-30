@@ -32,6 +32,24 @@ export interface ComparacionDeCopia {
   veredicto: 'identica' | 'anterior' | 'otra-version'
   puedeRestaurar: boolean
   motivoSiNoPuede: string | null
+  firma: EstadoDeFirma
+}
+
+/** valida: la hizo un sistema con la misma clave y no se tocó. invalida: se modificó o es de otra instalación. */
+export type EstadoDeFirma = 'valida' | 'invalida' | 'sin-firma' | 'no-disponible'
+
+/** Cómo se cuenta la firma de la copia en la vista previa. `ok` solo si se pudo comprobar que nadie la modificó. */
+export function textoDeFirma(firma: EstadoDeFirma): { texto: string; ok: boolean } {
+  switch (firma) {
+    case 'valida':
+      return { texto: 'válida: la hizo este sistema y no se modificó', ok: true }
+    case 'invalida':
+      return { texto: 'no coincide: se modificó o la hizo otra instalación', ok: false }
+    case 'sin-firma':
+      return { texto: 'la copia no está firmada', ok: false }
+    default:
+      return { texto: 'este sistema no puede comprobarla', ok: false }
+  }
 }
 
 export interface ResumenDeComparacion {

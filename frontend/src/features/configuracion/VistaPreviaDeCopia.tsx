@@ -3,7 +3,7 @@ import { CircleCheck, Info, Loader2, TriangleAlert, X } from 'lucide-react';
 import { descargarCopia, guardarArchivo, restaurarCopia, type ResultadoDeRestauracion } from '../../api/copiasApi';
 import {
   CONFIRMACION_DE_RESTAURACION, agruparPorModulo, confirmacionValida, diferenciaDeFilas, nombreDeArchivoDeCopia,
-  resumirComparacion, textoDeFilas, type ComparacionDeCopia, type TablaComparada,
+  resumirComparacion, textoDeFilas, textoDeFirma, type ComparacionDeCopia, type TablaComparada,
 } from './copiasUtil';
 
 interface Props {
@@ -117,6 +117,12 @@ export function VistaPreviaDeCopia({ archivo, comparacion, onCerrar }: Props) {
                   <dt className="inline text-slate-500">Base de datos: </dt>
                   <dd className="inline font-medium text-slate-800">
                     {comparacion.mismoEsquema ? `misma versión (${comparacion.actual.migraciones} migraciones)` : 'versión distinta a la actual'}
+                  </dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="inline text-slate-500">Firma de la copia: </dt>
+                  <dd className={`inline font-medium ${textoDeFirma(comparacion.firma).ok ? 'text-emerald-700' : 'text-amber-700'}`}>
+                    {textoDeFirma(comparacion.firma).texto}
                   </dd>
                 </div>
               </dl>

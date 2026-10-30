@@ -20,6 +20,8 @@ namespace EstudioContable.Application.Copias
     /// <summary>
     /// Qué pasaría al cargar una copia, sin haber cambiado nada. Veredicto: "identica" (los datos son los mismos que ahora),
     /// "anterior" (se cargaron o cambiaron datos después de la copia) u "otra-version" (el esquema de la base no es el mismo).
+    /// Firma: "valida" (la hizo un sistema con la misma clave y no se tocó), "invalida" (se modificó o la hizo otra instalación),
+    /// "sin-firma" (el manifiesto no la trae) o "no-disponible" (este sistema no tiene clave para firmar ni verificar).
     /// </summary>
     public record ComparacionDeCopia(
         DateTimeOffset? Fecha,
@@ -29,7 +31,8 @@ namespace EstudioContable.Application.Copias
         IReadOnlyList<TablaComparada> Tablas,
         string Veredicto,
         bool PuedeRestaurar,
-        string? MotivoSiNoPuede);
+        string? MotivoSiNoPuede,
+        string Firma);
 
     public record ResultadoDeRestauracion(int Tablas, long Filas);
 

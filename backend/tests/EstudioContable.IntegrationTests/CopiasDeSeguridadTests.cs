@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Headers;
@@ -66,6 +67,25 @@ public class CopiasDeSeguridadTests(ApiFixture api)
         => archivos["manifiesto.json"] = Encoding.UTF8.GetBytes(manifiesto.ToJsonString());
 
     private static string Sha(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
+
+    // Firma el manifiesto como lo hace el servidor (HMAC-SHA256 de lo que el manifiesto afirma): sirve para armar copias de un atacante
+    // que conociera la clave. Escrito aparte del código del servidor a propósito: es una segunda lectura del formato.
+    private static void Firmar(JsonObject manifiesto)
+    {
+        manifiesto.Remove("firma");
+        var lineas = new List<string>
+        {
+            (string)manifiesto["formato"]!,
+            DateTimeOffset.Parse((string)manifiesto["fecha"]!, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind).UtcDateTime.ToString("O", CultureInfo.InvariantCulture),
+            (string)manifiesto["version"]!,
+            (string)manifiesto["migracion"]!,
+            ((int)manifiesto["migraciones"]!).ToString(CultureInfo.InvariantCulture),
+        };
+        foreach (var (tabla, t) in manifiesto["tablas"]!.AsObject().OrderBy(x => x.Key, StringComparer.Ordinal))
+            lineas.Add($"{tabla}|{(long)t!["filas"]!}|{(string)t["huella"]!}|{(string)t["archivo"]!}|{(string)t["sha256"]!}");
+        var clave = SHA256.HashData(Encoding.UTF8.GetBytes("gymstudio-copia-v1|" + ApiFixture.ClaveDeFirmaDePrueba));
+        manifiesto["firma"] = Convert.ToHexString(HMACSHA256.HashData(clave, Encoding.UTF8.GetBytes(string.Join("\n", lineas))));
+    }
 
     private async Task<string> CrearPlan(HttpClient jefe, string? nombre = null)
     {
@@ -325,12 +345,13 @@ public class CopiasDeSeguridadTests(ApiFixture api)
         var antesPlanes = await Contar("contabilidad.\"Planes\"");
         var antesSocios = await Contar("contabilidad.\"Socios\"");
 
-        // Un atacante que sabe armar la huella: el archivo pasa la verificación pero la tabla de planes trae una fila rota.
+        // Un atacante que sabe armar la huella y tiene la clave de firma: el archivo pasa todas las verificaciones pero la tabla de planes trae una fila rota.
         var archivos = Desarmar(await Descargar(jefe));
         var rota = archivos["datos/contabilidad.Planes.csv"].Concat("esto no es una fila\n"u8.ToArray()).ToArray();
         archivos["datos/contabilidad.Planes.csv"] = rota;
         var manifiesto = Manifiesto(archivos);
         manifiesto["tablas"]!["contabilidad.Planes"]!["sha256"] = Sha(rota);
+        Firmar(manifiesto);
         GuardarManifiesto(archivos, manifiesto);
 
         var r = await jefe.PostAsync("/api/copias/restaurar", Formulario(Armar(archivos), confirmacion: "RESTAURAR"));
@@ -340,6 +361,64 @@ public class CopiasDeSeguridadTests(ApiFixture api)
         Assert.Equal(antesSocios, await Contar("contabilidad.\"Socios\""));
         Assert.True(await ExistePlan(jefe, plan));
         Assert.Equal(HttpStatusCode.OK, (await jefe.GetAsync("/api/dashboard")).StatusCode);
+    }
+
+    [Fact]
+    public async Task La_copia_viene_firmada_y_la_firma_se_reconoce_como_valida()
+    {
+        var jefe = await api.Jefe();
+        var zip = await Descargar(jefe);
+
+        var firma = (string)Manifiesto(Desarmar(zip))["firma"]!;
+        Assert.Matches("^[0-9A-F]{64}$", firma);
+
+        var comparacion = await Comparar(jefe, zip);
+        Assert.Equal("valida", (string)comparacion["firma"]!);
+    }
+
+    [Fact]
+    public async Task Un_atacante_que_recalcula_los_SHA256_pero_no_tiene_la_clave_no_logra_que_se_restaure_su_archivo()
+    {
+        var jefe = await api.Jefe();
+        var plan = await CrearPlan(jefe);
+        var antesPlanes = await Contar("contabilidad.\"Planes\"");
+
+        // Cambia datos y deja el manifiesto "consistente" (huellas recalculadas): todo cierra, salvo la firma.
+        var archivos = Desarmar(await Descargar(jefe));
+        var adulterado = archivos["datos/contabilidad.Planes.csv"].Concat("\n"u8.ToArray()).ToArray();
+        archivos["datos/contabilidad.Planes.csv"] = adulterado;
+        var manifiesto = Manifiesto(archivos);
+        manifiesto["tablas"]!["contabilidad.Planes"]!["sha256"] = Sha(adulterado);
+        GuardarManifiesto(archivos, manifiesto);
+        var zip = Armar(archivos);
+
+        var comparacion = await Comparar(jefe, zip);
+        Assert.Equal("invalida", (string)comparacion["firma"]!);
+        Assert.False((bool)comparacion["puedeRestaurar"]!);
+        Assert.Contains("firma", (string)comparacion["motivoSiNoPuede"]!);
+
+        var r = await jefe.PostAsync("/api/copias/restaurar", Formulario(zip, confirmacion: "RESTAURAR"));
+        Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
+        Assert.Equal(antesPlanes, await Contar("contabilidad.\"Planes\""));
+        Assert.True(await ExistePlan(jefe, plan));
+    }
+
+    [Fact]
+    public async Task Quitar_la_firma_tampoco_sirve_para_esquivar_la_comprobacion()
+    {
+        var jefe = await api.Jefe();
+        var archivos = Desarmar(await Descargar(jefe));
+        var manifiesto = Manifiesto(archivos);
+        manifiesto.Remove("firma");
+        GuardarManifiesto(archivos, manifiesto);
+        var zip = Armar(archivos);
+
+        var comparacion = await Comparar(jefe, zip);
+        Assert.Equal("sin-firma", (string)comparacion["firma"]!);
+        Assert.False((bool)comparacion["puedeRestaurar"]!);
+
+        var r = await jefe.PostAsync("/api/copias/restaurar", Formulario(zip, confirmacion: "RESTAURAR"));
+        Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
     }
 
     [Fact]

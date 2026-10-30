@@ -8,6 +8,7 @@ import {
   nombreDeArchivoDeCopia,
   resumirComparacion,
   textoDeFilas,
+  textoDeFirma,
   type TablaComparada,
 } from '../src/features/configuracion/copiasUtil.ts';
 
@@ -75,6 +76,16 @@ test('la diferencia de filas lleva su signo y es nula si no hay cambio o falta u
 test('el nombre del archivo lleva la fecha y la hora de la PC con ceros a la izquierda', () => {
   assert.equal(nombreDeArchivoDeCopia(new Date(2026, 9, 5, 7, 3, 9)), 'gymstudio_copia_20261005_070309.zip');
   assert.equal(nombreDeArchivoDeCopia(new Date(2026, 9, 29, 22, 15, 30), 'gymstudio_antes-de-restaurar'), 'gymstudio_antes-de-restaurar_20261029_221530.zip');
+});
+
+test('solo una firma válida se muestra como comprobada; cualquier otra cosa avisa', () => {
+  assert.equal(textoDeFirma('valida').ok, true);
+  for (const f of ['invalida', 'sin-firma', 'no-disponible'] as const) {
+    const t = textoDeFirma(f);
+    assert.equal(t.ok, false, f);
+    assert.ok(t.texto.length > 10, f);
+  }
+  assert.notEqual(textoDeFirma('invalida').texto, textoDeFirma('sin-firma').texto);
 });
 
 test('la confirmación exige la palabra exacta, en mayúsculas', () => {
