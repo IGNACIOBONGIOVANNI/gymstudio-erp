@@ -125,6 +125,12 @@ quedan exactamente los de antes, con secuencias, auditoría e integridad); confi
 inyectados; tabla desconocida; falla a mitad de la carga (se deshace todo); archivo que no es una copia; bomba zip (310 MB de ceros); y
 los permisos (401 sin sesión, 403 para Contador y Recepción).
 
+Además se probó la pantalla de punta a punta en un Docker aparte levantado desde el `.zip` del proyecto: se descargó una copia, se
+cargó un cliente, la vista previa mostró exactamente esa diferencia («Clientes: 0 en la copia, 1 ahora»), el botón de restaurar siguió
+desactivado hasta escribir `RESTAURAR` en mayúsculas, y la restauración devolvió el sistema al estado de la copia (26 tablas,
+112 filas, integridad contable 16 de 16, un alta posterior sin choques de numeración y el evento en la auditoría). Con una copia
+idéntica al sistema, la vista previa lo dice y no ofrece restaurar.
+
 **Con los scripts**, contra una copia local con el ejercicio de la cátedra (30 facturas):
 
 - se hizo una copia, se cargó una factura, un cliente y un usuario, y se restauró;

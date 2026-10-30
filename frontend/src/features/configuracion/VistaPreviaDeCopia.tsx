@@ -84,7 +84,13 @@ export function VistaPreviaDeCopia({ archivo, comparacion, onCerrar }: Props) {
         <div className="flex items-start justify-between gap-4 bg-slate-900 px-6 py-4">
           <div className="min-w-0">
             <h2 id="vista-copia-titulo" className="text-lg font-semibold leading-tight text-white">Vista previa de la copia de seguridad</h2>
-            <p className="mt-0.5 text-sm text-slate-400">Compara toda la copia con el sistema actual. Todavía no se cambió nada.</p>
+            <p className="mt-0.5 text-sm text-slate-400">
+              {paso === 'trabajando'
+                ? 'Restaurando la copia: no cierres esta ventana.'
+                : paso === 'listo'
+                  ? 'La restauración terminó.'
+                  : 'Compara toda la copia con el sistema actual. Todavía no se cambió nada.'}
+            </p>
           </div>
           {(paso === 'vista' || paso === 'confirmar') && (
             <button type="button" onClick={onCerrar} aria-label="Cerrar" className="shrink-0 text-slate-400 transition-colors hover:text-white">
@@ -173,7 +179,7 @@ export function VistaPreviaDeCopia({ archivo, comparacion, onCerrar }: Props) {
                 <div className="space-y-2">
                   <p className="font-semibold">Se van a reemplazar TODOS los datos del sistema por los de esta copia.</p>
                   <p>
-                    Facturas, asientos, caja, banco, stock, socios y usuarios vuelven al estado del {fecha}. Lo que se cargó después se pierde
+                    Facturas, asientos, caja, banco, stock, socios y usuarios vuelven al estado de la copia{comparacion.fecha ? ` (hecha el ${fecha})` : ''}. Lo que se cargó después se pierde
                     {hayDiferencias ? `: ${plural(resumen.cambian, 'tabla cambia', 'tablas cambian')} (mirá la vista previa)` : ''}.
                   </p>
                   <p>Antes de restaurar, el sistema descarga a tu PC una copia de lo que hay ahora, por si te arrepentís. Si algo falla en el medio, no cambia nada.</p>
@@ -229,7 +235,7 @@ export function VistaPreviaDeCopia({ archivo, comparacion, onCerrar }: Props) {
               </div>
               <p className="text-[13px] text-slate-500">
                 Como también se restauraron los usuarios, conviene volver a cargar el sistema. La copia de lo que había antes quedó en tu PC
-                (gymstudio_antes-de-restaurar…).
+                (el archivo gymstudio_antes-de-restaurar_fecha_hora.zip, en la carpeta de descargas).
               </p>
             </div>
             <Pie>
