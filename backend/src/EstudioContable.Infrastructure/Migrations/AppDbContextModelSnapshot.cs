@@ -1410,6 +1410,41 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.ToTable("Socios", "contabilidad");
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.TurnoEncargado", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Encargado")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<int>("Hora")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiaSemana", "Hora")
+                        .IsUnique()
+                        .HasDatabaseName("ux_turnos_encargado_dia_hora");
+
+                    b.ToTable("TurnosEncargado", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_TurnosEncargado_Dia", "\"DiaSemana\" BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("CK_TurnosEncargado_Hora", "\"Hora\" BETWEEN 6 AND 21");
+
+                            t.HasCheckConstraint("CK_TurnosEncargado_Nombre", "char_length(btrim(\"Encargado\")) > 0");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Usuario", b =>
                 {
                     b.Property<long>("Id")

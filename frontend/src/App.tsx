@@ -5,7 +5,7 @@ import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
   Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins, ListChecks,
-  BookOpen, Info,
+  BookOpen, Info, CalendarDays,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -27,6 +27,7 @@ import { CuentasCorrientes } from './features/cuentas/CuentasCorrientes'
 import { ControlIntegridad } from './features/integridad/ControlIntegridad'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
+import { ModuloCalendario } from './features/calendario/ModuloCalendario'
 import { Facturacion } from './features/ventas/components/Facturacion'
 import { LibroStock } from './features/inventario/components/LibroStock'
 import { GestionProductos } from './features/inventario/components/GestionProductos'
@@ -79,6 +80,7 @@ const MENU: Grupo[] = [
       { id: 'socios', titulo: 'Socios', icono: <Users className={icono} /> },
       { id: 'planes', titulo: 'Planes', icono: <CalendarRange className={icono} /> },
       { id: 'rutinas', titulo: 'Rutinas', icono: <Dumbbell className={icono} /> },
+      { id: 'calendario', titulo: 'Calendario', icono: <CalendarDays className={icono} /> },
     ],
   },
   {
@@ -207,6 +209,7 @@ function AppContent() {
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />
       case 'rutinas': return <RutinasGym />
+      case 'calendario': return <ModuloCalendario />
       case 'facturar': return <Facturacion />
       case 'ventas': return <LibroVenta />
       case 'compras': return <LibroCompra />

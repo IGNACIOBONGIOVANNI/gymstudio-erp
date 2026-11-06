@@ -70,7 +70,10 @@ export function encabezadosYPies(
   doc: jsPDF,
   tituloDePagina: (pagina: number) => { titulo: string; periodo: string },
   notaDerecha = 'Importes en pesos ($)',
+  /** Tamaño de la página en mm; por defecto A4 vertical. Para una hoja apaisada: { ancho: 297, alto: 210 }. */
+  pagina: { ancho: number; alto: number } = { ancho: ANCHO_PAGINA, alto: ALTO_PAGINA },
 ) {
+  const { ancho: ANCHO, alto: ALTO } = pagina;
   const negocio = datosDelNegocio();
   const total = doc.getNumberOfPages();
   const ahora = new Date();
@@ -92,21 +95,21 @@ export function encabezadosYPies(
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text(titulo, ANCHO_PAGINA - MARGEN, 16, { align: 'right' });
+    doc.text(titulo, ANCHO - MARGEN, 16, { align: 'right' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
-    doc.text(periodo, ANCHO_PAGINA - MARGEN, 21, { align: 'right' });
-    doc.text(notaDerecha, ANCHO_PAGINA - MARGEN, 25, { align: 'right' });
+    doc.text(periodo, ANCHO - MARGEN, 21, { align: 'right' });
+    doc.text(notaDerecha, ANCHO - MARGEN, 25, { align: 'right' });
 
     doc.setDrawColor(0);
     doc.setLineWidth(0.4);
-    doc.line(MARGEN, 29, ANCHO_PAGINA - MARGEN, 29);
+    doc.line(MARGEN, 29, ANCHO - MARGEN, 29);
 
     doc.setLineWidth(0.15);
-    doc.line(MARGEN, ALTO_PAGINA - 12, ANCHO_PAGINA - MARGEN, ALTO_PAGINA - 12);
+    doc.line(MARGEN, ALTO - 12, ANCHO - MARGEN, ALTO - 12);
     doc.setFontSize(7.5);
-    doc.text(`Emitido el ${emitido} por GymStudio ERP`, MARGEN, ALTO_PAGINA - 8);
-    doc.text(`Página ${p} de ${total}`, ANCHO_PAGINA - MARGEN, ALTO_PAGINA - 8, { align: 'right' });
+    doc.text(`Emitido el ${emitido} por GymStudio ERP`, MARGEN, ALTO - 8);
+    doc.text(`Página ${p} de ${total}`, ANCHO - MARGEN, ALTO - 8, { align: 'right' });
   }
 }
 

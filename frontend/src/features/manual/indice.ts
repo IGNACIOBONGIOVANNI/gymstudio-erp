@@ -7,6 +7,7 @@ export const SECCIONES = [
   { id: 'resumen', titulo: 'Resumen de inicio' },
   { id: 'recepcion', titulo: 'Recepción: ingreso de socios y cobro de cuotas' },
   { id: 'socios', titulo: 'Socios, planes y rutinas' },
+  { id: 'calendario', titulo: 'Calendario de encargados' },
   { id: 'facturar', titulo: 'Facturar ventas y compras' },
   { id: 'libros-iva', titulo: 'Libros de Ventas y de Compras' },
   { id: 'cuentas', titulo: 'Cuentas a cobrar y a pagar' },

@@ -41,6 +41,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<AsignacionRutina> AsignacionesRutina => Set<AsignacionRutina>();
         public DbSet<MedicionSocio> MedicionesSocio => Set<MedicionSocio>();
         public DbSet<AsistenciaSocio> AsistenciasSocio => Set<AsistenciaSocio>();
+        public DbSet<TurnoEncargado> TurnosEncargado => Set<TurnoEncargado>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -173,6 +174,20 @@ namespace EstudioContable.Infrastructure.Persistence
                 e.HasOne<Socio>().WithMany().HasForeignKey(x => x.SocioId).OnDelete(DeleteBehavior.Restrict);
                 e.HasIndex(x => new { x.SocioId, x.Fecha }).IsUnique().HasDatabaseName("ux_asistencias_socio_fecha");
                 e.HasIndex(x => x.Fecha).HasDatabaseName("ix_asistencias_fecha");
+            });
+
+            // Calendario semanal de encargados: una persona por día y hora, de lunes a viernes y de 06 a 22 hs.
+            // La base repite las reglas del dominio (ReglasDeCalendario) para que valgan aunque alguien escriba directo en ella.
+            modelBuilder.Entity<TurnoEncargado>(e =>
+            {
+                e.Property(x => x.Encargado).HasMaxLength(Domain.ReglasDeCalendario.LargoMaximoDelNombre);
+                e.HasIndex(x => new { x.DiaSemana, x.Hora }).IsUnique().HasDatabaseName("ux_turnos_encargado_dia_hora");
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_TurnosEncargado_Dia", $"\"DiaSemana\" BETWEEN {Domain.ReglasDeCalendario.PrimerDia} AND {Domain.ReglasDeCalendario.UltimoDia}");
+                    t.HasCheckConstraint("CK_TurnosEncargado_Hora", $"\"Hora\" BETWEEN {Domain.ReglasDeCalendario.PrimeraHora} AND {Domain.ReglasDeCalendario.UltimaHora}");
+                    t.HasCheckConstraint("CK_TurnosEncargado_Nombre", "char_length(btrim(\"Encargado\")) > 0");
+                });
             });
 
             // Cobros y pagos a cuenta corriente: el cliente o proveedor al que corresponden. Un movimiento

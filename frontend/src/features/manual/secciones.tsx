@@ -52,6 +52,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Asignar, cambiar y finalizar la rutina de un socio', SI, SI, SI],
           ['Crear, editar y eliminar rutinas modelo y ejercicios', SI, SI, NO],
           ['Registrar ingresos de socios y ver los socios en riesgo', SI, SI, SI],
+          ['Ver e imprimir el calendario de encargados', SI, SI, SI],
+          ['Modificar el calendario de encargados', SI, SI, NO],
           ['Deshacer un ingreso cargado por error', SI, SI, NO],
           ['Registrar y corregir mediciones de peso y medidas', SI, SI, SI],
           ['Crear, confirmar o anular asientos manuales; crear cuentas', SI, SI, NO],
@@ -153,6 +155,44 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         medición por socio y por día. La pantalla muestra un gráfico de evolución y la variación desde la primera medición, y
         se puede imprimir en PDF.
       </p>
+    </>
+  ),
+
+  calendario: (
+    <>
+      <Quien quien="todos" extra="Lo modifican el Administrador y el Contador; Recepción lo ve y lo imprime" />
+      <p>
+        El <B>Calendario</B> dice quién está de encargado en el gimnasio, de <strong>lunes a viernes</strong> y de <strong>06:00 a 22:00</strong>,
+        en turnos de una hora. Es una semana tipo: se repite todas las semanas, no tiene fechas.
+      </p>
+      <Sub>Cargar o cambiar los encargados</Sub>
+      <Pasos>
+        <li>Apretá <B>Editar calendario</B>.</li>
+        <li>
+          Escribí el nombre en cada hora. Con <strong>Enter</strong> o las flechas pasás a la hora de abajo o de arriba. Para dejar una
+          hora libre, borrá el nombre.
+        </li>
+        <li>
+          Para cargar a una persona en varias horas y días de una vez, apretá <B>Asignar turno</B>: escribí el nombre, tildá los días
+          y elegí <B>Desde las</B> y <B>Hasta las</B> (por ejemplo, Ana de lunes a viernes, de 06:00 a 14:00). El cuadro avisa a cuántos
+          turnos ya cargados reemplaza. <B>Dejar libres esas horas</B> vacía ese rango.
+        </li>
+        <li>Apretá <B>Guardar cambios</B>. Hasta entonces nada queda guardado; <B>Cancelar</B> pide confirmación si hay cambios sin guardar.</li>
+      </Pasos>
+      <Lista>
+        <li>La misma persona en horas seguidas se ve como un solo bloque, con un color suave por persona. Abajo figuran las horas semanales de cada una.</li>
+        <li><B>Vaciar todo</B> deja el calendario sin nadie (recién se aplica al guardar).</li>
+        <li>Cada cambio queda en la <B>Auditoría</B>: quién lo hizo y desde qué equipo.</li>
+      </Lista>
+      <Sub>Pasarlo a PDF</Sub>
+      <p>
+        <B>Imprimir (PDF)</B> abre el calendario en una hoja A4 apaisada, en blanco y negro y con el logo y los datos del negocio, lista para
+        fotocopiar. Las horas libres quedan en blanco por si querés anotar a mano. El PDF sale con lo que está guardado: si tenés cambios
+        sin guardar, el botón se desactiva hasta que los guardes o los canceles.
+      </p>
+      <Nota>
+        Si la hoja se imprime sin nadie cargado, sale la grilla vacía: sirve para completarla a mano.
+      </Nota>
     </>
   ),
 

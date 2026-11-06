@@ -90,6 +90,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `movimientos_caja` / `movimientos_banco` | `CK_..._un_solo_tercero` | Un cobro o pago es de un cliente **o** de un proveedor, nunca de los dos |
 | `MedicionesSocio` | `CK_MedicionesSocio_Peso` / `_Grasa` / `_Perimetros` | Peso 20 a 400 kg, grasa 2 a 70 %, perímetros dentro de rangos humanos |
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
+| `TurnosEncargado` | `CK_TurnosEncargado_Dia` / `_Hora` / `_Nombre` | Día 1 a 5 (lunes a viernes), hora 6 a 21 (turnos de 06:00 a 22:00) y nombre no vacío |
 
 ### Únicas y claves foráneas
 
@@ -102,6 +103,8 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 - `AsistenciasSocio (SocioId, Fecha)` único: un ingreso por socio y día, aunque dos recepciones lo carguen a la vez.
   La FK a `Socios` es `RESTRICT`: no se puede borrar un socio que tiene ingresos. Esta tabla no tiene disparador de
   auditoría (cada fila guarda quién la registró y cuándo).
+- `TurnosEncargado (DiaSemana, Hora)` único: una sola persona de encargado por día y hora. Es el calendario semanal de
+  encargados (una fila por celda cargada, sin fechas: se repite todas las semanas) y tiene disparador de auditoría.
 - `AsignacionesRutina (SocioId)` único **donde Activa**: un socio tiene una sola rutina activa.
 - `Ejercicios` y `Rutinas`: nombre único sin distinguir mayúsculas (`lower("Nombre")`).
 - Las FK `lineas_asiento → CuentasContables`, `Facturas → asientos_contables` y
@@ -113,7 +116,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 |---|---|---|---|
 | `trg_validar_balance_lineas` / `trg_validar_balance_asiento` | `lineas_asiento`, `asientos_contables` | `AFTER`, **diferido** al `COMMIT` | Un asiento Confirmado debe cumplir la partida doble: Debe = Haber, más de 0 y al menos 2 líneas |
 | `trg_proteger_lineas_asiento` / `trg_proteger_asiento` | `lineas_asiento`, `asientos_contables` | `BEFORE UPDATE OR DELETE` | Un asiento Confirmado o Anulado es inmutable: no se borra, no vuelve a Borrador y sus líneas no cambian |
-| `trg_auditar_*` (11 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
+| `trg_auditar_*` (12 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de encargados | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
 | `trg_auditoria_solo_lectura` / `trg_auditoria_sin_truncate` | `auditoria` | `BEFORE UPDATE OR DELETE` / `BEFORE TRUNCATE` | La auditoría no se puede alterar |
 
 **¿Por qué el trigger de balance es diferido?** Al confirmar una factura se inserta
