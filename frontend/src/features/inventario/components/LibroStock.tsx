@@ -65,8 +65,9 @@ export function LibroStock() {
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-5 2xl:grid-cols-2">
-          {visibles.map((f) => (
-            <div key={f.producto} className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+          {visibles.map((f, i) => (
+            // Dos productos pueden llamarse igual y la API no trae su id: el nombre solo no alcanza como clave.
+            <div key={`${i}-${f.producto}`} className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
               <div className="flex items-baseline justify-between gap-3 border-b border-slate-200 bg-slate-50/80 px-4 py-3">
                 <h3 className="text-sm font-bold text-slate-900">Producto: {f.producto}</h3>
                 <span className="text-xs text-slate-500">Stock actual: <strong className="text-slate-900">{f.saldoFinal}</strong></span>
