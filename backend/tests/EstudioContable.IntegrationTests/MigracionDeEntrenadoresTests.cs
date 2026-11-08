@@ -1,8 +1,4 @@
-using EstudioContable.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql;
+using static EstudioContable.IntegrationTests.BasesDePrueba;
 
 namespace EstudioContable.IntegrationTests;
 
@@ -15,50 +11,6 @@ public class MigracionDeEntrenadoresTests(ApiFixture api)
 {
     private const string Anterior = "20261106182940_TurnosDeEncargado";
 
-    /// <summary>Crea (o recrea) una base vacía en el mismo contenedor y devuelve su cadena de conexión.</summary>
-    private async Task<string> BaseNueva(string nombre)
-    {
-        var cadena = new NpgsqlConnectionStringBuilder(api.ConnectionString);
-        await using (var admin = new NpgsqlConnection(cadena.ConnectionString))
-        {
-            await admin.OpenAsync();
-            await using var borrar = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{nombre}\" WITH (FORCE)", admin);
-            await borrar.ExecuteNonQueryAsync();
-            await using var crear = new NpgsqlCommand($"CREATE DATABASE \"{nombre}\"", admin);
-            await crear.ExecuteNonQueryAsync();
-        }
-        cadena.Database = nombre;
-        return cadena.ConnectionString;
-    }
-
-    private static AppDbContext Contexto(string cadena)
-        => new(new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(cadena).Options);
-
-    private static async Task Migrar(string cadena, string? destino = null)
-    {
-        await using var contexto = Contexto(cadena);
-        await contexto.GetService<IMigrator>().MigrateAsync(destino);
-    }
-
-    private static async Task Ejecutar(string cadena, string sql)
-    {
-        await using var c = new NpgsqlConnection(cadena);
-        await c.OpenAsync();
-        await using var cmd = new NpgsqlCommand(sql, c);
-        await cmd.ExecuteNonQueryAsync();
-    }
-
-    private static async Task<List<string>> Leer(string cadena, string sql)
-    {
-        await using var c = new NpgsqlConnection(cadena);
-        await c.OpenAsync();
-        await using var cmd = new NpgsqlCommand(sql, c);
-        await using var lector = await cmd.ExecuteReaderAsync();
-        var filas = new List<string>();
-        while (await lector.ReadAsync()) filas.Add(string.Join("|", Enumerable.Range(0, lector.FieldCount).Select(i => lector.GetValue(i)?.ToString())));
-        return filas;
-    }
-
     private const string TurnosViejos = """
         INSERT INTO contabilidad."TurnosEncargado" ("DiaSemana", "Hora", "Encargado") VALUES
             (1, 6, 'Ana'), (1, 7, '  ana  '), (2, 6, 'Ana  López'), (2, 7, 'ana lópez'), (3, 6, 'Beto')
@@ -67,7 +19,7 @@ public class MigracionDeEntrenadoresTests(ApiFixture api)
     [Fact]
     public async Task Los_nombres_ya_cargados_pasan_a_ser_una_ficha_por_persona_y_la_migracion_se_deshace()
     {
-        var cadena = await BaseNueva("migracion_entrenadores");
+        var cadena = await api.BaseNueva("migracion_entrenadores");
         await Migrar(cadena, Anterior);
         await Ejecutar(cadena, TurnosViejos);
 
@@ -98,7 +50,7 @@ public class MigracionDeEntrenadoresTests(ApiFixture api)
     [Fact]
     public async Task Una_base_sin_turnos_migra_hacia_arriba_y_hacia_abajo_sin_error()
     {
-        var cadena = await BaseNueva("migracion_entrenadores_vacia");
+        var cadena = await api.BaseNueva("migracion_entrenadores_vacia");
         await Migrar(cadena, Anterior);
 
         await Migrar(cadena);

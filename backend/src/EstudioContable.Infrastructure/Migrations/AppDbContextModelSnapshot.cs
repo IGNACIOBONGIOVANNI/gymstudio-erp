@@ -332,6 +332,67 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.ToTable("ClientesComerciales", "contabilidad");
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.ConfiguracionDeCopias", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("ActivaDesde")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Conservar")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DiaDeLaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DiaDelMes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Frecuencia")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("Hora")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Minuto")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("UltimaCopia")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UltimoError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("UltimoIntento")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConfiguracionDeCopias", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_Conservar", "\"Conservar\" BETWEEN 1 AND 60");
+
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_DiaMes", "\"DiaDelMes\" IS NULL OR \"DiaDelMes\" BETWEEN 1 AND 28");
+
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_DiaSemana", "\"DiaDeLaSemana\" IS NULL OR \"DiaDeLaSemana\" BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_Frecuencia", "\"Frecuencia\" IN ('CadaSeisHoras', 'CadaDoceHoras', 'Diaria', 'Semanal', 'Mensual')");
+
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_Hora", "\"Hora\" BETWEEN 0 AND 23");
+
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_Minuto", "\"Minuto\" BETWEEN 0 AND 59");
+
+                            t.HasCheckConstraint("CK_ConfiguracionDeCopias_Unica", "\"Id\" = 1");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.CuentaContable", b =>
                 {
                     b.Property<long>("Id")

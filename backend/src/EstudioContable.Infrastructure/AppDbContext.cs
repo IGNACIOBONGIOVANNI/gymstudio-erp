@@ -43,6 +43,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<AsistenciaSocio> AsistenciasSocio => Set<AsistenciaSocio>();
         public DbSet<TurnoEncargado> TurnosEncargado => Set<TurnoEncargado>();
         public DbSet<Entrenador> Entrenadores => Set<Entrenador>();
+        public DbSet<ConfiguracionDeCopias> ConfiguracionesDeCopias => Set<ConfiguracionDeCopias>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -199,6 +200,28 @@ namespace EstudioContable.Infrastructure.Persistence
                 {
                     t.HasCheckConstraint("CK_TurnosEncargado_Dia", $"\"DiaSemana\" BETWEEN {Domain.ReglasDeCalendario.PrimerDia} AND {Domain.ReglasDeCalendario.UltimoDia}");
                     t.HasCheckConstraint("CK_TurnosEncargado_Hora", $"\"Hora\" BETWEEN {Domain.ReglasDeCalendario.PrimeraHora} AND {Domain.ReglasDeCalendario.UltimaHora}");
+                });
+            });
+
+            // Programación de las copias de seguridad automáticas: una sola fila (Id = 1). La base repite las reglas del dominio
+            // (ConfiguracionDeCopias y ReglasDeCopiasAutomaticas) para que valgan aunque alguien escriba directo en ella.
+            modelBuilder.Entity<ConfiguracionDeCopias>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).ValueGeneratedNever();
+                // Se guarda el nombre de la frecuencia (legible en la copia de seguridad), no su número.
+                e.Property(x => x.Frecuencia).HasConversion<string>().HasMaxLength(20);
+                e.Property(x => x.UltimoError).HasMaxLength(ConfiguracionDeCopias.LargoMaximoDelError);
+                var frecuencias = string.Join(", ", Enum.GetNames<FrecuenciaDeCopia>().Select(n => $"'{n}'"));
+                e.ToTable("ConfiguracionDeCopias", t =>
+                {
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_Unica", $"\"Id\" = {ConfiguracionDeCopias.IdUnico}");
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_Hora", "\"Hora\" BETWEEN 0 AND 23");
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_Minuto", "\"Minuto\" BETWEEN 0 AND 59");
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_Conservar", $"\"Conservar\" BETWEEN {ConfiguracionDeCopias.ConservarMinimo} AND {ConfiguracionDeCopias.ConservarMaximo}");
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_DiaSemana", "\"DiaDeLaSemana\" IS NULL OR \"DiaDeLaSemana\" BETWEEN 1 AND 7");
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_DiaMes", $"\"DiaDelMes\" IS NULL OR \"DiaDelMes\" BETWEEN 1 AND {ConfiguracionDeCopias.DiaDelMesMaximo}");
+                    t.HasCheckConstraint("CK_ConfiguracionDeCopias_Frecuencia", $"\"Frecuencia\" IN ({frecuencias})");
                 });
             });
 

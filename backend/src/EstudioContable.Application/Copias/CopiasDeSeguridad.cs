@@ -95,6 +95,7 @@ namespace EstudioContable.Application.Copias
             ["contabilidad.Usuario"] = ("Usuarios", "Sistema", 60),
             ["contabilidad.auditoria"] = ("Auditoría", "Sistema", 61),
             ["public.__EFMigrationsHistory"] = ("Historial de migraciones", "Sistema", 62),
+            ["contabilidad.ConfiguracionDeCopias"] = ("Programación de copias automáticas", "Sistema", 63),
         };
 
         public static (string Etiqueta, string Grupo, int Orden) De(string tabla)
