@@ -146,7 +146,7 @@ public class EntrenadorTests
         foreach (var invalido in new[]
                  {
                      "sin-arroba", "a b@c.com", "a@b", "@c.com", "ana@", "ana@@gym.com", "ana@gym..", "ana@.com.", "ana@gym..com",
-                     "ana\t@gym.com", "ana@gym\n.com", "ana@gym .com", "ana@gym.com ana@gym.com", de255,
+                     "ana\t@gym.com", "ana@gym\n.com", "ana@gym\u00A0.com", "ana@gym.com ana@gym.com", de255,
                  })
         {
             Assert.Throws<ArgumentException>(() => Entrenador.LimpiarEmail(invalido));
@@ -162,10 +162,10 @@ public class EntrenadorTests
     }
 
     [Theory]
-    [InlineData(" ")]     // espacio duro: el que trae pegar desde WhatsApp
-    [InlineData(" ")]     // espacio duro angosto: el que ponen algunos teléfonos al copiar un número
-    [InlineData("  ")]
-    [InlineData("     ")]
+    [InlineData("\u00A0")]     // espacio duro: el que trae pegar desde WhatsApp
+    [InlineData("\u202F")]     // espacio duro angosto: el que ponen algunos teléfonos al copiar un número
+    [InlineData("\u00A0\u00A0")]
+    [InlineData(" \u00A0 \u202F ")]
     public void El_WhatsApp_pegado_con_espacios_duros_se_guarda_con_espacios_comunes(string espacio)
     {
         Assert.Equal("+54 11 5555-1234", Entrenador.LimpiarWhatsApp($"+54{espacio}11{espacio}5555-1234"));

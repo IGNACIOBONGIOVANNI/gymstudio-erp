@@ -167,7 +167,7 @@ public class EntrenadoresTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var nombre = Nuevo("Con Contacto");
-        var id = await Crear(jefe, nombre, email: "  ana@gym.com ", whatsApp: "+54 11 5555-1234");   // el espacio duro lo trae pegar desde el teléfono
+        var id = await Crear(jefe, nombre, email: "  ana@gym.com ", whatsApp: "+54\u00A011\u00A05555-1234");   // el espacio duro lo trae pegar desde el teléfono
 
         foreach (var cliente in new[] { jefe, await api.Contador(), await api.Recepcion() })
         {

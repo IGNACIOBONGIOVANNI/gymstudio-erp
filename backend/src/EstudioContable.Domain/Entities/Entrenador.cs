@@ -22,7 +22,7 @@ namespace EstudioContable.Domain.Entities
         // cualquier racha pasa a un solo espacio común, así «Ana López» y «Ana López» con espacio duro son la misma ficha. El tabulador
         // y el salto de línea no están acá: son caracteres de control y el texto que los trae se rechaza.
         private static readonly Regex EspaciosRepetidos = new(
-            @"[    -     　]+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+            @"[ \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         // algo@dominio.ext: sin espacios, una sola arroba y un dominio con al menos un punto y sin partes vacías («a@b», «a@b..com» no valen).
         private static readonly Regex FormaDeEmail = new(
