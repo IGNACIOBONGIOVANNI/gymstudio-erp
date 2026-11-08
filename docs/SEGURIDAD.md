@@ -16,7 +16,7 @@ Qué protege el sistema, cómo se comprobó y qué queda pendiente para un uso r
 | Validaciones | Los números, códigos, tipos y documentos tienen forma y tope en el dominio (valen por cualquier camino). El texto libre no admite caracteres de control ni largos absurdos. |
 | Archivos | Solo `.xlsx` de hasta 5 MB; se descomprime hasta un tope (bomba zip) y se limitan las filas. |
 | Auditoría del equipo | Cada cambio y cada inicio de sesión registran IP, sistema operativo y navegador. La IP solo se toma de `X-Forwarded-For` desde una red de confianza. |
-| Copias | Copia completa descargable desde la pantalla (solo Administrador) con SHA-256 y manifiesto por tabla; vista previa que la compara con el sistema actual y restauración todo-o-nada con confirmación escrita. Los scripts (`backup.ps1`, `comparar-backup.ps1`, `restaurar.ps1`) hacen lo mismo desde PowerShell. |
+| Copias | Copia completa descargable desde la pantalla (solo Administrador) con SHA-256 y manifiesto por tabla; vista previa que la compara con el sistema actual y restauración todo-o-nada con confirmación escrita. Se puede programar para que el sistema la haga sola (cada 6 h, 12 h, diaria, semanal o mensual) en `backupsutomaticas`. Los scripts (`backup.ps1`, `comparar-backup.ps1`, `restaurar.ps1`) hacen lo mismo desde PowerShell. |
 | Política | Reglas escritas de quién es responsable de qué, en [`POLITICA_DE_SEGURIDAD.md`](POLITICA_DE_SEGURIDAD.md) y en el manual (sección *Política de seguridad*). |
 | Errores | Los errores internos no muestran trazas ni datos de la base. |
 | Dependencias | Sin vulnerabilidades conocidas en NuGet ni en las dependencias de producción de npm. |
@@ -152,6 +152,13 @@ Cómo se limitó el riesgo (cada punto tiene su test en `CopiasDeSeguridadTests`
 5. **No se restaura por error.** Exige escribir `RESTAURAR` (también lo exige el servidor), descarga antes una copia de lo que hay, y
    rechaza una copia de otra versión de la base.
 6. **Queda registrado.** Descargar y restaurar se guardan en la auditoría con el usuario y el equipo.
+7. **Copias automáticas.** Programarlas, hacer una a pedido, listarlas y descargarlas es solo del Administrador (401 y 403 como las demás).
+   La descarga acepta únicamente el nombre exacto `gymstudio_auto_AAAAMMDD_HHMMSS.zip`, validado antes de armar la ruta y otra vez
+   después (sin `..`, barras, rutas absolutas, saltos de línea ni dígitos de otros alfabetos), así que no puede salir de su carpeta; la
+   retención solo borra archivos con ese nombre exacto. La programación se valida entera en el servidor y en la base. Cada cambio y cada
+   copia (`PROGRAMADA`, `AUTOMATICA`, `FALLIDA`, `GUARDADA`) queda en la auditoría. Una falla de la tarea se guarda con un mensaje
+   genérico (el detalle va al registro del servidor) y nunca tumba el sistema. Tienen su test en `CopiasAutomaticasServicioTests` y
+   `CopiasAutomaticasApiTests`.
 
 Lo que **no** resuelve y conviene tener presente: la copia no está cifrada y trae los hashes de las contraseñas y los datos
 personales de los socios, por lo que su custodia depende de quien la guarda. La restauración necesita que la base le dé permisos de

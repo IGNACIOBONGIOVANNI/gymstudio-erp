@@ -42,6 +42,14 @@ auditoría) con un manifiesto y una huella de cada una. **Seleccionar copia (.zi
 sistema actual, tabla por tabla, y desde ahí se puede restaurar: pide escribir `RESTAURAR`, descarga antes una copia de lo que hay y
 es todo o nada (si algo falla, no queda nada a medias). Descargar y restaurar quedan en la Auditoría.
 
+**Copia automática** (en la misma pestaña, solo Administrador): se programa **cada 6 h, cada 12 h, todos los días, una vez por semana o
+una vez por mes**, a la hora de Argentina que se elija, y el sistema hace solo la misma copia completa y firmada, la guarda en la carpeta
+`backupsutomaticas` del proyecto y conserva las últimas N (de 1 a 60). La pantalla muestra la próxima y la última copia (y el motivo si
+una falló, con reintento a los 30 minutos), tiene el botón **Hacer una copia ahora** y la lista de las guardadas para descargarlas. Si
+Docker estaba apagado a la hora programada, hace una sola copia al arrancar. Para que la carpeta quede en la PC y no se pierda al recrear
+el contenedor, el `docker-compose.yml` monta `./backups`: tras actualizar el proyecto hay que recrear el backend una vez
+(`docker compose up -d`).
+
 **Con scripts** (en PowerShell, con el sistema levantado; es lo que usa la copia diaria programada):
 
 ```powershell
@@ -131,7 +139,7 @@ controlan en el backend; el frontend sólo oculta menús.
 | Deshacer un ingreso cargado por error                      | ✔ | ✔ | ✘ |
 | Crear, confirmar o anular asientos manuales; crear cuentas | ✔ | ✔ | ✘ |
 | Administrar usuarios y consultar la auditoría              | ✔ | ✘ | ✘ |
-| Descargar, comparar y restaurar copias de seguridad        | ✔ | ✘ | ✘ |
+| Descargar, comparar, restaurar y programar copias de seguridad | ✔ | ✘ | ✘ |
 
 El administrador principal no puede eliminarse, desactivarse ni perder el rol.
 

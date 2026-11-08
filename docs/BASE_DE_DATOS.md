@@ -92,6 +92,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
 | `TurnosEncargado` | `CK_TurnosEncargado_Dia` / `_Hora` | Día 1 a 5 (lunes a viernes) y hora 6 a 21 (turnos de 06:00 a 22:00) |
 | `Entrenadores` | `CK_Entrenadores_Nombre` | Nombre no vacío |
+| `ConfiguracionDeCopias` | `CK_ConfiguracionDeCopias_Unica` / `_Hora` / `_Minuto` / `_Conservar` / `_DiaSemana` / `_DiaMes` / `_Frecuencia` | Una sola fila (`Id = 1`), hora 0 a 23, minuto 0 a 59, copias a conservar 1 a 60, día de la semana 1 a 7, día del mes 1 a 28 y una de las cinco frecuencias |
 
 ### Únicas y claves foráneas
 
@@ -110,6 +111,10 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
   no se borra: se desactiva, y la API lo permite solo si no tiene horas en el calendario).
 - `Entrenadores`: nombre único sin distinguir mayúsculas (índice `ux_entrenadores_nombre` sobre `lower("NombreCompleto")`).
   Son fichas sin acceso al sistema (no son filas de `Usuario`). Tiene disparador de auditoría.
+- `ConfiguracionDeCopias`: **una sola fila** (`Id = 1`, `CHECK` y clave primaria), que la migración deja creada: copia automática apagada,
+  diaria a las 22:00 y las últimas 14 copias. Es la programación de las copias automáticas y cómo le fue a la última (`UltimaCopia`,
+  `UltimoIntento`, `UltimoError`). Tiene disparador de auditoría y entra en la copia de seguridad como cualquier otra tabla (por eso
+  restaurar una copia devuelve también la programación de ese momento).
 - `AsignacionesRutina (SocioId)` único **donde Activa**: un socio tiene una sola rutina activa.
 - `Ejercicios` y `Rutinas`: nombre único sin distinguir mayúsculas (`lower("Nombre")`).
 - Las FK `lineas_asiento → CuentasContables`, `Facturas → asientos_contables` y
@@ -121,7 +126,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 |---|---|---|---|
 | `trg_validar_balance_lineas` / `trg_validar_balance_asiento` | `lineas_asiento`, `asientos_contables` | `AFTER`, **diferido** al `COMMIT` | Un asiento Confirmado debe cumplir la partida doble: Debe = Haber, más de 0 y al menos 2 líneas |
 | `trg_proteger_lineas_asiento` / `trg_proteger_asiento` | `lineas_asiento`, `asientos_contables` | `BEFORE UPDATE OR DELETE` | Un asiento Confirmado o Anulado es inmutable: no se borra, no vuelve a Borrador y sus líneas no cambian |
-| `trg_auditar_*` (13 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de entrenadores, entrenadores | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
+| `trg_auditar_*` (14 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de entrenadores, entrenadores, programación de copias automáticas | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
 | `trg_auditoria_solo_lectura` / `trg_auditoria_sin_truncate` | `auditoria` | `BEFORE UPDATE OR DELETE` / `BEFORE TRUNCATE` | La auditoría no se puede alterar |
 
 **¿Por qué el trigger de balance es diferido?** Al confirmar una factura se inserta

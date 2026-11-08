@@ -21,7 +21,7 @@ Proteger la **confidencialidad**, la **integridad** y la **disponibilidad** de l
 - **Integridad:** los datos contables no se alteran sin dejar rastro. Un asiento confirmado no se edita; una factura
   equivocada se anula, no se borra; todo cambio queda registrado con quién, cuándo y desde qué equipo.
 - **Disponibilidad:** el negocio puede seguir trabajando y recuperarse de un error, una rotura de la PC o un ataque, gracias a
-  copias de seguridad verificadas.
+  copias de seguridad verificadas (que el sistema también puede hacer solo, con la copia automática).
 
 ## 2. Alcance
 

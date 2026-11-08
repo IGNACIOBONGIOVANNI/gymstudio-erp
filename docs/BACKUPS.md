@@ -2,7 +2,8 @@
 
 Los datos contables (facturas, asientos, caja, banco, stock, socios, usuarios y auditoría) viven en
 PostgreSQL, dentro del volumen de Docker `postgres_data`. Ese volumen **se borra** con
-`docker compose down -v`, y se pierde con la PC. Por eso hay dos formas de copiarlos:
+`docker compose down -v`, y se pierde con la PC. Por eso hay dos formas de copiarlos (y la de la pantalla se puede programar para
+que se haga sola: ver *Hacerla automática*):
 
 | | Desde el sistema (`.zip`) | Con los scripts (`.dump`) |
 |---|---|---|
@@ -89,6 +90,52 @@ la versión anterior de `backup.ps1` no traen manifiesto: en ese caso solo se pu
 
 ## Hacerla automática
 
+Hay dos caminos y se pueden usar los dos.
+
+### Desde el sistema: copia automática
+
+En *Configuración › Copia de seguridad › Copia automática* (solo Administrador) se programa cada cuánto se hace la copia completa:
+**cada 6 horas**, **cada 12 horas**, **todos los días**, **una vez por semana** (a elección, el día) o **una vez por mes** (el día 1 al 28:
+el 29, 30 y 31 no existen todos los meses). Se elige la hora (**hora de Argentina**, UTC-3, como el resto del sistema; en las
+frecuencias de 6 y 12 horas, desde cuándo se cuenta) y **cuántas copias conservar** (de 1 a 60; por defecto 14). La pantalla muestra la
+**próxima copia**, la **última** y, si falló, el motivo; tiene el botón **Hacer una copia ahora** (útil para comprobar que anda sin esperar
+a la hora programada) y la lista de las copias guardadas con su botón *Descargar*.
+
+Cómo funciona, y por qué se puede confiar:
+
+- Es una tarea dentro del propio backend: espera unos segundos a que el sistema arranque y, cada minuto, se pregunta si toca. La
+  programación vive en la base (tabla `ConfiguracionDeCopias`, una sola fila, con restricciones que repiten las reglas aunque alguien
+  escriba directo en ella).
+- Hace **la misma copia firmada** que *Descargar copia completa*: no hay un segundo formato. Se compara y se restaura con *Seleccionar
+  copia (.zip)* como cualquier otra, y una copia alterada se compara pero no se restaura.
+- Se guarda en la carpeta `backups\automaticas` del proyecto, con el nombre `gymstudio_auto_AAAAMMDD_HHMMSS.zip` (hora de Argentina).
+  El `docker-compose.yml` monta esa carpeta de la PC dentro del contenedor (`./backups:/backups` y `Copias__Carpeta=/backups/automaticas`):
+  sin eso las copias vivirían dentro del contenedor y se perderían al recrearlo. Al actualizar el proyecto hay que **recrear el
+  contenedor del backend una vez** (`docker compose up -d`) para que tome el volumen.
+- Se escribe primero en un archivo temporal y después se renombra, así no queda nunca un archivo a medias con nombre de copia (un corte
+  de luz deja a lo sumo un `.zip.tmp`, que se borra en la corrida siguiente).
+- **Retención:** después de guardar una copia se borran las más viejas y quedan las últimas N, pero solo entre los archivos que se llaman
+  exactamente como una copia automática: nunca toca los `.dump` de los scripts ni ningún otro archivo de la carpeta.
+- **Si Docker estaba apagado** a la hora programada, se hace **una** copia apenas arranca, aunque se hayan salteado varias. Una copia hecha
+  con *Hacer una copia ahora* cuenta como la última, pero no mueve la próxima programada.
+- **Si falla** (carpeta sin permisos, disco lleno, base ocupada) el sistema lo anota, lo muestra en pantalla con un mensaje claro (el detalle
+  técnico va al registro del servidor) y **reintenta a los 30 minutos**, no cada minuto. Una falla nunca tumba el sistema.
+- **Seguridad:** solo el Administrador ve, cambia y descarga (401 sin sesión, 403 para Contador y Recepción). La descarga acepta solamente
+  el nombre exacto de una copia automática (`gymstudio_auto_` + fecha + hora + `.zip`, validado antes de armar la ruta y otra vez después):
+  no hay forma de pedir `..\`, una ruta absoluta ni otro archivo. Cada cambio de programación y cada copia quedan en la **Auditoría**
+  (tabla *Copias de seguridad*: `PROGRAMADA` con quién lo cambió, `AUTOMATICA` y `FALLIDA` con el usuario «sistema», `GUARDADA` para las
+  hechas a pedido).
+- Las copias **no están cifradas** y traen datos de socios y hashes de contraseñas: la carpeta `backups` es privada, igual que las demás.
+- Como la programación está en la base, **restaurar una copia devuelve también la programación** a como estaba cuando se hizo esa copia.
+  Una copia hecha con una versión anterior de la base se compara pero no se restaura desde la pantalla (comportamiento de siempre).
+- Dos opciones de configuración (`appsettings` o variables de entorno): `Copias:Carpeta` (por defecto `backups/automaticas`; en Docker,
+  `/backups/automaticas`) y `Copias:TareaAutomatica` (`true` por defecto; con `false` no corre la tarea).
+
+Requiere que el sistema esté levantado (Docker abierto) a esa hora. Si querés una copia aunque el sistema esté apagado, usá el camino
+siguiente.
+
+### Con el Programador de tareas de Windows (scripts)
+
 ```powershell
 .\scripts\programar-backup.ps1            # todos los días a las 22:00
 .\scripts\programar-backup.ps1 -Hora 18:30
@@ -96,7 +143,8 @@ la versión anterior de `backup.ps1` no traen manifiesto: en ese caso solo se pu
 ```
 
 Usa el Programador de tareas de Windows; si la PC estaba apagada a esa hora, la copia se hace apenas
-se prende. Requiere Docker Desktop abierto.
+se prende. Requiere Docker Desktop abierto. Hace copias `.dump` (volcado de PostgreSQL) en la carpeta `backups`, aparte de las
+automáticas del sistema.
 
 ## Restaurar
 

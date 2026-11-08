@@ -44,6 +44,7 @@ EstudioContable.sln
 │   │   │   ├── Migrations/                  # Migraciones EF Core
 │   │   │   └── Repositories/                # ClienteRepository, AsientoRepository
 │   │   ├── Identity/                        # ASP.NET Core Identity + JWT
+│   │   ├── Copias/                          # CopiasDeSeguridadService, CopiasAutomaticasService (guarda, rota y lista)
 │   │   └── DependencyInjection.cs
 │   │
 │   └── EstudioContable.API/                 # Punto de entrada HTTP
@@ -54,6 +55,7 @@ EstudioContable.sln
 │       ├── Middlewares/                     # ExceptionHandlingMiddleware (mapea excepciones
 │       │                                     # de dominio a códigos HTTP), Logging
 │       ├── Filters/                         # [Authorize(Roles = "Administrador,Contador")]
+│       ├── Copias/                          # CopiasAutomaticasHostedService: tarea en segundo plano (cada minuto, ¿toca copia?)
 │       ├── Program.cs
 │       └── appsettings.json
 │
