@@ -1,0 +1,2044 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e76f503d-9e40-4f3e-a8e4-bb360fbbb667" name="elgua@DESKTOP-P6LEPN3 2026-11-07 22:42:10" runUser="DESKTOP-P6LEPN3\elgua" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-07T22:42:10.6368544-03:00" queuing="2026-11-07T22:42:10.6368549-03:00" start="2026-11-07T22:42:01.2752126-03:00" finish="2026-11-07T22:42:13.1380247-03:00" />
+  <TestSettings name="default" id="a8483f09-225d-42fd-ab36-f4bf6a3354d2">
+    <Deployment runDeploymentRoot="elgua_DESKTOP-P6LEPN3_2026-11-07_22_42_10" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5657a98a-cecc-4ad0-8af0-f7a6a2f76502" testId="e5bf4430-0f06-65b6-c75e-01c50e39747e" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre con carácter nulo&quot;, nombre: &quot;Ana\0&quot;, telefono: null, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0559890" startTime="2026-11-07T22:42:11.8266359-03:00" endTime="2026-11-07T22:42:11.8826261-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5657a98a-cecc-4ad0-8af0-f7a6a2f76502">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido 1d1a692f»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3ae4a918-de74-431f-a353-deca295ac87e" testId="ae068b13-d9e6-e819-3ece-64ee2e9159ff" testName="EstudioContable.IntegrationTests.EntrenadoresTests.El_texto_hostil_se_guarda_como_texto" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0562150" startTime="2026-11-07T22:42:12.4222030-03:00" endTime="2026-11-07T22:42:12.4784290-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ae4a918-de74-431f-a353-deca295ac87e">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «'; DROP TABLE contabilidad."Entrenadores"; -- &lt;script&gt;alert(1)&lt;/script&gt; 8ab6d8»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.El_texto_hostil_se_guarda_como_texto() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 151&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="315fde3a-ca66-4533-98a2-433ede7320c2" testId="40bb47da-a3e9-b5df-fd1e-92dfcb502372" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Solo_Administrador_y_Contador_cargan_editan_y_cambian_el_estado" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0602798" startTime="2026-11-07T22:42:12.5408854-03:00" endTime="2026-11-07T22:42:12.6012951-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="315fde3a-ca66-4533-98a2-433ede7320c2">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Permisos 4f35402b»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Solo_Administrador_y_Contador_cargan_editan_y_cambian_el_estado() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 69&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d62c18fa-1924-4dd2-9541-bb59a77e1a2a" testId="c25a04bd-6864-d2a2-4b37-14526f4e3eb3" testName="EstudioContable.IntegrationTests.EntrenadoresTests.La_lista_trae_las_horas_semanales" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0557667" startTime="2026-11-07T22:42:12.3642019-03:00" endTime="2026-11-07T22:42:12.4217309-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d62c18fa-1924-4dd2-9541-bb59a77e1a2a">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Con Horas Semanales d43fdcce»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.La_lista_trae_las_horas_semanales() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 211&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e90251d7-5eae-48f9-bd91-c931673ecd4d" testId="e971c054-06ae-3e7d-94b9-88f9d5cd42fa" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre vacío&quot;, nombre: &quot;&quot;, telefono: null, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0553347" startTime="2026-11-07T22:42:12.1076135-03:00" endTime="2026-11-07T22:42:12.1630562-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e90251d7-5eae-48f9-bd91-c931673ecd4d">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido 05e71a7a»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a40118ea-1746-4409-b9bd-2391125f457c" testId="b335ba4e-d7bb-33f6-9d63-0d5f47136ff4" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_inexistente_da_404" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0661013" startTime="2026-11-07T22:42:11.7037832-03:00" endTime="2026-11-07T22:42:11.7695546-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a40118ea-1746-4409-b9bd-2391125f457c" />
+    <UnitTestResult executionId="100655a8-ae10-4466-bcc4-3347e64b84ea" testId="238182fe-f302-257e-106b-a3954210ee6e" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Todos_los_roles_leen_la_lista_y_sin_sesion_no_se_ve" computerName="DESKTOP-P6LEPN3" duration="00:00:00.4656928" startTime="2026-11-07T22:42:11.1567728-03:00" endTime="2026-11-07T22:42:11.6314534-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="100655a8-ae10-4466-bcc4-3347e64b84ea">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Lectura bdb28aef»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Todos_los_roles_leen_la_lista_y_sin_sesion_no_se_ve() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 51&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1585cdbd-f40d-43fb-9a71-9eaa41614cea" testId="c66eaaf1-dd3d-9718-f96f-c666e6192e45" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre nulo&quot;, nombre: null, telefono: null, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0555902" startTime="2026-11-07T22:42:11.9955268-03:00" endTime="2026-11-07T22:42:12.0513688-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1585cdbd-f40d-43fb-9a71-9eaa41614cea">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido e0b75187»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fcf902ad-2a20-4218-9d06-a86b3571d415" testId="e857cd2d-98e0-e89d-5f0f-14a2c82e68f7" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Desactivar_con_horas_en_el_calendario_se_rechaza_con_la_cantidad" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0571485" startTime="2026-11-07T22:42:12.3069928-03:00" endTime="2026-11-07T22:42:12.3637452-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fcf902ad-2a20-4218-9d06-a86b3571d415">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Con Horas 2691830a»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Desactivar_con_horas_en_el_calendario_se_rechaza_con_la_cantidad() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 173&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7fcd2618-297c-4cad-9288-1f2f39be0933" testId="2156fd0a-6a29-d075-78aa-1e2ad0c49b76" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre en blanco&quot;, nombre: &quot;     &quot;, telefono: null, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0560517" startTime="2026-11-07T22:42:11.7697116-03:00" endTime="2026-11-07T22:42:11.8261441-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7fcd2618-297c-4cad-9288-1f2f39be0933">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido e79e8f83»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="801eb5c2-b980-4ec3-ada3-cf113ab7c2a1" testId="c31f29e6-e779-595b-b007-d2bae6f57d54" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre con salto de línea&quot;, nombre: &quot;Ana\nBeto&quot;, telefono: null, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0553780" startTime="2026-11-07T22:42:11.8830890-03:00" endTime="2026-11-07T22:42:11.9385256-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="801eb5c2-b980-4ec3-ada3-cf113ab7c2a1">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido 114cc403»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="66d8f16a-1a3c-4405-8b3c-01abe3e2d28e" testId="ee6af06b-d6fd-ee75-2ace-ea0c5c8e20bf" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre de 81 letras&quot;, nombre: &quot;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;···, telefono: null, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0552810" startTime="2026-11-07T22:42:12.0533572-03:00" endTime="2026-11-07T22:42:12.1071781-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="66d8f16a-1a3c-4405-8b3c-01abe3e2d28e">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido 672d8620»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4d36aea6-e176-459e-9f0d-5cc3616f835a" testId="85c0801d-d9b3-3e02-9ec8-6f71f9c2026b" testName="EstudioContable.IntegrationTests.MigracionDeEntrenadoresTests.Una_base_sin_turnos_migra_hacia_arriba_y_hacia_abajo_sin_error" computerName="DESKTOP-P6LEPN3" duration="00:00:00.9313282" startTime="2026-11-07T22:42:10.2305267-03:00" endTime="2026-11-07T22:42:11.1546192-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4d36aea6-e176-459e-9f0d-5cc3616f835a" />
+    <UnitTestResult executionId="edaa3a3f-1804-4392-96a6-4204b06bb58f" testId="64d1b623-3862-d7f2-505c-98e431c6a647" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;especialidad de 61 caracteres&quot;, nombre: &quot;&lt;nombre válido&gt;&quot;, telefono: null, especialidad: &quot;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee&quot;···)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0561411" startTime="2026-11-07T22:42:11.9390418-03:00" endTime="2026-11-07T22:42:11.9951550-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edaa3a3f-1804-4392-96a6-4204b06bb58f">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido b1148052»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b4688356-2d0e-4037-bff1-6d91d4bd9385" testId="169d89cb-cfb1-66e9-13c0-20d0e0b81563" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Se_desactiva_sin_horas_y_se_vuelve_a_activar_y_soloActivos_oculta_a_los_desactivados" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0718643" startTime="2026-11-07T22:42:11.6365490-03:00" endTime="2026-11-07T22:42:11.7032147-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b4688356-2d0e-4037-bff1-6d91d4bd9385">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Baja dd532306»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Se_desactiva_sin_horas_y_se_vuelve_a_activar_y_soloActivos_oculta_a_los_desactivados() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 194&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="99fa8b55-466a-455f-a97f-eb18fe5ed782" testId="e0abe20a-d2cc-fb1e-e939-994a741c95f9" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_nombre_repetido_en_otra_grafia_se_rechaza" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0615200" startTime="2026-11-07T22:42:12.4788113-03:00" endTime="2026-11-07T22:42:12.5404863-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99fa8b55-466a-455f-a97f-eb18fe5ed782">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Ana López 70623448»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_nombre_repetido_en_otra_grafia_se_rechaza() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 93&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="51e7bc56-2f24-4b6e-96a7-2bd6f85efcc2" testId="b366127a-eaa5-89db-db05-115458851991" testName="EstudioContable.IntegrationTests.MigracionDeEntrenadoresTests.Los_nombres_ya_cargados_pasan_a_ser_una_ficha_por_persona_y_la_migracion_se_deshace" computerName="DESKTOP-P6LEPN3" duration="00:00:01.1250979" startTime="2026-11-07T22:42:09.1080320-03:00" endTime="2026-11-07T22:42:10.2210740-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="51e7bc56-2f24-4b6e-96a7-2bd6f85efcc2" />
+    <UnitTestResult executionId="32753ee6-35dc-493f-856f-efe99b6f8b76" testId="274825e1-897c-dca2-2797-263abc4853a1" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_cargado_desde_la_API_entra_en_la_copia_de_seguridad" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0562766" startTime="2026-11-07T22:42:12.6022977-03:00" endTime="2026-11-07T22:42:12.6581176-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="32753ee6-35dc-493f-856f-efe99b6f8b76">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Para La Copia 86022191»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_cargado_desde_la_API_entra_en_la_copia_de_seguridad() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 245&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0ce3cdec-3384-4ec9-a364-dd95158491d5" testId="363be65d-0d0e-ed43-f624-0e2cb0386faf" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;teléfono de 31 caracteres&quot;, nombre: &quot;&lt;nombre válido&gt;&quot;, telefono: &quot;1111111111111111111111111111111&quot;, especialidad: null)" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0599466" startTime="2026-11-07T22:42:12.1634239-03:00" endTime="2026-11-07T22:42:12.2236363-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0ce3cdec-3384-4ec9-a364-dd95158491d5">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Valido 9f8d711d»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 133&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f71557f1-f449-452b-95b9-a2e58e666f2b" testId="5479251e-47ff-eea7-7c04-b64121b27a30" testName="EstudioContable.IntegrationTests.EntrenadoresTests.Renombrar_a_un_entrenador_se_ve_en_el_calendario" computerName="DESKTOP-P6LEPN3" duration="00:00:00.0818794" startTime="2026-11-07T22:42:12.2240546-03:00" endTime="2026-11-07T22:42:12.3060768-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f71557f1-f449-452b-95b9-a2e58e666f2b">
+      <Output>
+        <ErrorInfo>
+          <Message>Alta de «Nombre Viejo 4d948492»: se esperaba 201 y fue 404. </Message>
+          <StackTrace>   at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad) in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 24&#xD;
+   at EstudioContable.IntegrationTests.EntrenadoresTests.Renombrar_a_un_entrenador_se_ve_en_el_calendario() in C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs:line 226&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre vacío&quot;, nombre: &quot;&quot;, telefono: null, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="e971c054-06ae-3e7d-94b9-88f9d5cd42fa">
+      <Execution id="e90251d7-5eae-48f9-bd91-c931673ecd4d" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre con salto de línea&quot;, nombre: &quot;Ana\nBeto&quot;, telefono: null, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="c31f29e6-e779-595b-b007-d2bae6f57d54">
+      <Execution id="801eb5c2-b980-4ec3-ada3-cf113ab7c2a1" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Renombrar_a_un_entrenador_se_ve_en_el_calendario" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="5479251e-47ff-eea7-7c04-b64121b27a30">
+      <Execution id="f71557f1-f449-452b-95b9-a2e58e666f2b" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Renombrar_a_un_entrenador_se_ve_en_el_calendario" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_nombre_repetido_en_otra_grafia_se_rechaza" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="e0abe20a-d2cc-fb1e-e939-994a741c95f9">
+      <Execution id="99fa8b55-466a-455f-a97f-eb18fe5ed782" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_nombre_repetido_en_otra_grafia_se_rechaza" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Se_desactiva_sin_horas_y_se_vuelve_a_activar_y_soloActivos_oculta_a_los_desactivados" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="169d89cb-cfb1-66e9-13c0-20d0e0b81563">
+      <Execution id="b4688356-2d0e-4037-bff1-6d91d4bd9385" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Se_desactiva_sin_horas_y_se_vuelve_a_activar_y_soloActivos_oculta_a_los_desactivados" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Desactivar_con_horas_en_el_calendario_se_rechaza_con_la_cantidad" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="e857cd2d-98e0-e89d-5f0f-14a2c82e68f7">
+      <Execution id="fcf902ad-2a20-4218-9d06-a86b3571d415" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Desactivar_con_horas_en_el_calendario_se_rechaza_con_la_cantidad" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.La_lista_trae_las_horas_semanales" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="c25a04bd-6864-d2a2-4b37-14526f4e3eb3">
+      <Execution id="d62c18fa-1924-4dd2-9541-bb59a77e1a2a" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="La_lista_trae_las_horas_semanales" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;teléfono de 31 caracteres&quot;, nombre: &quot;&lt;nombre válido&gt;&quot;, telefono: &quot;1111111111111111111111111111111&quot;, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="363be65d-0d0e-ed43-f624-0e2cb0386faf">
+      <Execution id="0ce3cdec-3384-4ec9-a364-dd95158491d5" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre con carácter nulo&quot;, nombre: &quot;Ana\0&quot;, telefono: null, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="e5bf4430-0f06-65b6-c75e-01c50e39747e">
+      <Execution id="5657a98a-cecc-4ad0-8af0-f7a6a2f76502" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_cargado_desde_la_API_entra_en_la_copia_de_seguridad" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="274825e1-897c-dca2-2797-263abc4853a1">
+      <Execution id="32753ee6-35dc-493f-856f-efe99b6f8b76" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_entrenador_cargado_desde_la_API_entra_en_la_copia_de_seguridad" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Todos_los_roles_leen_la_lista_y_sin_sesion_no_se_ve" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="238182fe-f302-257e-106b-a3954210ee6e">
+      <Execution id="100655a8-ae10-4466-bcc4-3347e64b84ea" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Todos_los_roles_leen_la_lista_y_sin_sesion_no_se_ve" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;especialidad de 61 caracteres&quot;, nombre: &quot;&lt;nombre válido&gt;&quot;, telefono: null, especialidad: &quot;eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee&quot;···)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="64d1b623-3862-d7f2-505c-98e431c6a647">
+      <Execution id="edaa3a3f-1804-4392-96a6-4204b06bb58f" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre en blanco&quot;, nombre: &quot;     &quot;, telefono: null, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="2156fd0a-6a29-d075-78aa-1e2ad0c49b76">
+      <Execution id="7fcd2618-297c-4cad-9288-1f2f39be0933" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_inexistente_da_404" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="b335ba4e-d7bb-33f6-9d63-0d5f47136ff4">
+      <Execution id="a40118ea-1746-4409-b9bd-2391125f457c" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_entrenador_inexistente_da_404" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.MigracionDeEntrenadoresTests.Los_nombres_ya_cargados_pasan_a_ser_una_ficha_por_persona_y_la_migracion_se_deshace" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="b366127a-eaa5-89db-db05-115458851991">
+      <Execution id="51e7bc56-2f24-4b6e-96a7-2bd6f85efcc2" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.MigracionDeEntrenadoresTests" name="Los_nombres_ya_cargados_pasan_a_ser_una_ficha_por_persona_y_la_migracion_se_deshace" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.MigracionDeEntrenadoresTests.Una_base_sin_turnos_migra_hacia_arriba_y_hacia_abajo_sin_error" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="85c0801d-d9b3-3e02-9ec8-6f71f9c2026b">
+      <Execution id="4d36aea6-e176-459e-9f0d-5cc3616f835a" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.MigracionDeEntrenadoresTests" name="Una_base_sin_turnos_migra_hacia_arriba_y_hacia_abajo_sin_error" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre nulo&quot;, nombre: null, telefono: null, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="c66eaaf1-dd3d-9718-f96f-c666e6192e45">
+      <Execution id="1585cdbd-f40d-43fb-9a71-9eaa41614cea" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.El_texto_hostil_se_guarda_como_texto" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="ae068b13-d9e6-e819-3ece-64ee2e9159ff">
+      <Execution id="3ae4a918-de74-431f-a353-deca295ac87e" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="El_texto_hostil_se_guarda_como_texto" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Solo_Administrador_y_Contador_cargan_editan_y_cambian_el_estado" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="40bb47da-a3e9-b5df-fd1e-92dfcb502372">
+      <Execution id="315fde3a-ca66-4533-98a2-433ede7320c2" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Solo_Administrador_y_Contador_cargan_editan_y_cambian_el_estado" />
+    </UnitTest>
+    <UnitTest name="EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: &quot;nombre de 81 letras&quot;, nombre: &quot;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;···, telefono: null, especialidad: null)" storage="c:\sistema_contable\backend\tests\estudiocontable.integrationtests\bin\debug\net10.0\estudiocontable.integrationtests.dll" id="ee6af06b-d6fd-ee75-2ace-ea0c5c8e20bf">
+      <Execution id="66d8f16a-1a3c-4405-8b3c-01abe3e2d28e" />
+      <TestMethod codeBase="C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\bin\Debug\net10.0\EstudioContable.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="EstudioContable.IntegrationTests.EntrenadoresTests" name="Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="e5bf4430-0f06-65b6-c75e-01c50e39747e" executionId="5657a98a-cecc-4ad0-8af0-f7a6a2f76502" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae068b13-d9e6-e819-3ece-64ee2e9159ff" executionId="3ae4a918-de74-431f-a353-deca295ac87e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="40bb47da-a3e9-b5df-fd1e-92dfcb502372" executionId="315fde3a-ca66-4533-98a2-433ede7320c2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c25a04bd-6864-d2a2-4b37-14526f4e3eb3" executionId="d62c18fa-1924-4dd2-9541-bb59a77e1a2a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e971c054-06ae-3e7d-94b9-88f9d5cd42fa" executionId="e90251d7-5eae-48f9-bd91-c931673ecd4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b335ba4e-d7bb-33f6-9d63-0d5f47136ff4" executionId="a40118ea-1746-4409-b9bd-2391125f457c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="238182fe-f302-257e-106b-a3954210ee6e" executionId="100655a8-ae10-4466-bcc4-3347e64b84ea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c66eaaf1-dd3d-9718-f96f-c666e6192e45" executionId="1585cdbd-f40d-43fb-9a71-9eaa41614cea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e857cd2d-98e0-e89d-5f0f-14a2c82e68f7" executionId="fcf902ad-2a20-4218-9d06-a86b3571d415" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2156fd0a-6a29-d075-78aa-1e2ad0c49b76" executionId="7fcd2618-297c-4cad-9288-1f2f39be0933" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c31f29e6-e779-595b-b007-d2bae6f57d54" executionId="801eb5c2-b980-4ec3-ada3-cf113ab7c2a1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ee6af06b-d6fd-ee75-2ace-ea0c5c8e20bf" executionId="66d8f16a-1a3c-4405-8b3c-01abe3e2d28e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="85c0801d-d9b3-3e02-9ec8-6f71f9c2026b" executionId="4d36aea6-e176-459e-9f0d-5cc3616f835a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64d1b623-3862-d7f2-505c-98e431c6a647" executionId="edaa3a3f-1804-4392-96a6-4204b06bb58f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="169d89cb-cfb1-66e9-13c0-20d0e0b81563" executionId="b4688356-2d0e-4037-bff1-6d91d4bd9385" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e0abe20a-d2cc-fb1e-e939-994a741c95f9" executionId="99fa8b55-466a-455f-a97f-eb18fe5ed782" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b366127a-eaa5-89db-db05-115458851991" executionId="51e7bc56-2f24-4b6e-96a7-2bd6f85efcc2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="274825e1-897c-dca2-2797-263abc4853a1" executionId="32753ee6-35dc-493f-856f-efe99b6f8b76" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="363be65d-0d0e-ed43-f624-0e2cb0386faf" executionId="0ce3cdec-3384-4ec9-a364-dd95158491d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5479251e-47ff-eea7-7c04-b64121b27a30" executionId="f71557f1-f449-452b-95b9-a2e58e666f2b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Resultados sin formato de lista" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Todos los resultados cargados" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="20" executed="20" passed="3" failed="17" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.9)&#xD;
+[xUnit.net 00:00:00.08]   Discovering: EstudioContable.IntegrationTests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  EstudioContable.IntegrationTests&#xD;
+[xUnit.net 00:00:00.17]   Starting:    EstudioContable.IntegrationTests&#xD;
+[testcontainers.org 00:00:00.11] Connected to Docker:&#xD;
+  Host: npipe://./pipe/docker_engine&#xD;
+  Server Version: 28.5.1&#xD;
+  Kernel Version: 6.18.54.1-microsoft-standard-WSL2&#xD;
+  API Version: 1.51&#xD;
+  Operating System: Docker Desktop (containerized)&#xD;
+  Total Memory: 15.31 GB&#xD;
+  Labels: &#xD;
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli&#xD;
+[testcontainers.org 00:00:00.32] Docker container 6cb9bbb1dec3 created&#xD;
+[testcontainers.org 00:00:00.38] Start Docker container 6cb9bbb1dec3&#xD;
+[testcontainers.org 00:00:00.58] Wait for Docker container 6cb9bbb1dec3 to complete readiness checks&#xD;
+[testcontainers.org 00:00:01.61] Docker container 6cb9bbb1dec3 ready&#xD;
+[testcontainers.org 00:00:01.75] Docker container 57800326d26e created&#xD;
+[testcontainers.org 00:00:01.77] Start Docker container 57800326d26e&#xD;
+[testcontainers.org 00:00:01.96] Wait for Docker container 57800326d26e to complete readiness checks&#xD;
+[testcontainers.org 00:00:01.97] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 57800326d26e&#xD;
+[testcontainers.org 00:00:03.06] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 57800326d26e&#xD;
+[testcontainers.org 00:00:04.14] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 57800326d26e&#xD;
+[testcontainers.org 00:00:04.22] Docker container 57800326d26e ready&#xD;
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]&#xD;
+      Failed executing DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT "MigrationId", "ProductVersion"&#xD;
+      FROM "__EFMigrationsHistory"&#xD;
+      ORDER BY "MigrationId";&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260709150618_Inicial'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260812161630_AddSeedDataV2'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813011240_AgregarFacturasVenta'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813014117_AgregarFacturasCompra'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813032238_AgregarMovimientosCaja'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813163016_AgregarMovimientoCaja'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813171216_AgregarMovimientosBanco'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813171654_AgregarMovimientosBancoDinamico'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813180458_AddCondicionPagoToFacturas'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260813190145_AgregarColumnaCondicionPago'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260814004126_AgregarEntidadesGimnasio'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260815025312_AgregarFacturacion'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260815220344_AgregarTipoOperacion'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260818232936_AgregarCondicionPago'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260824222612_AgregandoRelacionFacturas'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260825202554_AddCascadeDeleteToMovimientos'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260825233438_AddCuentasContablesSeed'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260826005837_AddAsientoContableIdToFacturas'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260827174708_UpdateAccountNames'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260827193349_AgregarModuloInventario'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260827194307_FacturasConDetalleEInventario'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260827195315_AgregarDetalleFacturas'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260828014605_AgregarCamposNutricionalesProducto'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260902184931_RemoveMockData'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260923020253_AddClienteComercial'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260923161005_AddClienteComercialActivo'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260928174256_AddProveedorModule'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260928183447_AddProveedorToFacturaCompra'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260928231833_AddAfipDataToFactura'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260929000606_ActualizacionModelosAFIPySocios'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260929003753_AddPlanDuracionAndSocioEstado'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20260929004632_RenameDuracionDiasToMeses'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261026171022_AnulacionFacturasYContraasientos'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261026171440_CorregirFkPlanActualSocio'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261026172745_UsuariosConLogin'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Usuario" ADD "Telefono" character varying(50);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE UNIQUE INDEX "IX_Usuario_Email" ON contabilidad."Usuario" ("Email");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261026172745_UsuariosConLogin', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261026195747_ObjetosDeBaseDeDatos'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      -- Cuentas duplicadas de un seed viejo ("Caja" cargada como Pasivo e&#xD;
+      -- "IVA a Pagar"). S�lo se borran si no tienen ning�n movimiento.&#xD;
+      DELETE FROM contabilidad."CuentasContables" c&#xD;
+      WHERE c."Id" IN (1, 2)&#xD;
+        AND NOT EXISTS (SELECT 1 FROM contabilidad.lineas_asiento l WHERE l.cuenta_id = c."Id");&#xD;
+      -- Planes con duraci�n 0 (quedaron as� al renombrar DuracionDias a&#xD;
+      -- DuracionMeses). El sistema ya los trataba como de 1 mes.&#xD;
+      UPDATE contabilidad."Planes" SET "DuracionMeses" = 1 WHERE "DuracionMeses" &lt;= 0;&#xD;
+      -- Membres�as cuyo vencimiento qued� microsegundos antes del inicio por un&#xD;
+      -- error de c�lculo ya corregido (se tomaba la hora actual dos veces).&#xD;
+      UPDATE contabilidad."Membresias" SET "FechaVencimiento" = "FechaInicio"&#xD;
+      WHERE "FechaVencimiento" &lt; "FechaInicio";&#xD;
+      -- Referencias hu�rfanas que impedir�an crear las claves for�neas nuevas.&#xD;
+      UPDATE contabilidad."Facturas" f SET "AsientoContableId" = NULL&#xD;
+      WHERE f."AsientoContableId" IS NOT NULL&#xD;
+        AND NOT EXISTS (SELECT 1 FROM contabilidad.asientos_contables a WHERE a."Id" = f."AsientoContableId");&#xD;
+      UPDATE contabilidad."FacturaItems" i SET "ProductoId" = NULL&#xD;
+      WHERE i."ProductoId" IS NOT NULL&#xD;
+        AND NOT EXISTS (SELECT 1 FROM inventario."Productos" p WHERE p."Id" = i."ProductoId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad.auditoria (&#xD;
+          id bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          tabla character varying(100) NOT NULL,&#xD;
+          operacion character varying(10) NOT NULL,&#xD;
+          registro_id character varying(50),&#xD;
+          datos_anteriores jsonb,&#xD;
+          datos_nuevos jsonb,&#xD;
+          campos_modificados text[] NOT NULL,&#xD;
+          usuario character varying(254) NOT NULL,&#xD;
+          fecha timestamp with time zone NOT NULL DEFAULT (now()),&#xD;
+          CONSTRAINT "PK_auditoria" PRIMARY KEY (id)&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."CuentasContables" SET "Nombre" = 'IVA Cr�dito Fiscal'&#xD;
+      WHERE "Id" = 105;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."CuentasContables" SET "Nombre" = 'IVA D�bito Fiscal'&#xD;
+      WHERE "Id" = 201;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."CuentasContables" SET "Nombre" = 'Compras'&#xD;
+      WHERE "Id" = 501;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE inventario."Productos" ADD CONSTRAINT "CK_Productos_StockNoNegativo" CHECK ("StockActual" &gt;= 0);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Planes" ADD CONSTRAINT "CK_Planes_Valores" CHECK ("DuracionMeses" &gt; 0 AND "PrecioMensual" &gt;= 0);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD CONSTRAINT "CK_movimientos_caja_importe_positivo" CHECK ("Importe" &gt; 0);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD CONSTRAINT "CK_movimientos_banco_importe_positivo" CHECK ("Importe" &gt; 0);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Membresias" ADD CONSTRAINT "CK_Membresias_Vigencia" CHECK ("FechaVencimiento" &gt;= "FechaInicio");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad.lineas_asiento ADD CONSTRAINT "CK_lineas_asiento_debe_o_haber" CHECK ((debe &gt; 0) &lt;&gt; (haber &gt; 0));&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad.lineas_asiento ADD CONSTRAINT "CK_lineas_asiento_importes_no_negativos" CHECK (debe &gt;= 0 AND haber &gt;= 0);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_Facturas_AsientoContableId" ON contabilidad."Facturas" ("AsientoContableId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Facturas" ADD CONSTRAINT "CK_Facturas_ImportesNoNegativos" CHECK ("Subtotal" &gt;= 0 AND "Iva" &gt;= 0);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Facturas" ADD CONSTRAINT "CK_Facturas_TotalEsSubtotalMasIva" CHECK ("Total" = "Subtotal" + "Iva");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_FacturaItems_ProductoId" ON contabilidad."FacturaItems" ("ProductoId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_auditoria_fecha" ON contabilidad.auditoria (fecha);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_auditoria_tabla_registro_id" ON contabilidad.auditoria (tabla, registro_id);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."FacturaItems" ADD CONSTRAINT "FK_FacturaItems_Productos_ProductoId" FOREIGN KEY ("ProductoId") REFERENCES inventario."Productos" ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Facturas" ADD CONSTRAINT "FK_Facturas_asientos_contables_AsientoContableId" FOREIGN KEY ("AsientoContableId") REFERENCES contabilidad.asientos_contables ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (45ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      -- =====================================================================&#xD;
+      -- 1. Partida doble: un asiento Confirmado debe balancear (Debe = Haber)&#xD;
+      --    y tener al menos dos l�neas.&#xD;
+      --    Es un CONSTRAINT TRIGGER diferido: se eval�a al hacer COMMIT, cuando&#xD;
+      --    el asiento y todas sus l�neas ya fueron insertados en la transacci�n.&#xD;
+      -- =====================================================================&#xD;
+      CREATE OR REPLACE FUNCTION contabilidad.fn_validar_balance_asiento()&#xD;
+      RETURNS trigger&#xD;
+      LANGUAGE plpgsql AS $$&#xD;
+      DECLARE&#xD;
+          v_asiento_id bigint;&#xD;
+          v_estado     text;&#xD;
+          v_debe       numeric(18,2);&#xD;
+          v_haber      numeric(18,2);&#xD;
+          v_lineas     integer;&#xD;
+      BEGIN&#xD;
+          IF TG_TABLE_NAME = 'asientos_contables' THEN&#xD;
+              v_asiento_id := NEW."Id";&#xD;
+          ELSIF TG_OP = 'DELETE' THEN&#xD;
+              v_asiento_id := OLD.asiento_id;&#xD;
+          ELSE&#xD;
+              v_asiento_id := NEW.asiento_id;&#xD;
+          END IF;&#xD;
+          SELECT estado INTO v_estado&#xD;
+          FROM contabilidad.asientos_contables&#xD;
+          WHERE "Id" = v_asiento_id;&#xD;
+          -- Los borradores pueden estar desbalanceados mientras se cargan.&#xD;
+          IF v_estado IS DISTINCT FROM 'Confirmado' THEN&#xD;
+              RETURN NULL;&#xD;
+          END IF;&#xD;
+          SELECT COALESCE(SUM(debe), 0), COALESCE(SUM(haber), 0), COUNT(*)&#xD;
+          INTO v_debe, v_haber, v_lineas&#xD;
+          FROM contabilidad.lineas_asiento&#xD;
+          WHERE asiento_id = v_asiento_id;&#xD;
+          IF v_lineas &lt; 2 OR v_debe = 0 OR v_debe &lt;&gt; v_haber THEN&#xD;
+              RAISE EXCEPTION 'El asiento % no cumple la partida doble (Debe = %, Haber = %, l�neas = %).',&#xD;
+                  v_asiento_id, v_debe, v_haber, v_lineas&#xD;
+                  USING ERRCODE = 'check_violation';&#xD;
+          END IF;&#xD;
+          RETURN NULL;&#xD;
+      END;&#xD;
+      $$;&#xD;
+      CREATE CONSTRAINT TRIGGER trg_validar_balance_lineas&#xD;
+          AFTER INSERT OR UPDATE OR DELETE ON contabilidad.lineas_asiento&#xD;
+          DEFERRABLE INITIALLY DEFERRED&#xD;
+          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_validar_balance_asiento();&#xD;
+      CREATE CONSTRAINT TRIGGER trg_validar_balance_asiento&#xD;
+          AFTER INSERT OR UPDATE OF estado ON contabilidad.asientos_contables&#xD;
+          DEFERRABLE INITIALLY DEFERRED&#xD;
+          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_validar_balance_asiento();&#xD;
+      -- =====================================================================&#xD;
+      -- 2. Inmutabilidad: un asiento Confirmado o Anulado no se borra ni se&#xD;
+      --    modifica (ni �l ni sus l�neas). Para corregirlo se registra un&#xD;
+      --    contraasiento. S�lo se permite pasar de Confirmado a Anulado.&#xD;
+      -- =====================================================================&#xD;
+      CREATE OR REPLACE FUNCTION contabilidad.fn_proteger_asiento_confirmado()&#xD;
+      RETURNS trigger&#xD;
+      LANGUAGE plpgsql AS $$&#xD;
+      DECLARE&#xD;
+          v_estado text;&#xD;
+      BEGIN&#xD;
+          IF TG_TABLE_NAME = 'lineas_asiento' THEN&#xD;
+              SELECT estado INTO v_estado&#xD;
+              FROM contabilidad.asientos_contables&#xD;
+              WHERE "Id" = OLD.asiento_id;&#xD;
+              IF v_estado IN ('Confirmado', 'Anulado') THEN&#xD;
+                  RAISE EXCEPTION 'Las l�neas del asiento % no pueden modificarse porque est� %.', OLD.asiento_id, v_estado;&#xD;
+              END IF;&#xD;
+          ELSIF OLD.estado &lt;&gt; 'Borrador' THEN&#xD;
+              IF TG_OP = 'DELETE' THEN&#xD;
+                  RAISE EXCEPTION 'El asiento N� % est� % y no puede eliminarse: corresponde registrar un contraasiento.',&#xD;
+                      OLD.numero_asiento, OLD.estado;&#xD;
+              END IF;&#xD;
+              IF NEW.estado = 'Borrador'&#xD;
+                 OR (OLD.estado = 'Anulado' AND NEW.estado &lt;&gt; 'Anulado')&#xD;
+                 OR NEW.fecha &lt;&gt; OLD.fecha&#xD;
+                 OR NEW.numero_asiento &lt;&gt; OLD.numero_asiento&#xD;
+                 OR NEW.descripcion &lt;&gt; OLD.descripcion&#xD;
+                 OR NEW.cliente_id &lt;&gt; OLD.cliente_id THEN&#xD;
+                  RAISE EXCEPTION 'El asiento N� % est� % y no puede modificarse.', OLD.numero_asiento, OLD.estado;&#xD;
+              END IF;&#xD;
+          END IF;&#xD;
+          IF TG_OP = 'DELETE' THEN&#xD;
+              RETURN OLD;&#xD;
+          END IF;&#xD;
+          RETURN NEW;&#xD;
+      END;&#xD;
+      $$;&#xD;
+      CREATE TRIGGER trg_proteger_lineas_asiento&#xD;
+          BEFORE UPDATE OR DELETE ON contabilidad.lineas_asiento&#xD;
+          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_proteger_asiento_confirmado();&#xD;
+      CREATE TRIGGER trg_proteger_asiento&#xD;
+          BEFORE UPDATE OR DELETE ON contabilidad.asientos_contables&#xD;
+          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_proteger_asiento_confirmado();&#xD;
+      -- =====================================================================&#xD;
+      -- 3. Auditor�a: cada INSERT, UPDATE o DELETE de las tablas auditadas queda&#xD;
+      --    registrado en contabilidad.auditoria con la fila antes y despu�s, los&#xD;
+      --    campos modificados y el usuario. La API informa el usuario logueado&#xD;
+      --    con set_config('app.usuario', ...); si el cambio no viene de la API se&#xD;
+      --    registra el usuario de PostgreSQL.&#xD;
+      -- =====================================================================&#xD;
+      CREATE OR REPLACE FUNCTION contabilidad.fn_auditar()&#xD;
+      RETURNS trigger&#xD;
+      LANGUAGE plpgsql AS $$&#xD;
+      DECLARE&#xD;
+          -- Nunca se guarda el hash de la contrase�a; el �ltimo login no es un&#xD;
+          -- cambio de datos y generar�a un registro por cada inicio de sesi�n.&#xD;
+          c_ignorados CONSTANT text[] := ARRAY['PasswordHash', 'UltimoLogin'];&#xD;
+          v_anterior  jsonb;&#xD;
+          v_nuevo     jsonb;&#xD;
+          v_campos    text[];&#xD;
+      BEGIN&#xD;
+          IF TG_OP &lt;&gt; 'INSERT' THEN&#xD;
+              v_anterior := to_jsonb(OLD) - c_ignorados;&#xD;
+          END IF;&#xD;
+          IF TG_OP &lt;&gt; 'DELETE' THEN&#xD;
+              v_nuevo := to_jsonb(NEW) - c_ignorados;&#xD;
+          END IF;&#xD;
+          IF TG_OP = 'UPDATE' THEN&#xD;
+              SELECT array_agg(n.key ORDER BY n.key) INTO v_campos&#xD;
+              FROM jsonb_each(v_nuevo) n&#xD;
+              WHERE v_anterior -&gt; n.key IS DISTINCT FROM n.value;&#xD;
+              -- El cambio de contrase�a se registra, sin guardar el hash.&#xD;
+              IF (to_jsonb(OLD) -&gt;&gt; 'PasswordHash') IS DISTINCT FROM (to_jsonb(NEW) -&gt;&gt; 'PasswordHash') THEN&#xD;
+                  v_campos := array_append(COALESCE(v_campos, '{}'), 'Contrase�a');&#xD;
+              END IF;&#xD;
+              -- S�lo cambiaron campos ignorados: no hay nada que auditar.&#xD;
+              IF v_campos IS NULL THEN&#xD;
+                  RETURN NULL;&#xD;
+              END IF;&#xD;
+          END IF;&#xD;
+          INSERT INTO contabilidad.auditoria&#xD;
+              (tabla, operacion, registro_id, datos_anteriores, datos_nuevos, campos_modificados, usuario, fecha)&#xD;
+          VALUES (&#xD;
+              TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME,&#xD;
+              TG_OP,&#xD;
+              COALESCE(v_nuevo, v_anterior) -&gt;&gt; 'Id',&#xD;
+              v_anterior,&#xD;
+              v_nuevo,&#xD;
+              COALESCE(v_campos, '{}'),&#xD;
+              COALESCE(NULLIF(current_setting('app.usuario', true), ''), session_user),&#xD;
+              now());&#xD;
+          RETURN NULL;&#xD;
+      END;&#xD;
+      $$;&#xD;
+      CREATE TRIGGER trg_auditar_facturas         AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Facturas"         FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      CREATE TRIGGER trg_auditar_asientos         AFTER INSERT OR UPDATE OR DELETE ON contabilidad.asientos_contables FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      CREATE TRIGGER trg_auditar_cuentas          AFTER INSERT OR UPDATE OR DELETE ON contabilidad."CuentasContables" FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      CREATE TRIGGER trg_auditar_usuarios         AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Usuario"          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      CREATE TRIGGER trg_auditar_planes           AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Planes"           FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      CREATE TRIGGER trg_auditar_socios           AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Socios"           FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      CREATE TRIGGER trg_auditar_productos        AFTER INSERT OR UPDATE OR DELETE ON inventario."Productos"          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+      -- La auditor�a es de s�lo lectura: ni siquiera la propia base permite&#xD;
+      -- modificar o borrar registros.&#xD;
+      CREATE OR REPLACE FUNCTION contabilidad.fn_auditoria_solo_lectura()&#xD;
+      RETURNS trigger&#xD;
+      LANGUAGE plpgsql AS $$&#xD;
+      BEGIN&#xD;
+          RAISE EXCEPTION 'La tabla de auditor�a es de s�lo lectura (operaci�n % rechazada).', TG_OP;&#xD;
+      END;&#xD;
+      $$;&#xD;
+      CREATE TRIGGER trg_auditoria_solo_lectura&#xD;
+          BEFORE UPDATE OR DELETE ON contabilidad.auditoria&#xD;
+          FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditoria_solo_lectura();&#xD;
+      CREATE TRIGGER trg_auditoria_sin_truncate&#xD;
+          BEFORE TRUNCATE ON contabilidad.auditoria&#xD;
+          FOR EACH STATEMENT EXECUTE FUNCTION contabilidad.fn_auditoria_solo_lectura();&#xD;
+      -- =====================================================================&#xD;
+      -- 4. Vista del Libro Mayor: totales y saldo por cuenta de los asientos&#xD;
+      --    confirmados (los contraasientos tambi�n suman, y dejan en cero lo&#xD;
+      --    que revierten).&#xD;
+      -- =====================================================================&#xD;
+      CREATE OR REPLACE VIEW contabilidad.v_libro_mayor AS&#xD;
+      SELECT a.cliente_id,&#xD;
+             c."Id"           AS cuenta_id,&#xD;
+             c."Codigo"::text AS codigo,&#xD;
+             c."Nombre"::text AS nombre,&#xD;
+             c."Naturaleza"   AS naturaleza,&#xD;
+             SUM(l.debe)           AS total_debe,&#xD;
+             SUM(l.haber)          AS total_haber,&#xD;
+             SUM(l.debe - l.haber) AS saldo&#xD;
+      FROM contabilidad.lineas_asiento l&#xD;
+      JOIN contabilidad.asientos_contables a ON a."Id" = l.asiento_id&#xD;
+      JOIN contabilidad."CuentasContables" c ON c."Id" = l.cuenta_id&#xD;
+      WHERE a.estado = 'Confirmado'&#xD;
+      GROUP BY a.cliente_id, c."Id", c."Codigo", c."Nombre", c."Naturaleza";&#xD;
+      -- =====================================================================&#xD;
+      -- 5. Balance de sumas y saldos entre fechas (par�metros opcionales).&#xD;
+      --    Devuelve todas las cuentas del cliente, con el saldo expresado seg�n&#xD;
+      --    su naturaleza: Debe - Haber para el Activo (0) y Haber - Debe para&#xD;
+      --    Pasivo (1), Patrimonio Neto (2) y Resultado (3).&#xD;
+      -- =====================================================================&#xD;
+      CREATE OR REPLACE FUNCTION contabilidad.fn_sumas_y_saldos(&#xD;
+          p_cliente_id bigint,&#xD;
+          p_desde      date DEFAULT NULL,&#xD;
+          p_hasta      date DEFAULT NULL)&#xD;
+      RETURNS TABLE (&#xD;
+          cuenta_id     bigint,&#xD;
+          codigo        text,&#xD;
+          nombre        text,&#xD;
+          naturaleza    integer,&#xD;
+          total_debe    numeric,&#xD;
+          total_haber   numeric,&#xD;
+          saldo_natural numeric)&#xD;
+      LANGUAGE sql STABLE AS $$&#xD;
+          SELECT c."Id",&#xD;
+                 c."Codigo"::text,&#xD;
+                 c."Nombre"::text,&#xD;
+                 c."Naturaleza",&#xD;
+                 COALESCE(SUM(m.debe), 0),&#xD;
+                 COALESCE(SUM(m.haber), 0),&#xD;
+                 CASE WHEN c."Naturaleza" = 0&#xD;
+                      THEN COALESCE(SUM(m.debe), 0) - COALESCE(SUM(m.haber), 0)&#xD;
+                      ELSE COALESCE(SUM(m.haber), 0) - COALESCE(SUM(m.debe), 0)&#xD;
+                 END&#xD;
+          FROM contabilidad."CuentasContables" c&#xD;
+          LEFT JOIN (&#xD;
+              SELECT l.cuenta_id, l.debe, l.haber&#xD;
+              FROM contabilidad.lineas_asiento l&#xD;
+              JOIN contabilidad.asientos_contables a ON a."Id" = l.asiento_id&#xD;
+              WHERE a.estado = 'Confirmado'&#xD;
+                AND a.cliente_id = p_cliente_id&#xD;
+                AND (p_desde IS NULL OR a.fecha &gt;= p_desde)&#xD;
+                AND (p_hasta IS NULL OR a.fecha &lt;= p_hasta)&#xD;
+          ) m ON m.cuenta_id = c."Id"&#xD;
+          WHERE c."ClienteId" = p_cliente_id&#xD;
+          GROUP BY c."Id", c."Codigo", c."Nombre", c."Naturaleza"&#xD;
+          ORDER BY c."Codigo";&#xD;
+      $$;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261026195747_ObjetosDeBaseDeDatos', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261026211232_MovimientosManualesConAsiento'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD "AsientoContableId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD "AsientoContableId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO contabilidad."CuentasContables" ("Id", "Activa", "ClienteId", "Codigo", "CuentaPadreId", "Naturaleza", "Nombre")&#xD;
+      VALUES (106, TRUE, 1, '4.1.2.01', NULL, 3, 'Otros Ingresos');&#xD;
+      INSERT INTO contabilidad."CuentasContables" ("Id", "Activa", "ClienteId", "Codigo", "CuentaPadreId", "Naturaleza", "Nombre")&#xD;
+      VALUES (107, TRUE, 1, '5.2.1.01', NULL, 3, 'Gastos Generales');&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_movimientos_caja_AsientoContableId" ON caja.movimientos_caja ("AsientoContableId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_movimientos_banco_AsientoContableId" ON banco.movimientos_banco ("AsientoContableId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD CONSTRAINT "FK_movimientos_banco_asientos_contables_AsientoContableId" FOREIGN KEY ("AsientoContableId") REFERENCES contabilidad.asientos_contables ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD CONSTRAINT "FK_movimientos_caja_asientos_contables_AsientoContableId" FOREIGN KEY ("AsientoContableId") REFERENCES contabilidad.asientos_contables ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT setval(&#xD;
+    pg_get_serial_sequence('contabilidad."CuentasContables"', 'Id'),&#xD;
+    GREATEST(&#xD;
+        (SELECT MAX("Id") FROM contabilidad."CuentasContables") + 1,&#xD;
+        nextval(pg_get_serial_sequence('contabilidad."CuentasContables"', 'Id'))),&#xD;
+    false);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261026211232_MovimientosManualesConAsiento', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261026233640_NumeroDeComprobante'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Facturas" ADD "NumeroComprobante" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Facturas" ADD "PuntoVenta" integer;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Facturas" f&#xD;
+      SET "PuntoVenta" = 1, "NumeroComprobante" = n.numero&#xD;
+      FROM (SELECT "Id", ROW_NUMBER() OVER (PARTITION BY "TipoComprobante" ORDER BY "Fecha", "Id") AS numero&#xD;
+            FROM contabilidad."Facturas" WHERE "TipoOperacion" = 'Venta') n&#xD;
+      WHERE f."Id" = n."Id";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."Facturas" ADD CONSTRAINT "CK_Facturas_Numeracion" CHECK (&#xD;
+          ("PuntoVenta" IS NULL OR "PuntoVenta" BETWEEN 1 AND 99999)&#xD;
+          AND ("NumeroComprobante" IS NULL OR "NumeroComprobante" BETWEEN 1 AND 99999999));&#xD;
+      -- Una venta no puede repetir n�mero dentro de su tipo y punto de venta.&#xD;
+      CREATE UNIQUE INDEX "UX_Facturas_NumeroVenta" ON contabilidad."Facturas"&#xD;
+          ("TipoComprobante", "PuntoVenta", "NumeroComprobante")&#xD;
+          WHERE "TipoOperacion" = 'Venta' AND "NumeroComprobante" IS NOT NULL;&#xD;
+      -- La misma factura de un proveedor no puede estar cargada dos veces (salvo anulada).&#xD;
+      CREATE UNIQUE INDEX "UX_Facturas_NumeroCompra" ON contabilidad."Facturas"&#xD;
+          ("ProveedorId", "TipoComprobante", "PuntoVenta", "NumeroComprobante")&#xD;
+          WHERE "TipoOperacion" = 'Compra' AND NOT "Anulada"&#xD;
+            AND "ProveedorId" IS NOT NULL AND "NumeroComprobante" IS NOT NULL;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261026233640_NumeroDeComprobante', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261027000810_AnularContraasientos'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad.asientos_contables&#xD;
+      SET estado = 'Anulado'&#xD;
+      WHERE estado = 'Confirmado'&#xD;
+        AND (asiento_revertido_id IS NOT NULL&#xD;
+             OR "Id" IN (SELECT asiento_revertido_id FROM contabilidad.asientos_contables&#xD;
+                         WHERE asiento_revertido_id IS NOT NULL AND estado = 'Confirmado'));&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261027000810_AnularContraasientos', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261028011520_RutinasDeGimnasio'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."Ejercicios" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "Nombre" character varying(100) NOT NULL,&#xD;
+          "GrupoMuscular" character varying(30) NOT NULL,&#xD;
+          "Activo" boolean NOT NULL,&#xD;
+          CONSTRAINT "PK_Ejercicios" PRIMARY KEY ("Id")&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."Rutinas" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "Nombre" character varying(100) NOT NULL,&#xD;
+          "Objetivo" character varying(200) NOT NULL,&#xD;
+          "Nivel" character varying(20) NOT NULL,&#xD;
+          "Activa" boolean NOT NULL,&#xD;
+          "ModificadaEn" timestamp with time zone NOT NULL,&#xD;
+          CONSTRAINT "PK_Rutinas" PRIMARY KEY ("Id")&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."AsignacionesRutina" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "SocioId" bigint NOT NULL,&#xD;
+          "RutinaId" bigint NOT NULL,&#xD;
+          "FechaInicio" date NOT NULL,&#xD;
+          "FechaFin" date,&#xD;
+          "Observaciones" character varying(500) NOT NULL,&#xD;
+          "Activa" boolean NOT NULL,&#xD;
+          CONSTRAINT "PK_AsignacionesRutina" PRIMARY KEY ("Id"),&#xD;
+          CONSTRAINT "CK_AsignacionesRutina_Fechas" CHECK ("FechaFin" IS NULL OR "FechaFin" &gt;= "FechaInicio"),&#xD;
+          CONSTRAINT "FK_AsignacionesRutina_Rutinas_RutinaId" FOREIGN KEY ("RutinaId") REFERENCES contabilidad."Rutinas" ("Id") ON DELETE RESTRICT,&#xD;
+          CONSTRAINT "FK_AsignacionesRutina_Socios_SocioId" FOREIGN KEY ("SocioId") REFERENCES contabilidad."Socios" ("Id") ON DELETE RESTRICT&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."RutinaEjercicios" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "RutinaId" bigint NOT NULL,&#xD;
+          "EjercicioId" bigint NOT NULL,&#xD;
+          "Dia" integer NOT NULL,&#xD;
+          "Orden" integer NOT NULL,&#xD;
+          "Series" integer NOT NULL,&#xD;
+          "Repeticiones" character varying(20) NOT NULL,&#xD;
+          "DescansoSegundos" integer NOT NULL,&#xD;
+          "Indicaciones" character varying(200) NOT NULL,&#xD;
+          CONSTRAINT "PK_RutinaEjercicios" PRIMARY KEY ("Id"),&#xD;
+          CONSTRAINT "CK_RutinaEjercicios_Descanso" CHECK ("DescansoSegundos" BETWEEN 0 AND 600),&#xD;
+          CONSTRAINT "CK_RutinaEjercicios_Dia" CHECK ("Dia" BETWEEN 1 AND 7),&#xD;
+          CONSTRAINT "CK_RutinaEjercicios_Series" CHECK ("Series" BETWEEN 1 AND 20),&#xD;
+          CONSTRAINT "FK_RutinaEjercicios_Ejercicios_EjercicioId" FOREIGN KEY ("EjercicioId") REFERENCES contabilidad."Ejercicios" ("Id") ON DELETE RESTRICT,&#xD;
+          CONSTRAINT "FK_RutinaEjercicios_Rutinas_RutinaId" FOREIGN KEY ("RutinaId") REFERENCES contabilidad."Rutinas" ("Id") ON DELETE CASCADE&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_AsignacionesRutina_RutinaId" ON contabilidad."AsignacionesRutina" ("RutinaId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE UNIQUE INDEX ux_asignaciones_rutina_activa_por_socio ON contabilidad."AsignacionesRutina" ("SocioId") WHERE "Activa";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_RutinaEjercicios_EjercicioId" ON contabilidad."RutinaEjercicios" ("EjercicioId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_RutinaEjercicios_RutinaId" ON contabilidad."RutinaEjercicios" ("RutinaId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+                      CREATE UNIQUE INDEX ux_ejercicios_nombre ON contabilidad."Ejercicios" (lower("Nombre"));&#xD;
+                      CREATE UNIQUE INDEX ux_rutinas_nombre    ON contabilidad."Rutinas"    (lower("Nombre"));&#xD;
+                      CREATE TRIGGER trg_auditar_ejercicios   AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Ejercicios"         FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+                      CREATE TRIGGER trg_auditar_rutinas      AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Rutinas"            FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+                      CREATE TRIGGER trg_auditar_asignaciones AFTER INSERT OR UPDATE OR DELETE ON contabilidad."AsignacionesRutina" FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261028011520_RutinasDeGimnasio', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261028020609_MedicionesDeSocios'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."MedicionesSocio" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "SocioId" bigint NOT NULL,&#xD;
+          "Fecha" date NOT NULL,&#xD;
+          "PesoKg" numeric(6,1) NOT NULL,&#xD;
+          "GrasaCorporalPct" numeric(6,1),&#xD;
+          "CinturaCm" numeric(6,1),&#xD;
+          "CaderaCm" numeric(6,1),&#xD;
+          "PechoCm" numeric(6,1),&#xD;
+          "BrazoCm" numeric(6,1),&#xD;
+          "MusloCm" numeric(6,1),&#xD;
+          "Notas" character varying(300) NOT NULL,&#xD;
+          CONSTRAINT "PK_MedicionesSocio" PRIMARY KEY ("Id"),&#xD;
+          CONSTRAINT "CK_MedicionesSocio_Grasa" CHECK ("GrasaCorporalPct" IS NULL OR "GrasaCorporalPct" BETWEEN 2 AND 70),&#xD;
+          CONSTRAINT "CK_MedicionesSocio_Perimetros" CHECK (("CinturaCm" IS NULL OR "CinturaCm" BETWEEN 30 AND 250) AND ("CaderaCm" IS NULL OR "CaderaCm" BETWEEN 30 AND 250) AND ("PechoCm" IS NULL OR "PechoCm" BETWEEN 30 AND 250) AND ("BrazoCm" IS NULL OR "BrazoCm" BETWEEN 10 AND 100) AND ("MusloCm" IS NULL OR "MusloCm" BETWEEN 20 AND 150)),&#xD;
+          CONSTRAINT "CK_MedicionesSocio_Peso" CHECK ("PesoKg" BETWEEN 20 AND 400),&#xD;
+          CONSTRAINT "FK_MedicionesSocio_Socios_SocioId" FOREIGN KEY ("SocioId") REFERENCES contabilidad."Socios" ("Id") ON DELETE RESTRICT&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE UNIQUE INDEX ux_mediciones_socio_fecha ON contabilidad."MedicionesSocio" ("SocioId", "Fecha");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+                      CREATE TRIGGER trg_auditar_mediciones AFTER INSERT OR UPDATE OR DELETE ON contabilidad."MedicionesSocio" FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261028020609_MedicionesDeSocios', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261028021357_CuentasCorrientes'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD "ClienteComercialId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD "ProveedorId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD "ClienteComercialId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD "ProveedorId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_movimientos_caja_ClienteComercialId" ON caja.movimientos_caja ("ClienteComercialId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_movimientos_caja_ProveedorId" ON caja.movimientos_caja ("ProveedorId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD CONSTRAINT "CK_movimientos_caja_un_solo_tercero" CHECK (NOT ("ClienteComercialId" IS NOT NULL AND "ProveedorId" IS NOT NULL));&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_movimientos_banco_ClienteComercialId" ON banco.movimientos_banco ("ClienteComercialId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_movimientos_banco_ProveedorId" ON banco.movimientos_banco ("ProveedorId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD CONSTRAINT "CK_movimientos_banco_un_solo_tercero" CHECK (NOT ("ClienteComercialId" IS NOT NULL AND "ProveedorId" IS NOT NULL));&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD CONSTRAINT "FK_movimientos_banco_ClientesComerciales_ClienteComercialId" FOREIGN KEY ("ClienteComercialId") REFERENCES contabilidad."ClientesComerciales" ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE banco.movimientos_banco ADD CONSTRAINT "FK_movimientos_banco_Proveedores_ProveedorId" FOREIGN KEY ("ProveedorId") REFERENCES contabilidad."Proveedores" ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD CONSTRAINT "FK_movimientos_caja_ClientesComerciales_ClienteComercialId" FOREIGN KEY ("ClienteComercialId") REFERENCES contabilidad."ClientesComerciales" ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE caja.movimientos_caja ADD CONSTRAINT "FK_movimientos_caja_Proveedores_ProveedorId" FOREIGN KEY ("ProveedorId") REFERENCES contabilidad."Proveedores" ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261028021357_CuentasCorrientes', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261029025351_AsistenciasDeSocios'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."AsistenciasSocio" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "SocioId" bigint NOT NULL,&#xD;
+          "Fecha" date NOT NULL,&#xD;
+          "RegistradaEn" timestamp with time zone NOT NULL,&#xD;
+          "RegistradaPor" character varying(100) NOT NULL,&#xD;
+          CONSTRAINT "PK_AsistenciasSocio" PRIMARY KEY ("Id"),&#xD;
+          CONSTRAINT "FK_AsistenciasSocio_Socios_SocioId" FOREIGN KEY ("SocioId") REFERENCES contabilidad."Socios" ("Id") ON DELETE RESTRICT&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX ix_asistencias_fecha ON contabilidad."AsistenciasSocio" ("Fecha");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE UNIQUE INDEX ux_asistencias_socio_fecha ON contabilidad."AsistenciasSocio" ("SocioId", "Fecha");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261029025351_AsistenciasDeSocios', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261030003807_AuditoriaConEquipo'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad.auditoria ADD ip character varying(45);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad.auditoria ADD navegador character varying(60);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad.auditoria ADD sistema_operativo character varying(60);&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE OR REPLACE FUNCTION contabilidad.fn_auditar()&#xD;
+RETURNS trigger&#xD;
+LANGUAGE plpgsql AS $$&#xD;
+DECLARE&#xD;
+    -- Nunca se guarda el hash de la contrase�a; el �ltimo login no es un&#xD;
+    -- cambio de datos y generar�a un registro por cada inicio de sesi�n.&#xD;
+    c_ignorados CONSTANT text[] := ARRAY['PasswordHash', 'UltimoLogin'];&#xD;
+    v_anterior  jsonb;&#xD;
+    v_nuevo     jsonb;&#xD;
+    v_campos    text[];&#xD;
+BEGIN&#xD;
+    IF TG_OP &lt;&gt; 'INSERT' THEN&#xD;
+        v_anterior := to_jsonb(OLD) - c_ignorados;&#xD;
+    END IF;&#xD;
+    IF TG_OP &lt;&gt; 'DELETE' THEN&#xD;
+        v_nuevo := to_jsonb(NEW) - c_ignorados;&#xD;
+    END IF;&#xD;
+    IF TG_OP = 'UPDATE' THEN&#xD;
+        SELECT array_agg(n.key ORDER BY n.key) INTO v_campos&#xD;
+        FROM jsonb_each(v_nuevo) n&#xD;
+        WHERE v_anterior -&gt; n.key IS DISTINCT FROM n.value;&#xD;
+        -- El cambio de contrase�a se registra, sin guardar el hash.&#xD;
+        IF (to_jsonb(OLD) -&gt;&gt; 'PasswordHash') IS DISTINCT FROM (to_jsonb(NEW) -&gt;&gt; 'PasswordHash') THEN&#xD;
+            v_campos := array_append(COALESCE(v_campos, '{}'), 'Contrase�a');&#xD;
+        END IF;&#xD;
+        -- S�lo cambiaron campos ignorados: no hay nada que auditar.&#xD;
+        IF v_campos IS NULL THEN&#xD;
+            RETURN NULL;&#xD;
+        END IF;&#xD;
+    END IF;&#xD;
+    INSERT INTO contabilidad.auditoria&#xD;
+        (tabla, operacion, registro_id, datos_anteriores, datos_nuevos, campos_modificados, usuario, fecha,&#xD;
+         ip, sistema_operativo, navegador)&#xD;
+    VALUES (&#xD;
+        TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME,&#xD;
+        TG_OP,&#xD;
+        COALESCE(v_nuevo, v_anterior) -&gt;&gt; 'Id',&#xD;
+        v_anterior,&#xD;
+        v_nuevo,&#xD;
+        COALESCE(v_campos, '{}'),&#xD;
+        COALESCE(NULLIF(current_setting('app.usuario', true), ''), session_user),&#xD;
+        now(),&#xD;
+        left(NULLIF(current_setting('app.ip', true), ''), 45),&#xD;
+        left(NULLIF(current_setting('app.sistema_operativo', true), ''), 60),&#xD;
+        left(NULLIF(current_setting('app.navegador', true), ''), 60));&#xD;
+    RETURN NULL;&#xD;
+END;&#xD;
+$$;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261030003807_AuditoriaConEquipo', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261106182940_TurnosDeEncargado'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."TurnosEncargado" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "DiaSemana" integer NOT NULL,&#xD;
+          "Hora" integer NOT NULL,&#xD;
+          "Encargado" character varying(80) NOT NULL,&#xD;
+          CONSTRAINT "PK_TurnosEncargado" PRIMARY KEY ("Id"),&#xD;
+          CONSTRAINT "CK_TurnosEncargado_Dia" CHECK ("DiaSemana" BETWEEN 1 AND 5),&#xD;
+          CONSTRAINT "CK_TurnosEncargado_Hora" CHECK ("Hora" BETWEEN 6 AND 21),&#xD;
+          CONSTRAINT "CK_TurnosEncargado_Nombre" CHECK (char_length(btrim("Encargado")) &gt; 0)&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE UNIQUE INDEX ux_turnos_encargado_dia_hora ON contabilidad."TurnosEncargado" ("DiaSemana", "Hora");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+                CREATE TRIGGER trg_auditar_turnos_encargado AFTER INSERT OR UPDATE OR DELETE ON contabilidad."TurnosEncargado" FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261106182940_TurnosDeEncargado', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20402]&#xD;
+      Applying migration '20261108013744_EntrenadoresEnElCalendario'.&#xD;
+info: Microsoft.EntityFrameworkCore.Migrations[20411]&#xD;
+      Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE contabilidad."Entrenadores" (&#xD;
+          "Id" bigint GENERATED BY DEFAULT AS IDENTITY,&#xD;
+          "NombreCompleto" character varying(80) NOT NULL,&#xD;
+          "Telefono" character varying(30),&#xD;
+          "Especialidad" character varying(60),&#xD;
+          "Activo" boolean NOT NULL,&#xD;
+          "FechaCreacion" timestamp with time zone NOT NULL,&#xD;
+          CONSTRAINT "PK_Entrenadores" PRIMARY KEY ("Id"),&#xD;
+          CONSTRAINT "CK_Entrenadores_Nombre" CHECK (char_length(btrim("NombreCompleto")) &gt; 0)&#xD;
+      );&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE UNIQUE INDEX ux_entrenadores_nombre ON contabilidad."Entrenadores" (lower("NombreCompleto"));&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+                      INSERT INTO contabilidad."Entrenadores" ("NombreCompleto", "Activo", "FechaCreacion")&#xD;
+                      SELECT DISTINCT ON (lower(n)) n, true, now()&#xD;
+                      FROM (SELECT regexp_replace(btrim("Encargado"), '\s+', ' ', 'g') AS n, "DiaSemana", "Hora" FROM contabilidad."TurnosEncargado") t&#xD;
+                      ORDER BY lower(n), "DiaSemana", "Hora";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."TurnosEncargado" ADD "EntrenadorId" bigint;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+                      UPDATE contabilidad."TurnosEncargado" t SET "EntrenadorId" = e."Id"&#xD;
+                      FROM contabilidad."Entrenadores" e&#xD;
+                      WHERE lower(e."NombreCompleto") = lower(regexp_replace(btrim(t."Encargado"), '\s+', ' ', 'g'));&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."TurnosEncargado" ALTER COLUMN "EntrenadorId" SET NOT NULL;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE INDEX "IX_TurnosEncargado_EntrenadorId" ON contabilidad."TurnosEncargado" ("EntrenadorId");&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."TurnosEncargado" ADD CONSTRAINT "FK_TurnosEncargado_Entrenadores_EntrenadorId" FOREIGN KEY ("EntrenadorId") REFERENCES contabilidad."Entrenadores" ("Id") ON DELETE RESTRICT;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."TurnosEncargado" DROP CONSTRAINT "CK_TurnosEncargado_Nombre";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      ALTER TABLE contabilidad."TurnosEncargado" DROP COLUMN "Encargado";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+                      CREATE TRIGGER trg_auditar_entrenadores AFTER INSERT OR UPDATE OR DELETE ON contabilidad."Entrenadores" FOR EACH ROW EXECUTE FUNCTION contabilidad.fn_auditar();&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")&#xD;
+      VALUES ('20261108013744_EntrenadoresEnElCalendario', '10.0.4');&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT EXISTS (&#xD;
+          SELECT 1&#xD;
+          FROM contabilidad."Usuario" AS u)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (8ms) [Parameters=[@p0='?' (DbType = Boolean), @p1='?' (DbType = Int64), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = DateTime), @p5='?', @p6='?', @p7='?' (DbType = Int32), @p8='?', @p9='?' (DbType = DateTime), @p10='?' (DbType = Boolean), @p11='?' (DbType = Int64), @p12='?', @p13='?' (DbType = Boolean), @p14='?' (DbType = DateTime), @p15='?', @p16='?', @p17='?' (DbType = Int32), @p18='?', @p19='?' (DbType = DateTime), @p20='?' (DbType = Boolean), @p21='?' (DbType = Int64), @p22='?', @p23='?' (DbType = Boolean), @p24='?' (DbType = DateTime), @p25='?', @p26='?', @p27='?' (DbType = Int32), @p28='?', @p29='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO contabilidad."Usuario" ("Activo", "ClienteId", "Email", "EsPrincipal", "FechaCreacion", "NombreCompleto", "PasswordHash", "Rol", "Telefono", "UltimoLogin")&#xD;
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Usuario" ("Activo", "ClienteId", "Email", "EsPrincipal", "FechaCreacion", "NombreCompleto", "PasswordHash", "Rol", "Telefono", "UltimoLogin")&#xD;
+      VALUES (@p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Usuario" ("Activo", "ClienteId", "Email", "EsPrincipal", "FechaCreacion", "NombreCompleto", "PasswordHash", "Rol", "Telefono", "UltimoLogin")&#xD;
+      VALUES (@p20, @p21, @p22, @p23, @p24, @p25, @p26, @p27, @p28, @p29)&#xD;
+      RETURNING "Id";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT EXISTS (&#xD;
+          SELECT 1&#xD;
+          FROM contabilidad."Ejercicios" AS e)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (5ms) [Parameters=[@p0='?' (DbType = Boolean), @p1='?', @p2='?', @p3='?' (DbType = Boolean), @p4='?', @p5='?', @p6='?' (DbType = Boolean), @p7='?', @p8='?', @p9='?' (DbType = Boolean), @p10='?', @p11='?', @p12='?' (DbType = Boolean), @p13='?', @p14='?', @p15='?' (DbType = Boolean), @p16='?', @p17='?', @p18='?' (DbType = Boolean), @p19='?', @p20='?', @p21='?' (DbType = Boolean), @p22='?', @p23='?', @p24='?' (DbType = Boolean), @p25='?', @p26='?', @p27='?' (DbType = Boolean), @p28='?', @p29='?', @p30='?' (DbType = Boolean), @p31='?', @p32='?', @p33='?' (DbType = Boolean), @p34='?', @p35='?', @p36='?' (DbType = Boolean), @p37='?', @p38='?', @p39='?' (DbType = Boolean), @p40='?', @p41='?', @p42='?' (DbType = Boolean), @p43='?', @p44='?', @p45='?' (DbType = Boolean), @p46='?', @p47='?', @p48='?' (DbType = Boolean), @p49='?', @p50='?', @p51='?' (DbType = Boolean), @p52='?', @p53='?', @p54='?' (DbType = Boolean), @p55='?', @p56='?', @p57='?' (DbType = Boolean), @p58='?', @p59='?', @p60='?' (DbType = Boolean), @p61='?', @p62='?', @p63='?' (DbType = Boolean), @p64='?', @p65='?', @p66='?' (DbType = Boolean), @p67='?', @p68='?', @p69='?' (DbType = Boolean), @p70='?', @p71='?', @p72='?' (DbType = Boolean), @p73='?', @p74='?', @p75='?' (DbType = Boolean), @p76='?', @p77='?', @p78='?' (DbType = Boolean), @p79='?', @p80='?', @p81='?' (DbType = Boolean), @p82='?', @p83='?', @p84='?' (DbType = Boolean), @p85='?', @p86='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p0, @p1, @p2)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p3, @p4, @p5)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p6, @p7, @p8)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p9, @p10, @p11)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p12, @p13, @p14)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p15, @p16, @p17)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p18, @p19, @p20)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p21, @p22, @p23)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p24, @p25, @p26)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p27, @p28, @p29)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p30, @p31, @p32)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p33, @p34, @p35)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p36, @p37, @p38)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p39, @p40, @p41)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p42, @p43, @p44)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p45, @p46, @p47)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p48, @p49, @p50)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p51, @p52, @p53)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p54, @p55, @p56)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p57, @p58, @p59)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p60, @p61, @p62)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p63, @p64, @p65)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p66, @p67, @p68)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p69, @p70, @p71)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p72, @p73, @p74)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p75, @p76, @p77)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p78, @p79, @p80)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p81, @p82, @p83)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Ejercicios" ("Activo", "GrupoMuscular", "Nombre")&#xD;
+      VALUES (@p84, @p85, @p86)&#xD;
+      RETURNING "Id";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT e."Id", e."Activo", e."GrupoMuscular", e."Nombre"&#xD;
+      FROM contabilidad."Ejercicios" AS e&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = Boolean), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?' (DbType = Boolean), @p6='?' (DbType = DateTime), @p7='?', @p8='?', @p9='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO contabilidad."Rutinas" ("Activa", "ModificadaEn", "Nivel", "Nombre", "Objetivo")&#xD;
+      VALUES (@p0, @p1, @p2, @p3, @p4)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."Rutinas" ("Activa", "ModificadaEn", "Nivel", "Nombre", "Objetivo")&#xD;
+      VALUES (@p5, @p6, @p7, @p8, @p9)&#xD;
+      RETURNING "Id";&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (54ms) [Parameters=[@p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?' (DbType = Int64), @p13='?', @p14='?' (DbType = Int32), @p15='?', @p16='?' (DbType = Int64), @p17='?' (DbType = Int32), @p18='?' (DbType = Int32), @p19='?' (DbType = Int32), @p20='?' (DbType = Int64), @p21='?', @p22='?' (DbType = Int32), @p23='?', @p24='?' (DbType = Int64), @p25='?' (DbType = Int32), @p26='?' (DbType = Int32), @p27='?' (DbType = Int32), @p28='?' (DbType = Int64), @p29='?', @p30='?' (DbType = Int32), @p31='?', @p32='?' (DbType = Int64), @p33='?' (DbType = Int32), @p34='?' (DbType = Int32), @p35='?' (DbType = Int32), @p36='?' (DbType = Int64), @p37='?', @p38='?' (DbType = Int32), @p39='?', @p40='?' (DbType = Int64), @p41='?' (DbType = Int32), @p42='?' (DbType = Int32), @p43='?' (DbType = Int32), @p44='?' (DbType = Int64), @p45='?', @p46='?' (DbType = Int32), @p47='?', @p48='?' (DbType = Int64), @p49='?' (DbType = Int32), @p50='?' (DbType = Int32), @p51='?' (DbType = Int32), @p52='?' (DbType = Int64), @p53='?', @p54='?' (DbType = Int32), @p55='?', @p56='?' (DbType = Int64), @p57='?' (DbType = Int32), @p58='?' (DbType = Int32), @p59='?' (DbType = Int32), @p60='?' (DbType = Int64), @p61='?', @p62='?' (DbType = Int32), @p63='?', @p64='?' (DbType = Int64), @p65='?' (DbType = Int32), @p66='?' (DbType = Int32), @p67='?' (DbType = Int32), @p68='?' (DbType = Int64), @p69='?', @p70='?' (DbType = Int32), @p71='?', @p72='?' (DbType = Int64), @p73='?' (DbType = Int32), @p74='?' (DbType = Int32), @p75='?' (DbType = Int32), @p76='?' (DbType = Int64), @p77='?', @p78='?' (DbType = Int32), @p79='?', @p80='?' (DbType = Int64), @p81='?' (DbType = Int32), @p82='?' (DbType = Int32), @p83='?' (DbType = Int32), @p84='?' (DbType = Int64), @p85='?', @p86='?' (DbType = Int32), @p87='?', @p88='?' (DbType = Int64), @p89='?' (DbType = Int32), @p90='?' (DbType = Int32), @p91='?' (DbType = Int32), @p92='?' (DbType = Int64), @p93='?', @p94='?' (DbType = Int32), @p95='?', @p96='?' (DbType = Int64), @p97='?' (DbType = Int32), @p98='?' (DbType = Int32), @p99='?' (DbType = Int32), @p100='?' (DbType = Int64), @p101='?', @p102='?' (DbType = Int32), @p103='?', @p104='?' (DbType = Int64), @p105='?' (DbType = Int32), @p106='?' (DbType = Int32), @p107='?' (DbType = Int32), @p108='?' (DbType = Int64), @p109='?', @p110='?' (DbType = Int32), @p111='?', @p112='?' (DbType = Int64), @p113='?' (DbType = Int32), @p114='?' (DbType = Int32), @p115='?' (DbType = Int32), @p116='?' (DbType = Int64), @p117='?', @p118='?' (DbType = Int32), @p119='?', @p120='?' (DbType = Int64), @p121='?' (DbType = Int32), @p122='?' (DbType = Int32), @p123='?' (DbType = Int32), @p124='?' (DbType = Int64), @p125='?', @p126='?' (DbType = Int32), @p127='?', @p128='?' (DbType = Int64), @p129='?' (DbType = Int32), @p130='?' (DbType = Int32), @p131='?' (DbType = Int32), @p132='?' (DbType = Int64), @p133='?', @p134='?' (DbType = Int32), @p135='?', @p136='?' (DbType = Int64), @p137='?' (DbType = Int32), @p138='?' (DbType = Int32), @p139='?' (DbType = Int32), @p140='?' (DbType = Int64), @p141='?', @p142='?' (DbType = Int32), @p143='?', @p144='?' (DbType = Int64), @p145='?' (DbType = Int32), @p146='?' (DbType = Int32), @p147='?' (DbType = Int32), @p148='?' (DbType = Int64), @p149='?', @p150='?' (DbType = Int32), @p151='?', @p152='?' (DbType = Int64), @p153='?' (DbType = Int32), @p154='?' (DbType = Int32), @p155='?' (DbType = Int32), @p156='?' (DbType = Int64), @p157='?', @p158='?' (DbType = Int32), @p159='?', @p160='?' (DbType = Int64), @p161='?' (DbType = Int32), @p162='?' (DbType = Int32), @p163='?' (DbType = Int32), @p164='?' (DbType = Int64), @p165='?', @p166='?' (DbType = Int32), @p167='?', @p168='?' (DbType = Int64), @p169='?' (DbType = Int32), @p170='?' (DbType = Int32), @p171='?' (DbType = Int32), @p172='?' (DbType = Int64), @p173='?', @p174='?' (DbType = Int32), @p175='?', @p176='?' (DbType = Int64), @p177='?' (DbType = Int32), @p178='?' (DbType = Int32), @p179='?' (DbType = Int32), @p180='?' (DbType = Int64), @p181='?', @p182='?' (DbType = Int32), @p183='?', @p184='?' (DbType = Int64), @p185='?' (DbType = Int32), @p186='?' (DbType = Int32), @p187='?' (DbType = Int32), @p188='?' (DbType = Int64), @p189='?', @p190='?' (DbType = Int32), @p191='?', @p192='?' (DbType = Int64), @p193='?' (DbType = Int32), @p194='?' (DbType = Int32), @p195='?' (DbType = Int32), @p196='?' (DbType = Int64), @p197='?', @p198='?' (DbType = Int32), @p199='?', @p200='?' (DbType = Int64), @p201='?' (DbType = Int32), @p202='?' (DbType = Int32), @p203='?' (DbType = Int32), @p204='?' (DbType = Int64), @p205='?', @p206='?' (DbType = Int32), @p207='?', @p208='?' (DbType = Int64), @p209='?' (DbType = Int32), @p210='?' (DbType = Int32), @p211='?' (DbType = Int32), @p212='?' (DbType = Int64), @p213='?', @p214='?' (DbType = Int32), @p215='?', @p216='?' (DbType = Int64), @p217='?' (DbType = Int32), @p218='?' (DbType = Int32), @p219='?' (DbType = Int32), @p220='?' (DbType = Int64), @p221='?', @p222='?' (DbType = Int32), @p223='?', @p224='?' (DbType = Int64), @p225='?' (DbType = Int32), @p226='?' (DbType = Int32), @p227='?' (DbType = Int32), @p228='?' (DbType = Int64), @p229='?', @p230='?' (DbType = Int32), @p231='?', @p232='?' (DbType = Int64), @p233='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p18, @p19, @p20, @p21, @p22, @p23, @p24, @p25)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p26, @p27, @p28, @p29, @p30, @p31, @p32, @p33)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p34, @p35, @p36, @p37, @p38, @p39, @p40, @p41)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p42, @p43, @p44, @p45, @p46, @p47, @p48, @p49)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p50, @p51, @p52, @p53, @p54, @p55, @p56, @p57)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p58, @p59, @p60, @p61, @p62, @p63, @p64, @p65)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p66, @p67, @p68, @p69, @p70, @p71, @p72, @p73)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p74, @p75, @p76, @p77, @p78, @p79, @p80, @p81)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p82, @p83, @p84, @p85, @p86, @p87, @p88, @p89)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p90, @p91, @p92, @p93, @p94, @p95, @p96, @p97)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p98, @p99, @p100, @p101, @p102, @p103, @p104, @p105)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p106, @p107, @p108, @p109, @p110, @p111, @p112, @p113)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p114, @p115, @p116, @p117, @p118, @p119, @p120, @p121)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p122, @p123, @p124, @p125, @p126, @p127, @p128, @p129)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p130, @p131, @p132, @p133, @p134, @p135, @p136, @p137)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p138, @p139, @p140, @p141, @p142, @p143, @p144, @p145)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p146, @p147, @p148, @p149, @p150, @p151, @p152, @p153)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p154, @p155, @p156, @p157, @p158, @p159, @p160, @p161)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p162, @p163, @p164, @p165, @p166, @p167, @p168, @p169)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p170, @p171, @p172, @p173, @p174, @p175, @p176, @p177)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p178, @p179, @p180, @p181, @p182, @p183, @p184, @p185)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p186, @p187, @p188, @p189, @p190, @p191, @p192, @p193)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p194, @p195, @p196, @p197, @p198, @p199, @p200, @p201)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p202, @p203, @p204, @p205, @p206, @p207, @p208, @p209)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p210, @p211, @p212, @p213, @p214, @p215, @p216, @p217)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p218, @p219, @p220, @p221, @p222, @p223, @p224, @p225)&#xD;
+      RETURNING "Id";&#xD;
+      INSERT INTO contabilidad."RutinaEjercicios" ("DescansoSegundos", "Dia", "EjercicioId", "Indicaciones", "Orden", "Repeticiones", "RutinaId", "Series")&#xD;
+      VALUES (@p226, @p227, @p228, @p229, @p230, @p231, @p232, @p233)&#xD;
+      RETURNING "Id";&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Development&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\Sistema_contable\backend\src\EstudioContable.API&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:09.98]       Alta de «Lectura bdb28aef»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:09.99]       Stack Trace:&#xD;
+[xUnit.net 00:00:09.99]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:09.99]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(51,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Todos_los_roles_leen_la_lista_y_sin_sesion_no_se_ve()&#xD;
+[xUnit.net 00:00:09.99]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.05]       Alta de «Baja dd532306»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.05]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.05]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.05]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(194,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Se_desactiva_sin_horas_y_se_vuelve_a_activar_y_soloActivos_oculta_a_los_desactivados()&#xD;
+[xUnit.net 00:00:10.05]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.18]       Alta de «Valido e79e8f83»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.18]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.18]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.18]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.18]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.23]       Alta de «Valido 1d1a692f»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.23]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.23]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.23]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.23]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (0ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.29]       Alta de «Valido 114cc403»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.29]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.29]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.29]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.29]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.35]       Alta de «Valido b1148052»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.35]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.35]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.35]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.35]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.40]       Alta de «Valido e0b75187»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.40]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.40]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.40]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.40]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.46]       Alta de «Valido 672d8620»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.46]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.46]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.46]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.46]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.51]       Alta de «Valido 05e71a7a»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.51]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.51]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.51]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.51]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.57]       Alta de «Valido 9f8d711d»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.57]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.57]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.57]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(133,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(String caso, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.57]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.66]       Alta de «Nombre Viejo 4d948492»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.66]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.66]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.66]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(226,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Renombrar_a_un_entrenador_se_ve_en_el_calendario()&#xD;
+[xUnit.net 00:00:10.66]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.71]       Alta de «Con Horas 2691830a»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.71]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.71]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.71]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(173,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Desactivar_con_horas_en_el_calendario_se_rechaza_con_la_cantidad()&#xD;
+[xUnit.net 00:00:10.71]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.77]       Alta de «Con Horas Semanales d43fdcce»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.77]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.77]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.77]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(211,0): at EstudioContable.IntegrationTests.EntrenadoresTests.La_lista_trae_las_horas_semanales()&#xD;
+[xUnit.net 00:00:10.77]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.83]       Alta de «'; DROP TABLE contabilidad."Entrenadores"; -- &lt;script&gt;alert(1)&lt;/script&gt; 8ab6d8»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.83]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.83]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.83]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(151,0): at EstudioContable.IntegrationTests.EntrenadoresTests.El_texto_hostil_se_guarda_como_texto()&#xD;
+[xUnit.net 00:00:10.83]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.89]       Alta de «Ana López 70623448»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.89]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.89]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.89]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(93,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_nombre_repetido_en_otra_grafia_se_rechaza()&#xD;
+[xUnit.net 00:00:10.89]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:10.95]       Alta de «Permisos 4f35402b»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:10.95]       Stack Trace:&#xD;
+[xUnit.net 00:00:10.95]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:10.95]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(69,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Solo_Administrador_y_Contador_cargan_editan_y_cambian_el_estado()&#xD;
+[xUnit.net 00:00:10.95]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@email='?'], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Id", u."Activo", u."ClienteId", u."Email", u."EsPrincipal", u."FechaCreacion", u."NombreCompleto", u."PasswordHash", u."Rol", u."Telefono", u."UltimoLogin"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Email" = @email&#xD;
+      LIMIT 1&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p1='?' (DbType = Int64), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']&#xD;
+      UPDATE contabilidad."Usuario" SET "UltimoLogin" = @p0&#xD;
+      WHERE "Id" = @p1;&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@p0='?', @p1='?', @p2='?', @p3='?' (DbType = Object), @p4='?', @p5='?'], CommandType='Text', CommandTimeout='30']&#xD;
+                    INSERT INTO contabilidad.auditoria&#xD;
+                        (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)&#xD;
+                    VALUES&#xD;
+                        (@p0, @p1, NULL, '{}'::text[], @p2, now(),&#xD;
+                         @p3::varchar, @p4::varchar, @p5::varchar)&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[@id='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']&#xD;
+      SELECT u."Activo", u."Rol"&#xD;
+      FROM contabilidad."Usuario" AS u&#xD;
+      WHERE u."Id" = @id&#xD;
+      LIMIT 1&#xD;
+[xUnit.net 00:00:11.01]       Alta de «Para La Copia 86022191»: se esperaba 201 y fue 404. &#xD;
+[xUnit.net 00:00:11.01]       Stack Trace:&#xD;
+[xUnit.net 00:00:11.01]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(24,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Crear(HttpClient cliente, String nombre, String telefono, String especialidad)&#xD;
+[xUnit.net 00:00:11.01]         C:\Sistema_contable\backend\tests\EstudioContable.IntegrationTests\EntrenadoresTests.cs(245,0): at EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_cargado_desde_la_API_entra_en_la_copia_de_seguridad()&#xD;
+[xUnit.net 00:00:11.01]         --- End of stack trace from previous location ---&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+[testcontainers.org 00:00:10.74] Delete Docker container 57800326d26e&#xD;
+[xUnit.net 00:00:11.43]   Finished:    EstudioContable.IntegrationTests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:11.6342279-03:00">
+        <Text>[xUnit.net 00:00:09.98]     EstudioContable.IntegrationTests.EntrenadoresTests.Todos_los_roles_leen_la_lista_y_sin_sesion_no_se_ve [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:11.7035162-03:00">
+        <Text>[xUnit.net 00:00:10.05]     EstudioContable.IntegrationTests.EntrenadoresTests.Se_desactiva_sin_horas_y_se_vuelve_a_activar_y_soloActivos_oculta_a_los_desactivados [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:11.8264256-03:00">
+        <Text>[xUnit.net 00:00:10.18]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "nombre en blanco", nombre: "     ", telefono: null, especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:11.8830917-03:00">
+        <Text>[xUnit.net 00:00:10.23]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "nombre con carácter nulo", nombre: "Ana\0", telefono: null, especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:11.9387898-03:00">
+        <Text>[xUnit.net 00:00:10.29]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "nombre con salto de línea", nombre: "Ana\nBeto", telefono: null, especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:11.9954129-03:00">
+        <Text>[xUnit.net 00:00:10.35]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "especialidad de 61 caracteres", nombre: "&lt;nombre válido&gt;", telefono: null, especialidad: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"···) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.0515695-03:00">
+        <Text>[xUnit.net 00:00:10.40]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "nombre nulo", nombre: null, telefono: null, especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.1073796-03:00">
+        <Text>[xUnit.net 00:00:10.46]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "nombre de 81 letras", nombre: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"···, telefono: null, especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.1632506-03:00">
+        <Text>[xUnit.net 00:00:10.51]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "nombre vacío", nombre: "", telefono: null, especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.2238363-03:00">
+        <Text>[xUnit.net 00:00:10.57]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_pedido_invalido_se_rechaza_con_400_y_no_cambia_nada(caso: "teléfono de 31 caracteres", nombre: "&lt;nombre válido&gt;", telefono: "1111111111111111111111111111111", especialidad: null) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.3062772-03:00">
+        <Text>[xUnit.net 00:00:10.66]     EstudioContable.IntegrationTests.EntrenadoresTests.Renombrar_a_un_entrenador_se_ve_en_el_calendario [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.3639270-03:00">
+        <Text>[xUnit.net 00:00:10.71]     EstudioContable.IntegrationTests.EntrenadoresTests.Desactivar_con_horas_en_el_calendario_se_rechaza_con_la_cantidad [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.4219578-03:00">
+        <Text>[xUnit.net 00:00:10.77]     EstudioContable.IntegrationTests.EntrenadoresTests.La_lista_trae_las_horas_semanales [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.4786048-03:00">
+        <Text>[xUnit.net 00:00:10.83]     EstudioContable.IntegrationTests.EntrenadoresTests.El_texto_hostil_se_guarda_como_texto [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.5406658-03:00">
+        <Text>[xUnit.net 00:00:10.89]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_nombre_repetido_en_otra_grafia_se_rechaza [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.6014630-03:00">
+        <Text>[xUnit.net 00:00:10.95]     EstudioContable.IntegrationTests.EntrenadoresTests.Solo_Administrador_y_Contador_cargan_editan_y_cambian_el_estado [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-P6LEPN3" outcome="Error" timestamp="2026-11-07T22:42:12.6582929-03:00">
+        <Text>[xUnit.net 00:00:11.01]     EstudioContable.IntegrationTests.EntrenadoresTests.Un_entrenador_cargado_desde_la_API_entra_en_la_copia_de_seguridad [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

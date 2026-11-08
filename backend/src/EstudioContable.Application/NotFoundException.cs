@@ -21,6 +21,7 @@ namespace EstudioContable.Application.Common.Exceptions
             ["Socio"] = "el socio",
             ["Proveedor"] = "el proveedor",
             ["Plan"] = "el plan",
+            ["Entrenador"] = "el entrenador",
             ["Membresía"] = "la membresía",
             ["Movimiento de caja"] = "el movimiento de caja",
             ["Movimiento de banco"] = "el movimiento de banco",
