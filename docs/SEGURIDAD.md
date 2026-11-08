@@ -14,7 +14,7 @@ Qué protege el sistema, cómo se comprobó y qué queda pendiente para un uso r
 | Navegador | CORS limitado a los orígenes del frontend. Cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control: no-store` y `Content-Security-Policy` en la API. |
 | Datos | Consultas parametrizadas (EF Core). Restricciones en la base: partida doble, inmutabilidad de asientos, tabla de auditoría de solo lectura y auditoría automática de quién cambió qué. |
 | Validaciones | Los números, códigos, tipos y documentos tienen forma y tope en el dominio (valen por cualquier camino). El texto libre no admite caracteres de control ni largos absurdos. |
-| Archivos | Solo `.xlsx` de hasta 5 MB; se descomprime hasta un tope (bomba zip) y se limitan las filas. |
+| Archivos | Solo `.xlsx` de hasta 5 MB; se descomprime hasta un tope (bomba zip) y se limitan las filas. La foto de un entrenador: un JPEG de verdad de 100 a 150 000 bytes y de 16 a 512 píxeles de lado, validado en el servidor (ver la quinta revisión). |
 | Auditoría del equipo | Cada cambio y cada inicio de sesión registran IP, sistema operativo y navegador. La IP solo se toma de `X-Forwarded-For` desde una red de confianza. |
 | Copias | Copia completa descargable desde la pantalla (solo Administrador) con SHA-256 y manifiesto por tabla; vista previa que la compara con el sistema actual y restauración todo-o-nada con confirmación escrita. Se puede programar para que el sistema la haga sola (cada 6 h, 12 h, diaria, semanal o mensual) en `backupsutomaticas`. Los scripts (`backup.ps1`, `comparar-backup.ps1`, `restaurar.ps1`) hacen lo mismo desde PowerShell. |
 | Política | Reglas escritas de quién es responsable de qué, en [`POLITICA_DE_SEGURIDAD.md`](POLITICA_DE_SEGURIDAD.md) y en el manual (sección *Política de seguridad*). |
@@ -98,7 +98,7 @@ Encontrado y corregido:
    tamaño que declara el zip puede mentir), se limitan las entradas y las filas, y las filas inválidas se omiten y se cuentan.
 3. **Planes, productos y cuentas aceptaban valores sin sentido**: un plan de 2.147.483.647 meses (que rompería al cobrar),
    calorías negativas, precios de 10^20, stock de 2.000 millones y un código de cuenta con `' OR '1'='1`. Ahora tienen tope y forma.
-4. **Un email con un carácter nulo (` `) en el login llegaba hasta la consulta a la base** y daba un error de
+4. **Un email con un carácter nulo (`\0`) en el login llegaba hasta la consulta a la base** y daba un error de
    PostgreSQL (traducido a 400 por la defensa general, pero distinto al resto del login). Ahora se corta en la entrada.
 5. **El login permitía descubrir qué emails existen midiendo el tiempo**: con un email inexistente no se calculaba el hash
    y la respuesta era mucho más rápida. Ahora se calcula igual. Además, el registro de cuentas con fallos no puede crecer sin
@@ -175,6 +175,35 @@ El asistente no usa internet ni modelos externos y no ejecuta nada que venga esc
 compara con palabras clave y nunca llega a una consulta SQL. El rol se decide en el servidor con el token (Recepción
 no recibe ningún importe, probado rompiendo la restricción a propósito), la pregunta tiene un máximo de 300 caracteres y
 las respuestas no repiten el texto del usuario más que normalizado (sin signos), por lo que no pueden contener HTML.
+
+## Quinta revisión (foto y contacto de los entrenadores)
+
+La ficha del entrenador suma una **foto** que sube el usuario (un archivo más que llega al servidor) y datos de contacto, email y WhatsApp,
+que después se convierten en los enlaces `mailto:` y `wa.me`. Cómo se limitó el riesgo (cada punto tiene su prueba en
+`FotosDeEntrenadorTests`, `EntrenadoresTests` y `ReglasDeFotoTests`):
+
+1. **Solo la gestión sube y quita; todos ven.** Subir y quitar la foto dan 401 sin sesión y 403 a Recepción. Verla exige sesión: un `<img>`
+   no puede mandar el token, así que la pantalla la baja con la sesión y la muestra desde un enlace de objeto del navegador.
+2. **Un JPEG de verdad, validado en el servidor.** No se confía en la extensión ni en el `Content-Type` que mande el cliente: se mira la
+   estructura del archivo (empieza con `FF D8 FF`, termina con `FF D9` y tiene la cabecera de tamaño `SOF`), pesa de 100 a 150 000 bytes y
+   mide de 16 a 512 píxeles de lado (una imagen de 20 000 por 20 000 que pesa poco se rechaza sin decodificarla). Un PNG, un SVG con
+   script, un HTML, un JPEG cortado o un cuerpo vacío dan 400 y no se guarda nada. El navegador la achica a 256 por 256 antes de subirla,
+   pero eso es una comodidad, no la defensa. El cuerpo se lee con tope (160 000 bytes) y la base repite el límite de peso
+   (`CK_FotosDeEntrenador_Tamano`).
+3. **Se sirve sin que el navegador adivine.** `image/jpeg`, `X-Content-Type-Options: nosniff`, la `Content-Security-Policy` de la API
+   (`default-src 'none'`) y `Cache-Control: private, no-cache` con un `ETag` derivado de la fecha de la subida: el navegador la guarda pero
+   pregunta antes de usarla, y al reemplazarla nadie sigue viendo la vieja. Es el único endpoint al que el sistema le deja su propio
+   `Cache-Control`; el resto sigue con `no-store`.
+4. **Sin auditoría de filas, pero con eventos.** La tabla de fotos no tiene disparador de auditoría (copiaría la foto entera en cada
+   cambio); subir y quitar quedan en la auditoría como eventos (`FOTO` y `FOTO_BAJA`) con el usuario y el equipo.
+5. **El contacto es texto, no código.** El email tiene forma de email (hasta 254 caracteres, sin espacios) y el WhatsApp admite solo
+   números, espacios y los signos + - ( ) (hasta 30); el espacio duro que trae pegar desde el teléfono se arregla solo. Al armar los
+   enlaces, el email se codifica para que no pueda agregar destinatarios ni asunto a un `mailto:` (por ejemplo con `?bcc=`), el enlace de
+   WhatsApp sale solo si el número se puede interpretar y se abre con `rel="noopener noreferrer"`.
+6. **Entra en la copia de seguridad.** La tabla `FotosDeEntrenador` viaja en la copia y vuelve igual al restaurarla (probado).
+
+Lo que **no** resuelve: la foto es un dato personal que queda en la base y en las copias, que no están cifradas; su custodia depende de
+quien las guarda.
 
 ## Pendiente antes de usarlo con datos reales
 

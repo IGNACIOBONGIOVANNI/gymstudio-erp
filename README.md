@@ -312,16 +312,32 @@ Menú **Rutinas** (y el botón de la pesa en **Socios**):
   anterior se cierra el día que empieza la nueva. Queda el historial.
 - **Imprimir PDF** de la rutina del socio, en blanco y negro, con una columna para anotar el peso.
 
-## Calendario de entrenadores
+## Entrenadores y calendario
 
-Menú **Calendario** (grupo Recepción), con dos pestañas. El calendario dice qué entrenador está a cargo del gimnasio, de **lunes a
-viernes** y de **06:00 a 22:00** (16 turnos de una hora por día). Es una semana tipo que se repite: no tiene fechas. Hay una sola
-persona por hora y solo figuran entrenadores: quien hace la parte contable o administrativa no aparece.
+Dos ítems del menú, en el grupo Recepción: **Entrenadores** (las fichas) y **Calendario** (quién está a cargo de cada hora).
+
+### Entrenadores
+
+- Cada ficha tiene **foto**, nombre, teléfono, **WhatsApp**, **email**, especialidad, las horas por semana que tiene en el calendario
+  y su estado. Son fichas, no usuarios: no tienen contraseña ni entran al sistema. El nombre no se repite aunque cambien las
+  mayúsculas o los espacios. Un entrenador no se borra: se **desactiva**, y solo si no tiene horas en el calendario (el sistema avisa
+  cuántas son).
+- Los ven todos los usuarios; los cargan, editan y desactivan, y les ponen o sacan la foto, el **Administrador y el Contador** (el
+  servidor lo exige: Recepción recibe 403). Recepción ve la lista y puede escribirles: el WhatsApp es un botón que abre el chat en otra
+  pestaña y el email abre el programa de correo.
+- **La foto** se elige desde la computadora o el celular: el navegador la recorta al centro y la achica a 256 por 256 antes de subirla, y
+  el servidor vuelve a comprobar que sea un JPEG de verdad (100 a 150 000 bytes, de 16 a 512 píxeles de lado). Sin foto, o si no se puede
+  cargar, se ven las iniciales. Vive en su propia tabla, `FotosDeEntrenador`, sin auditoría de filas (cada subida y baja queda como un
+  evento) y entra en las copias de seguridad.
+- El WhatsApp admite números, espacios y los signos + - ( ); el espacio duro que trae pegar desde el teléfono se arregla solo.
+
+### Calendario
+
+El calendario dice qué entrenador está a cargo del gimnasio, de **lunes a viernes** y de **06:00 a 22:00** (16 turnos de una hora por
+día). Es una semana tipo que se repite: no tiene fechas. Hay una sola persona por hora y solo figuran entrenadores: quien hace la parte
+contable o administrativa no aparece. Si todavía no hay entrenadores cargados, el aviso del calendario lleva a **Entrenadores**.
 
 - Lo ven todos los usuarios; lo modifican **Administrador y Contador** (el servidor lo exige: Recepción recibe 403).
-- **Pestaña Entrenadores**: la lista de entrenadores (nombre, teléfono, especialidad, horas por semana y estado). Son fichas, no
-  usuarios: no tienen contraseña ni entran al sistema. El nombre no se repite aunque cambien las mayúsculas o los espacios. Un
-  entrenador no se borra: se **desactiva**, y solo si no tiene horas en el calendario (el sistema avisa cuántas son).
 - **Editar calendario**: se escribe el nombre del entrenador en cada hora (aparece la lista de los cargados; Enter y las flechas pasan
   a la hora de abajo o de arriba) o se usa **Asignar turno** para cargar a un entrenador en varios días y horas de una vez (por ejemplo,
   Ana de lunes a viernes de 06:00 a 14:00). Un nombre que no es de un entrenador activo se marca en rojo y no deja guardar. Los cambios

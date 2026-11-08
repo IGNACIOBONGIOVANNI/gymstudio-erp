@@ -91,7 +91,8 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `MedicionesSocio` | `CK_MedicionesSocio_Peso` / `_Grasa` / `_Perimetros` | Peso 20 a 400 kg, grasa 2 a 70 %, perímetros dentro de rangos humanos |
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
 | `TurnosEncargado` | `CK_TurnosEncargado_Dia` / `_Hora` | Día 1 a 5 (lunes a viernes) y hora 6 a 21 (turnos de 06:00 a 22:00) |
-| `Entrenadores` | `CK_Entrenadores_Nombre` | Nombre no vacío |
+| `Entrenadores` | `CK_Entrenadores_Nombre` / `CK_Entrenadores_Email` | Nombre no vacío; el email, si está, tiene forma de email (`algo@dominio.ext`, sin espacios) |
+| `FotosDeEntrenador` | `CK_FotosDeEntrenador_Tamano` | La foto pesa de 100 a 150 000 bytes |
 | `ConfiguracionDeCopias` | `CK_ConfiguracionDeCopias_Unica` / `_Hora` / `_Minuto` / `_Conservar` / `_DiaSemana` / `_DiaMes` / `_Frecuencia` | Una sola fila (`Id = 1`), hora 0 a 23, minuto 0 a 59, copias a conservar 1 a 60, día de la semana 1 a 7, día del mes 1 a 28 y una de las cinco frecuencias |
 
 ### Únicas y claves foráneas
@@ -110,7 +111,13 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
   `EntrenadorId` es una FK a `Entrenadores` `RESTRICT`: no se puede borrar un entrenador que tiene turnos (por eso un entrenador
   no se borra: se desactiva, y la API lo permite solo si no tiene horas en el calendario).
 - `Entrenadores`: nombre único sin distinguir mayúsculas (índice `ux_entrenadores_nombre` sobre `lower("NombreCompleto")`).
-  Son fichas sin acceso al sistema (no son filas de `Usuario`). Tiene disparador de auditoría.
+  Son fichas sin acceso al sistema (no son filas de `Usuario`). Además del teléfono y la especialidad, guardan un `Email`
+  (`varchar(254)`) y un `WhatsApp` (`varchar(30)`), nulos si no se cargaron. Tiene disparador de auditoría.
+- `FotosDeEntrenador (EntrenadorId)`: la foto de la ficha, una por entrenador (`EntrenadorId` es la clave primaria y una FK a
+  `Entrenadores` `ON DELETE CASCADE`), en una columna `Foto` `bytea` con la fecha de la última subida (`Actualizada`). Está **aparte** de
+  `Entrenadores` para que la lista y el calendario no carguen imágenes, y **no tiene disparador de auditoría**: el disparador guarda
+  la fila entera en cada cambio y copiaría hasta 150 KB por foto en la bitácora. Las altas y bajas de foto se registran como eventos
+  (`entrenador` / `FOTO` y `FOTO_BAJA`) desde la API. Entra en la copia de seguridad como cualquier otra tabla.
 - `ConfiguracionDeCopias`: **una sola fila** (`Id = 1`, `CHECK` y clave primaria), que la migración deja creada: copia automática apagada,
   diaria a las 22:00 y las últimas 14 copias. Es la programación de las copias automáticas y cómo le fue a la última (`UltimaCopia`,
   `UltimoIntento`, `UltimoError`). Tiene disparador de auditoría y entra en la copia de seguridad como cualquier otra tabla (por eso
