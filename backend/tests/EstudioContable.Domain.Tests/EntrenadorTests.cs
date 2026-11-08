@@ -240,4 +240,50 @@ public class EntrenadorTests
         Assert.Equal("ana@gym.com", entrenador.Email);
         Assert.Equal("11 5555-1234", entrenador.WhatsApp);
     }
+
+    // ---------- valor de la hora ----------
+
+    [Fact]
+    public void El_valor_de_la_hora_es_opcional_y_admite_cero_y_dos_decimales()
+    {
+        Assert.Null(new Entrenador("Ana López", null, null).ValorHora);
+        Assert.Null(new Entrenador("Ana López", null, null, null, null, null).ValorHora);
+        Assert.Equal(0m, new Entrenador("Ana López", null, null, null, null, 0m).ValorHora);
+        Assert.Equal(1500.50m, new Entrenador("Ana López", null, null, null, null, 1500.50m).ValorHora);
+        Assert.Equal(999_999_999_999m, new Entrenador("Ana López", null, null, null, null, 999_999_999_999m).ValorHora);
+    }
+
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("1000000000000")]
+    [InlineData("1.234")]
+    public void Un_valor_de_hora_negativo_enorme_o_con_tres_decimales_se_rechaza(string valor)
+    {
+        var numero = decimal.Parse(valor, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Throws<ArgumentException>(() => new Entrenador("Ana López", null, null, null, null, numero));
+    }
+
+    [Fact]
+    public void ActualizarDatos_cambia_el_valor_de_la_hora_y_sin_valor_lo_borra()
+    {
+        var entrenador = new Entrenador("Ana López", null, null, null, null, 1000m);
+
+        entrenador.ActualizarDatos("Ana López", null, null, null, null, 1500m);
+        Assert.Equal(1500m, entrenador.ValorHora);
+
+        entrenador.ActualizarDatos("Ana López", null, null);   // el valor ausente es «sin valor»
+        Assert.Null(entrenador.ValorHora);
+    }
+
+    [Fact]
+    public void ActualizarDatos_con_un_valor_de_hora_invalido_no_cambia_nada()
+    {
+        var entrenador = new Entrenador("Ana López", "111", "Yoga", "ana@gym.com", "11 5555-1234", 1000m);
+
+        Assert.Throws<ArgumentException>(() => entrenador.ActualizarDatos("Beto Pérez", "222", "Pilates", "beto@gym.com", "11 0000-0000", -5m));
+        Assert.Throws<ArgumentException>(() => entrenador.ActualizarDatos("Beto Pérez", "222", "Pilates", "beto@gym.com", "11 0000-0000", 1.234m));
+
+        Assert.Equal(("Ana López", "111", "Yoga", "ana@gym.com", "11 5555-1234", (decimal?)1000m),
+            (entrenador.NombreCompleto, entrenador.Telefono, entrenador.Especialidad, entrenador.Email, entrenador.WhatsApp, entrenador.ValorHora));
+    }
 }

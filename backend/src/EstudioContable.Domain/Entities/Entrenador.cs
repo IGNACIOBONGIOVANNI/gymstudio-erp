@@ -8,7 +8,8 @@ namespace EstudioContable.Domain.Entities
     /// Un entrenador (o coach) del gimnasio. Es una ficha, no un usuario: no tiene contraseña ni entra al sistema. Se carga para poder
     /// ponerlo en el calendario semanal. El nombre no se repite aunque cambien las mayúsculas o los espacios (lo garantiza también
     /// un índice único en la base) y no se borra: se desactiva, y solo si no tiene horas en el calendario. Además del teléfono, la ficha
-    /// puede llevar un email y un WhatsApp de contacto (la foto vive aparte, en <see cref="FotoDeEntrenador"/>).
+    /// puede llevar un email y un WhatsApp de contacto (la foto vive aparte, en <see cref="FotoDeEntrenador"/>) y el valor de la hora con
+    /// el que se le paga (que solo ve y carga la gestión; lo oculta la API).
     /// </summary>
     public class Entrenador
     {
@@ -36,19 +37,21 @@ namespace EstudioContable.Domain.Entities
         public string? Especialidad { get; private set; }
         public string? Email { get; private set; }
         public string? WhatsApp { get; private set; }
+        /// <summary>Lo que se le paga por hora; null = todavía sin valor.</summary>
+        public decimal? ValorHora { get; private set; }
         public bool Activo { get; private set; } = true;
         public DateTimeOffset FechaCreacion { get; private set; } = DateTimeOffset.UtcNow;
 
         protected Entrenador() { } // EF Core
 
-        public Entrenador(string? nombreCompleto, string? telefono, string? especialidad, string? email = null, string? whatsApp = null)
+        public Entrenador(string? nombreCompleto, string? telefono, string? especialidad, string? email = null, string? whatsApp = null, decimal? valorHora = null)
         {
-            AsignarDatos(nombreCompleto, telefono, especialidad, email, whatsApp);
+            AsignarDatos(nombreCompleto, telefono, especialidad, email, whatsApp, valorHora);
         }
 
-        /// <summary>Reemplaza los datos de la ficha. El email y el WhatsApp que no se pasan quedan en blanco, como cualquier otro dato vacío.</summary>
-        public void ActualizarDatos(string? nombreCompleto, string? telefono, string? especialidad, string? email = null, string? whatsApp = null)
-            => AsignarDatos(nombreCompleto, telefono, especialidad, email, whatsApp);
+        /// <summary>Reemplaza los datos de la ficha. El email, el WhatsApp y el valor de la hora que no se pasan quedan en blanco, como cualquier otro dato vacío.</summary>
+        public void ActualizarDatos(string? nombreCompleto, string? telefono, string? especialidad, string? email = null, string? whatsApp = null, decimal? valorHora = null)
+            => AsignarDatos(nombreCompleto, telefono, especialidad, email, whatsApp, valorHora);
 
         public void Activar() => Activo = true;
 
@@ -88,18 +91,20 @@ namespace EstudioContable.Domain.Entities
         private static string ColapsarEspacios(string? texto) => EspaciosRepetidos.Replace(texto ?? string.Empty, " ");
 
         // Se valida todo antes de asignar nada: un pedido inválido no deja la ficha a medias.
-        private void AsignarDatos(string? nombreCompleto, string? telefono, string? especialidad, string? email, string? whatsApp)
+        private void AsignarDatos(string? nombreCompleto, string? telefono, string? especialidad, string? email, string? whatsApp, decimal? valorHora)
         {
             var nombre = LimpiarNombre(nombreCompleto);
             var tel = ReglasDeDatos.TextoOpcional(telefono, "El teléfono", LargoMaximoDelTelefono);
             var esp = ReglasDeDatos.TextoOpcional(especialidad, "La especialidad", LargoMaximoDeLaEspecialidad);
             var correo = LimpiarEmail(email);
             var whats = LimpiarWhatsApp(whatsApp);
+            var valor = ReglasDeHoras.ValidarValorHora(valorHora);
             NombreCompleto = nombre;
             Telefono = tel;
             Especialidad = esp;
             Email = correo;
             WhatsApp = whats;
+            ValorHora = valor;
         }
     }
 }
