@@ -56,7 +56,11 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
 
     setGuardando(true);
     try {
-      await guardarEntrenador({ id: entrenador?.id, nombre: limpiarNombre(nombre), telefono: telefono.trim(), especialidad: especialidad.trim() });
+      // El email y el WhatsApp todavía no se editan en este diálogo: se mandan los que ya tenía la ficha para no borrarlos.
+      await guardarEntrenador({
+        id: entrenador?.id, nombre: limpiarNombre(nombre), telefono: telefono.trim(), especialidad: especialidad.trim(),
+        email: entrenador?.email ?? '', whatsApp: entrenador?.whatsApp ?? '',
+      });
       toast.success(esEdicion ? `Entrenador «${limpiarNombre(nombre)}» actualizado.` : `Entrenador «${limpiarNombre(nombre)}» cargado.`);
       onGuardado();
       onCerrar();

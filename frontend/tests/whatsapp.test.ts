@@ -32,6 +32,14 @@ test('el enlace lleva el mensaje codificado', () => {
   assert.equal(enlaceWhatsApp('abc', 'x'), null);
 });
 
+test('sin mensaje el enlace abre el chat y no lleva «?text=»', () => {
+  assert.equal(enlaceWhatsApp('11 5555-1234'), 'https://wa.me/5491155551234');
+  assert.equal(enlaceWhatsApp('11 5555-1234', ''), 'https://wa.me/5491155551234');
+  assert.equal(enlaceWhatsApp('abc'), null);
+  // Con mensaje sigue igual que siempre.
+  assert.equal(enlaceWhatsApp('11 5555-1234', 'Hola'), 'https://wa.me/5491155551234?text=Hola');
+});
+
 test('días entre fechas, incluso cruzando mes y año', () => {
   assert.equal(diasEntre('2026-10-27', '2026-10-30'), 3);
   assert.equal(diasEntre('2026-10-30', '2026-10-27'), -3);

@@ -45,9 +45,11 @@ export function telefonoParaWhatsApp(telefono: string | null | undefined): strin
   return d.length === 10 ? `549${d}` : null;                       // área + número = 10 dígitos
 }
 
-export function enlaceWhatsApp(telefono: string | null | undefined, mensaje: string): string | null {
+/** El enlace que abre el chat de WhatsApp con ese número; con `mensaje` lo deja escrito, sin mensaje abre el chat vacío. */
+export function enlaceWhatsApp(telefono: string | null | undefined, mensaje = ''): string | null {
   const numero = telefonoParaWhatsApp(telefono);
-  return numero ? `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}` : null;
+  if (!numero) return null;
+  return mensaje ? `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}` : `https://wa.me/${numero}`;
 }
 
 const aDDMMAAAA = (f: string) => f.slice(0, 10).split('-').reverse().join('/');

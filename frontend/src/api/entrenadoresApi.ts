@@ -30,12 +30,45 @@ export interface DatosDeEntrenador {
   nombre: string
   telefono: string
   especialidad: string
+  email: string
+  whatsApp: string
 }
 
-export async function guardarEntrenador({ id, nombre, telefono, especialidad }: DatosDeEntrenador): Promise<void> {
-  const cuerpo = { nombre, telefono, especialidad };
-  if (id === undefined) await pedir('/api/entrenadores', conJson('POST', cuerpo), 'No se pudo guardar el entrenador.');
-  else await pedir(`/api/entrenadores/${id}`, conJson('PUT', cuerpo), 'No se pudo guardar el entrenador.');
+/** Da de alta o edita la ficha y devuelve su id (el del alta, o el recibido en una edición): hace falta para subirle la foto. */
+export async function guardarEntrenador({ id, nombre, telefono, especialidad, email, whatsApp }: DatosDeEntrenador): Promise<number> {
+  const cuerpo = { nombre, telefono, especialidad, email, whatsApp };
+  if (id !== undefined) {
+    await pedir(`/api/entrenadores/${id}`, conJson('PUT', cuerpo), 'No se pudo guardar el entrenador.');
+    return id;
+  }
+  const res = await pedir('/api/entrenadores', conJson('POST', cuerpo), 'No se pudo guardar el entrenador.');
+  return (await res.json()).id as number;
+}
+
+/** Sube o reemplaza la foto: el JPEG ya achicado, tal cual en el cuerpo del pedido. */
+export async function subirFoto(id: number, foto: Blob): Promise<void> {
+  await pedir(`/api/entrenadores/${id}/foto`, { method: 'PUT', headers: { 'Content-Type': 'image/jpeg' }, body: foto }, 'No se pudo guardar la foto.');
+}
+
+/** Quita la foto; si no tenía, no pasa nada. */
+export async function quitarFoto(id: number): Promise<void> {
+  await pedir(`/api/entrenadores/${id}/foto`, { method: 'DELETE' }, 'No se pudo quitar la foto.');
+}
+
+/**
+ * La foto del entrenador, o null si no tiene (404). Se pide con la sesión (el navegador no puede mandar el token desde un `<img>`),
+ * así que se muestra a través de un enlace de objeto creado desde este Blob.
+ */
+export async function obtenerFoto(id: number): Promise<Blob | null> {
+  let res: Response;
+  try {
+    res = await fetch(`/api/entrenadores/${id}/foto`);
+  } catch {
+    throw new Error(ERROR_DE_CONEXION);
+  }
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(await mensajeDeError(res, 'No se pudo cargar la foto.'));
+  return res.blob();
 }
 
 /** Desactivar falla (con el motivo) si el entrenador todavía tiene horas en el calendario. */

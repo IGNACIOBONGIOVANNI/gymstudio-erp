@@ -188,9 +188,14 @@ export interface Entrenador {
   nombre: string
   telefono: string | null
   especialidad: string | null
+  email: string | null
+  whatsApp: string | null
   activo: boolean
   /** Horas que tiene por semana en el calendario. */
   horasSemanales: number
+  tieneFoto: boolean
+  /** Cuándo se subió la foto vigente (sirve para saber si hay que volver a pedirla); null si no tiene. */
+  fotoActualizada: string | null
 }
 
 /** Un turno como lo devuelve la API del calendario. */
