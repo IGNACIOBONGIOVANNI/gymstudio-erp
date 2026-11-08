@@ -108,4 +108,136 @@ public class EntrenadorTests
         Assert.Throws<ArgumentException>(() => entrenador.ActualizarDatos("Ana", new string('1', 31), null));
         Assert.Equal("Ana M. López", entrenador.NombreCompleto);   // un pedido inválido no cambia nada
     }
+
+    [Fact]
+    public void Email_y_WhatsApp_son_opcionales_y_vacio_es_null()
+    {
+        var sinContacto = new Entrenador("Ana López", null, null);
+        Assert.Null(sinContacto.Email);
+        Assert.Null(sinContacto.WhatsApp);
+
+        var vacios = new Entrenador("Ana López", null, null, "   ", "");
+        Assert.Null(vacios.Email);
+        Assert.Null(vacios.WhatsApp);
+
+        Assert.Null(Entrenador.LimpiarEmail(null));
+        Assert.Null(Entrenador.LimpiarWhatsApp(null));
+        Assert.Null(Entrenador.LimpiarEmail("  "));
+        Assert.Null(Entrenador.LimpiarWhatsApp("  "));
+
+        var conContacto = new Entrenador("Ana López", null, null, "ana@gym.com", "+54 11 5555-1234");
+        Assert.Equal("ana@gym.com", conContacto.Email);
+        Assert.Equal("+54 11 5555-1234", conContacto.WhatsApp);
+    }
+
+    [Fact]
+    public void El_email_se_recorta_y_tiene_que_tener_forma_de_email()
+    {
+        Assert.Equal("ana@gym.com", Entrenador.LimpiarEmail("  ana@gym.com "));
+        Assert.Equal("ana.lopez+gym@mail.gym.com.ar", Entrenador.LimpiarEmail("ana.lopez+gym@mail.gym.com.ar"));
+        Assert.Equal("Ana@Gym.com", Entrenador.LimpiarEmail("Ana@Gym.com"));   // las mayúsculas se conservan como se escribieron
+
+        Assert.Equal(254, Entrenador.LargoMaximoDelEmail);
+        var de254 = new string('a', 246) + "@gym.com";
+        var de255 = new string('a', 247) + "@gym.com";
+        Assert.Equal((254, 255), (de254.Length, de255.Length));
+        Assert.Equal(de254, Entrenador.LimpiarEmail(de254));
+
+        foreach (var invalido in new[]
+                 {
+                     "sin-arroba", "a b@c.com", "a@b", "@c.com", "ana@", "ana@@gym.com", "ana@gym..", "ana@.com.", "ana@gym..com",
+                     "ana\t@gym.com", "ana@gym\n.com", "ana@gym .com", "ana@gym.com ana@gym.com", de255,
+                 })
+        {
+            Assert.Throws<ArgumentException>(() => Entrenador.LimpiarEmail(invalido));
+            Assert.Throws<ArgumentException>(() => new Entrenador("Ana López", null, null, invalido, null));
+        }
+    }
+
+    [Fact]
+    public void El_mensaje_del_email_invalido_se_entiende()
+    {
+        var error = Assert.Throws<ArgumentException>(() => Entrenador.LimpiarEmail("sin-arroba"));
+        Assert.Contains("email", error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(" ")]     // espacio duro: el que trae pegar desde WhatsApp
+    [InlineData(" ")]     // espacio duro angosto: el que ponen algunos teléfonos al copiar un número
+    [InlineData("  ")]
+    [InlineData("     ")]
+    public void El_WhatsApp_pegado_con_espacios_duros_se_guarda_con_espacios_comunes(string espacio)
+    {
+        Assert.Equal("+54 11 5555-1234", Entrenador.LimpiarWhatsApp($"+54{espacio}11{espacio}5555-1234"));
+        Assert.Equal("+54 11 5555-1234", Entrenador.LimpiarWhatsApp($"{espacio}+54{espacio}11{espacio}5555-1234{espacio}"));
+        Assert.Equal("+54 11 5555-1234", new Entrenador("Ana", null, null, null, $"+54{espacio}11{espacio}5555-1234").WhatsApp);
+    }
+
+    [Fact]
+    public void El_WhatsApp_con_espacios_repetidos_queda_con_uno_solo()
+        => Assert.Equal("+54 11 5555-1234", Entrenador.LimpiarWhatsApp("  +54   11    5555-1234  "));
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("11 5555-1234 int. 5")]
+    [InlineData("11.5555.1234")]
+    [InlineData("11 5555\n1234")]
+    [InlineData("+54 11 5555-1234 ext")]
+    [InlineData("+")]            // signos solos: no hay un número al que escribirle
+    [InlineData("( ) - +")]
+    public void El_WhatsApp_solo_admite_digitos_espacios_y_signos(string whatsApp)
+    {
+        Assert.Throws<ArgumentException>(() => Entrenador.LimpiarWhatsApp(whatsApp));
+        Assert.Throws<ArgumentException>(() => new Entrenador("Ana", null, null, null, whatsApp));
+    }
+
+    [Fact]
+    public void El_WhatsApp_admite_parentesis_guiones_y_el_signo_mas_y_tiene_su_tope()
+    {
+        Assert.Equal("(011) 15 5555-1234", Entrenador.LimpiarWhatsApp("(011) 15 5555-1234"));
+        Assert.Equal("+5491155551234", Entrenador.LimpiarWhatsApp("+5491155551234"));
+
+        Assert.Equal(30, Entrenador.LargoMaximoDelWhatsApp);
+        Assert.Equal(new string('1', 30), Entrenador.LimpiarWhatsApp(new string('1', 30)));
+        Assert.Throws<ArgumentException>(() => Entrenador.LimpiarWhatsApp(new string('1', 31)));
+    }
+
+    [Fact]
+    public void ActualizarDatos_guarda_el_contacto_y_lo_puede_borrar()
+    {
+        var entrenador = new Entrenador("Ana López", "111", "Yoga", "ana@gym.com", "11 5555-1234");
+
+        entrenador.ActualizarDatos("Ana López", "111", "Yoga", "  ana.lopez@gym.com ", "+54 9 11 5555-1234");
+        Assert.Equal("ana.lopez@gym.com", entrenador.Email);
+        Assert.Equal("+54 9 11 5555-1234", entrenador.WhatsApp);
+
+        entrenador.ActualizarDatos("Ana López", "111", "Yoga", "", null);
+        Assert.Null(entrenador.Email);
+        Assert.Null(entrenador.WhatsApp);
+    }
+
+    [Fact]
+    public void ActualizarDatos_sin_contacto_deja_el_contacto_en_blanco_como_lo_manda_el_pedido()
+    {
+        // Los parámetros nuevos son opcionales para que lo que ya llama a estos métodos siga compilando; omitirlos es mandarlos vacíos.
+        var entrenador = new Entrenador("Ana López", null, null, "ana@gym.com", "11 5555-1234");
+        entrenador.ActualizarDatos("Ana López", null, null);
+        Assert.Null(entrenador.Email);
+        Assert.Null(entrenador.WhatsApp);
+    }
+
+    [Fact]
+    public void ActualizarDatos_con_un_email_invalido_no_cambia_nada()
+    {
+        var entrenador = new Entrenador("Ana López", "111", "Yoga", "ana@gym.com", "11 5555-1234");
+
+        Assert.Throws<ArgumentException>(() => entrenador.ActualizarDatos("Beto Pérez", "222", "Pilates", "sin-arroba", "11 0000-0000"));
+        Assert.Throws<ArgumentException>(() => entrenador.ActualizarDatos("Beto Pérez", "222", "Pilates", "beto@gym.com", "abc"));
+
+        Assert.Equal("Ana López", entrenador.NombreCompleto);
+        Assert.Equal("111", entrenador.Telefono);
+        Assert.Equal("Yoga", entrenador.Especialidad);
+        Assert.Equal("ana@gym.com", entrenador.Email);
+        Assert.Equal("11 5555-1234", entrenador.WhatsApp);
+    }
 }
