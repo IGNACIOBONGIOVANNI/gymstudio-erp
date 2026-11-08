@@ -4,7 +4,7 @@ import {
   DIAS, HORAS, LARGO_MAXIMO_DEL_NOMBRE, aplicarRango, celdasDelRango, clave, encargadosDistintos, esCeldaValida, filasParaMostrar,
   grillaDesdeTurnos, grillasIguales, horasPorEncargado, limpiarNombre, nombreDelDia, ponerEncargado, problemaDelRango,
   textoDeHora, textoDelTurno, turnosDesdeGrilla, turnosQueSePisan, type Grilla,
-  buscarEntrenador, canonizarGrilla, celdasSinEntrenador, turnoDesdeServidor, turnosParaGuardar, type Entrenador,
+  buscarEntrenador, canonizarGrilla, celdasSinEntrenador, conHorasDelCalendario, turnoDesdeServidor, turnosParaGuardar, type Entrenador,
 } from '../src/features/calendario/calendarioUtil.ts';
 
 test('la semana es de lunes a viernes y de 06 a 22: 5 días por 16 turnos de una hora', () => {
@@ -184,4 +184,15 @@ test('turnosParaGuardar lanza un Error con un nombre que no es entrenador activo
 test('turnoDesdeServidor usa el nombre del entrenador como encargado de la celda', () => {
   assert.deepEqual(turnoDesdeServidor({ dia: 1, hora: 6, entrenadorId: 5, entrenador: '  Ana   López ' }), { dia: 1, hora: 6, encargado: '  Ana   López ' });
   assert.deepEqual(grillaDesdeTurnos([turnoDesdeServidor({ dia: 3, hora: 8, entrenadorId: 5, entrenador: 'Ana' })]), { '3-8': 'Ana' });
+});
+
+test('conHorasDelCalendario cuenta las horas guardadas de cada entrenador sin distinguir mayúsculas ni espacios, y no toca la lista', () => {
+  const lista = [ficha(1, 'Ana López'), ficha(2, 'Beto'), ficha(3, 'Carla', false)];
+  const grilla: Grilla = { '1-6': 'Ana López', '1-7': 'ana   lópez', '2-6': 'Beto', '3-6': 'Alguien Ajeno' };
+
+  const conHoras = conHorasDelCalendario(lista, grilla);
+
+  assert.deepEqual(conHoras.map((e) => [e.nombre, e.horasSemanales]), [['Ana López', 2], ['Beto', 1], ['Carla', 0]]);
+  assert.equal(lista[0].horasSemanales, 0);                         // la lista original no cambia
+  assert.deepEqual(conHorasDelCalendario(lista, {}).map((e) => e.horasSemanales), [0, 0, 0]);
 });

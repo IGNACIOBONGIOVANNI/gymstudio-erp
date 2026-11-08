@@ -9,7 +9,7 @@ import { DialogoAsignarTurno } from './DialogoAsignarTurno';
 import { PestanaEntrenadores } from './PestanaEntrenadores';
 import {
   DIAS, HORAS, LARGO_MAXIMO_DEL_NOMBRE, aplicarRango, buscarEntrenador, canonizarGrilla, celdasSinEntrenador, clave, encargadosDistintos,
-  filasParaMostrar, grillaDesdeTurnos, grillasIguales, horasPorEncargado, limpiarNombre, nombreDelDia, ponerEncargado, textoDelTurno,
+  conHorasDelCalendario, filasParaMostrar, grillaDesdeTurnos, grillasIguales, horasPorEncargado, limpiarNombre, nombreDelDia, ponerEncargado, textoDelTurno,
   turnosDesdeGrilla, turnosParaGuardar, type Entrenador, type Grilla, type RangoDeTurno,
 } from './calendarioUtil';
 
@@ -92,6 +92,8 @@ export function ModuloCalendario() {
   const encargados = useMemo(() => encargadosDistintos(editando ? borrador : guardada), [editando, borrador, guardada]);
   const horas = useMemo(() => horasPorEncargado(guardada), [guardada]);
   const activos = useMemo(() => entrenadores.filter((e) => e.activo), [entrenadores]);
+  // Las horas por semana de la pestaña Entrenadores salen del calendario guardado, para que no queden viejas al guardarlo.
+  const entrenadoresConHoras = useMemo(() => conHorasDelCalendario(entrenadores, guardada), [entrenadores, guardada]);
   // Los nombres escritos en el borrador que no son de un entrenador activo: no se pueden guardar.
   const sinFicha = useMemo(() => (editando ? celdasSinEntrenador(borrador, entrenadores) : []), [editando, borrador, entrenadores]);
   const colorDe = (nombre: string) => COLORES[Math.max(0, encargados.indexOf(nombre)) % COLORES.length];
@@ -195,7 +197,7 @@ export function ModuloCalendario() {
               Tenés cambios del calendario sin guardar. Volvé a la pestaña Calendario para guardarlos o cancelarlos.
             </p>
           )}
-          <PestanaEntrenadores entrenadores={entrenadores} puedeEditar={puedeEditar} onCambio={() => void alCambiarUnEntrenador()} />
+          <PestanaEntrenadores entrenadores={entrenadoresConHoras} puedeEditar={puedeEditar} onCambio={() => void alCambiarUnEntrenador()} />
         </div>
       )}
 
