@@ -191,6 +191,9 @@ builder.Services.AddScoped<EstudioContable.Application.Services.IAsistenteServic
 builder.Services.AddScoped<EstudioContable.Application.Services.IAsistenciasService, EstudioContable.Application.Services.AsistenciasService>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IRegistroDeEventos, EstudioContable.Infrastructure.Persistence.RegistroDeEventos>();
 builder.Services.AddScoped<EstudioContable.Application.Copias.ICopiasDeSeguridadService, EstudioContable.Infrastructure.Copias.CopiasDeSeguridadService>();
+// El reloj del sistema (se inyecta para poder probar las copias automáticas fijando la hora) y el servicio de copias automáticas.
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<EstudioContable.Application.Copias.ICopiasAutomaticasService, EstudioContable.Infrastructure.Copias.CopiasAutomaticasService>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
 // Registro de MediatR (apuntando al Assembly de la capa Application)

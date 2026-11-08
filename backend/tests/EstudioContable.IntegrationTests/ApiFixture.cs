@@ -34,6 +34,15 @@ public sealed class ApiFixture : IAsyncLifetime
 
     public string ConnectionString => _postgres.GetConnectionString();
 
+    /// <summary>El reloj del servidor: se puede fijar para probar cuándo toca una copia automática.</summary>
+    public RelojDePrueba Reloj { get; } = new();
+
+    /// <summary>La carpeta donde el servidor guarda las copias automáticas (temporal y propia de esta corrida de pruebas).</summary>
+    public string CarpetaDeCopias { get; } = Path.Combine(Path.GetTempPath(), "gymstudio-copias-" + Guid.NewGuid().ToString("N"));
+
+    /// <summary>Los servicios del servidor, para probar uno directamente sin pasar por HTTP.</summary>
+    public IServiceProvider Servicios => _factory.Services;
+
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();
@@ -44,7 +53,13 @@ public sealed class ApiFixture : IAsyncLifetime
             builder.UseSetting("ConnectionStrings:DefaultConnection", ConnectionString);
             builder.UseSetting("Auth:IntentosLoginPorMinuto", "10000");
             builder.UseSetting("Copias:ClaveDeFirma", ClaveDeFirmaDePrueba);
-            builder.ConfigureServices(servicios => servicios.AddTransient<IStartupFilter, SimularIpDeConexion>());
+            builder.UseSetting("Copias:Carpeta", CarpetaDeCopias);
+            builder.UseSetting("Copias:TareaAutomatica", "false");   // las pruebas llaman al servicio con su propio reloj
+            builder.ConfigureServices(servicios =>
+            {
+                servicios.AddTransient<IStartupFilter, SimularIpDeConexion>();
+                servicios.AddSingleton<TimeProvider>(Reloj);
+            });
         });
 
         // Fuerza el arranque (migraciones y usuarios iniciales).
@@ -55,6 +70,7 @@ public sealed class ApiFixture : IAsyncLifetime
     {
         await _factory.DisposeAsync();
         await _postgres.DisposeAsync();
+        if (Directory.Exists(CarpetaDeCopias)) Directory.Delete(CarpetaDeCopias, recursive: true);
     }
 
     public HttpClient ClienteAnonimo() => _factory.CreateClient();
