@@ -102,8 +102,7 @@ export function CopiasAutomaticas() {
     if (primero) document.getElementById(primero[1])?.focus();
   };
 
-  const guardar = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const guardar = async () => {
     const invalidos = validarProgramacion(formulario);
     setErrores(invalidos);
     if (Object.keys(invalidos).length > 0) { enfocarPrimero(invalidos); return; }
@@ -162,7 +161,14 @@ export function CopiasAutomaticas() {
         </p>
       </div>
 
-      <form onSubmit={(e) => void guardar(e)} noValidate className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-5">
+      {/* No es un formulario HTML: Configuración ya está dentro de uno. Enter en un campo guarda la programación, y no la configuración de la empresa. */}
+      <div role="group" aria-label="Programación de la copia automática" className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-5"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+            e.preventDefault();
+            void guardar();
+          }
+        }}>
         <div className="flex items-center gap-3">
           <button type="button" role="switch" aria-checked={formulario.activa} aria-labelledby="copia-activa-texto" disabled={guardando}
             onClick={() => cambiar({ activa: !formulario.activa })}
@@ -234,7 +240,7 @@ export function CopiasAutomaticas() {
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" disabled={guardando || sinCambios} className={`${boton} bg-marca-600 text-white hover:bg-marca-700`}>
+          <button type="button" onClick={() => void guardar()} disabled={guardando || sinCambios} className={`${boton} bg-marca-600 text-white hover:bg-marca-700`}>
             {guardando ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
             {guardando ? 'Guardando…' : 'Guardar programación'}
           </button>
@@ -245,7 +251,7 @@ export function CopiasAutomaticas() {
           </button>
           {!sinCambios && <span className="text-xs font-medium text-amber-700">Hay cambios sin guardar.</span>}
         </div>
-      </form>
+      </div>
 
       {errorDeLaCopia && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800">{errorDeLaCopia}</p>}
 
