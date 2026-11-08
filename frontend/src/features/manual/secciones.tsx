@@ -52,8 +52,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Asignar, cambiar y finalizar la rutina de un socio', SI, SI, SI],
           ['Crear, editar y eliminar rutinas modelo y ejercicios', SI, SI, NO],
           ['Registrar ingresos de socios y ver los socios en riesgo', SI, SI, SI],
-          ['Ver e imprimir el calendario de entrenadores y ver la lista de entrenadores', SI, SI, SI],
-          ['Modificar el calendario y cargar, editar y desactivar entrenadores', SI, SI, NO],
+          ['Ver e imprimir el calendario, y ver la lista de entrenadores con su foto y su contacto', SI, SI, SI],
+          ['Modificar el calendario; cargar, editar y desactivar entrenadores y ponerles o sacarles la foto', SI, SI, NO],
           ['Deshacer un ingreso cargado por error', SI, SI, NO],
           ['Registrar y corregir mediciones de peso y medidas', SI, SI, SI],
           ['Crear, confirmar o anular asientos manuales; crear cuentas', SI, SI, NO],
@@ -166,25 +166,13 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         en turnos de una hora. Es una semana tipo: se repite todas las semanas, no tiene fechas. Hay <strong>una sola persona por hora</strong>,
         y solo figuran entrenadores: quienes trabajan en la parte contable o administrativa no aparecen.
       </p>
-      <Sub>Cargar a los entrenadores</Sub>
-      <Pasos>
-        <li>Entrá a la pestaña <B>Entrenadores</B> y apretá <B>Nuevo entrenador</B>.</li>
-        <li>
-          Completá el <B>nombre completo</B> (es obligatorio y no se puede repetir: «Ana López» y «ana  LÓPEZ» son la misma persona) y, si
-          querés, el teléfono y la especialidad.
-        </li>
-        <li>
-          Para corregir un dato, apretá <B>Editar</B>. Para sacar a alguien, <B>Desactivar</B>: antes hay que liberar sus horas en el
-          calendario, y el sistema avisa cuántas tiene. Un entrenador desactivado se puede volver a <B>Activar</B>.
-        </li>
-      </Pasos>
-      <Nota>
-        Un entrenador es una ficha para el calendario: no tiene usuario ni contraseña y no entra al sistema. Recepción ve la lista (con los
-        teléfonos) pero no la modifica.
-      </Nota>
+      <p>
+        A los entrenadores se los carga en <B>Entrenadores</B>, otro ítem del menú (grupo Recepción): ahí están su foto, su contacto y su
+        especialidad. Si todavía no hay ninguno cargado, el calendario lo avisa y tiene un botón <B>Ir a Entrenadores</B>.
+      </p>
       <Sub>Poner a los entrenadores en el calendario</Sub>
       <Pasos>
-        <li>En la pestaña <B>Calendario</B>, apretá <B>Editar calendario</B>.</li>
+        <li>En <B>Calendario</B>, apretá <B>Editar calendario</B>.</li>
         <li>
           Escribí el nombre en cada hora y elegilo de la lista que aparece. Con <strong>Enter</strong> o las flechas pasás a la hora de
           abajo o de arriba. Para dejar una hora libre, borrá el nombre. Si el nombre no es de un entrenador cargado, la celda se marca en
@@ -211,6 +199,58 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       </p>
       <Nota>
         Si la hoja se imprime sin nadie cargado, sale la grilla vacía: sirve para completarla a mano.
+      </Nota>
+    </>
+  ),
+
+  entrenadores: (
+    <>
+      <Quien quien="todos" extra="Los cargan y los editan el Administrador y el Contador; Recepción los ve y les puede escribir" />
+      <p>
+        <B>Entrenadores</B> (menú, grupo Recepción) tiene la ficha de cada entrenador o coach del gimnasio: su <strong>foto</strong>, su
+        teléfono, su <strong>WhatsApp</strong>, su <strong>email</strong> y su especialidad, y cuántas horas por semana tiene en el
+        calendario. Son los que se pueden poner en el <B>Calendario</B>. Quienes trabajan en la parte contable o administrativa no se cargan acá.
+      </p>
+      <Sub>Cargar un entrenador</Sub>
+      <Pasos>
+        <li>Entrá a <B>Entrenadores</B> y apretá <B>Nuevo entrenador</B>.</li>
+        <li>
+          Completá el <B>nombre completo</B>: es obligatorio y no se puede repetir («Ana López» y «ana  LÓPEZ» son la misma persona). Todo lo
+          demás es opcional.
+        </li>
+        <li>
+          Para la foto, apretá <B>Elegir foto</B> y elegí una imagen de la computadora o del celular (JPG, PNG o WebP). El sistema la recorta
+          al centro y la achica sola, y ves cómo queda antes de guardar. <B>Quitar foto</B> la saca.
+        </li>
+        <li>
+          Escribí el <B>WhatsApp</B> y el <B>email</B> si querés poder escribirle desde la lista. El WhatsApp admite números, espacios y los
+          signos + - ( ); si lo copiás desde el teléfono, los espacios raros se arreglan solos.
+        </li>
+        <li>
+          Apretá <B>Cargar entrenador</B>. Si los datos se guardan pero la foto no se puede subir, el cuadro sigue abierto con el motivo y
+          podés reintentar sin cargar a la persona de nuevo.
+        </li>
+      </Pasos>
+      <Sub>Escribirle a un entrenador</Sub>
+      <Lista>
+        <li>
+          El número de <B>WhatsApp</B> es un botón que abre el chat en otra pestaña, sin mensaje armado. Funciona con números argentinos; si el
+          número no se puede interpretar, se ve el texto solo.
+        </li>
+        <li>El <B>email</B> es un enlace que abre tu programa de correo.</li>
+        <li>Mientras un entrenador no tiene foto (o la foto no se puede cargar), se ven sus iniciales.</li>
+      </Lista>
+      <Sub>Corregir, desactivar y activar</Sub>
+      <Pasos>
+        <li>Para corregir un dato o cambiar la foto, apretá <B>Editar</B>.</li>
+        <li>
+          Para sacar a alguien, <B>Desactivar</B>: antes hay que liberar sus horas en el calendario, y el sistema avisa cuántas tiene. Un
+          entrenador desactivado se puede volver a <B>Activar</B>.
+        </li>
+      </Pasos>
+      <Nota>
+        Un entrenador es una ficha: no tiene usuario ni contraseña y no entra al sistema. Cada cambio de la ficha y cada foto que se sube
+        o se quita quedan en la <B>Auditoría</B>, y las fotos entran en las copias de seguridad.
       </Nota>
     </>
   ),

@@ -252,13 +252,3 @@ export function turnosParaGuardar(grilla: Grilla, lista: readonly Entrenador[]):
     return { dia: t.dia, hora: t.hora, entrenadorId: entrenador.id }
   })
 }
-
-/**
- * La lista de entrenadores con las horas por semana que tiene cada uno en el calendario guardado. Se calcula con lo que se muestra,
- * así la columna «Horas por semana» no se queda con un número viejo después de guardar el calendario.
- */
-export function conHorasDelCalendario(lista: readonly Entrenador[], guardada: Grilla): Entrenador[] {
-  const cuenta = new Map<string, number>()
-  for (const t of turnosDesdeGrilla(guardada)) cuenta.set(paraComparar(t.encargado), (cuenta.get(paraComparar(t.encargado)) ?? 0) + 1)
-  return lista.map((e) => ({ ...e, horasSemanales: cuenta.get(paraComparar(e.nombre)) ?? 0 }))
-}

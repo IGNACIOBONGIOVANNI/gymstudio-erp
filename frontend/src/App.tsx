@@ -5,7 +5,7 @@ import {
   LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
   Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins, ListChecks,
-  BookOpen, Info, CalendarDays,
+  BookOpen, Info, CalendarDays, Contact,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
 import { ListadoAsientos } from './asientos/ListadoAsientos'
@@ -28,6 +28,7 @@ import { ControlIntegridad } from './features/integridad/ControlIntegridad'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { ModuloCalendario } from './features/calendario/ModuloCalendario'
+import { ModuloEntrenadores } from './features/entrenadores/ModuloEntrenadores'
 import { Facturacion } from './features/ventas/components/Facturacion'
 import { LibroStock } from './features/inventario/components/LibroStock'
 import { GestionProductos } from './features/inventario/components/GestionProductos'
@@ -81,6 +82,7 @@ const MENU: Grupo[] = [
       { id: 'planes', titulo: 'Planes', icono: <CalendarRange className={icono} /> },
       { id: 'rutinas', titulo: 'Rutinas', icono: <Dumbbell className={icono} /> },
       { id: 'calendario', titulo: 'Calendario', icono: <CalendarDays className={icono} /> },
+      { id: 'entrenadores', titulo: 'Entrenadores', icono: <Contact className={icono} /> },
     ],
   },
   {
@@ -209,7 +211,8 @@ function AppContent() {
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />
       case 'rutinas': return <RutinasGym />
-      case 'calendario': return <ModuloCalendario />
+      case 'calendario': return <ModuloCalendario onIrAEntrenadores={() => irA('entrenadores')} />
+      case 'entrenadores': return <ModuloEntrenadores />
       case 'facturar': return <Facturacion />
       case 'ventas': return <LibroVenta />
       case 'compras': return <LibroCompra />

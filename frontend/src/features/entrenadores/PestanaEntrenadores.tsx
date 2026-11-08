@@ -1,23 +1,26 @@
 import { useState } from 'react';
-import { Pencil, Plus, Power } from 'lucide-react';
+import { Mail, MessageCircle, Pencil, Plus, Power } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cambiarEstadoDeEntrenador } from '../../api/entrenadoresApi';
+import type { Entrenador } from '../calendario/calendarioUtil';
+import { AvatarDeEntrenador } from './AvatarDeEntrenador';
 import { ModalEntrenador } from './ModalEntrenador';
-import type { Entrenador } from './calendarioUtil';
+import { enlaceDeEmail, enlaceDeWhatsAppDeEntrenador } from './entrenadoresUtil';
 
 interface Props {
   entrenadores: Entrenador[];
   /** Administrador y Contador. La API es la que decide: acá solo se ocultan los botones que Recepción no puede usar. */
   puedeEditar: boolean;
-  /** Se llama después de cada alta, edición o cambio de estado, para volver a cargar la lista y el calendario. */
+  /** Se llama después de cada alta, edición o cambio de estado, para volver a cargar la lista. */
   onCambio: () => void;
 }
 
 const boton = 'inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50';
 const botonPrimario = `${boton} bg-marca-600 text-white hover:bg-marca-700`;
 const botonChico = 'inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50';
+const enlaceDeContacto = 'inline-flex max-w-full items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50';
 
-/** La lista de entrenadores del gimnasio: quiénes se pueden poner en el calendario. */
+/** La lista de entrenadores del gimnasio: su foto, cómo contactarlos y cuántas horas tienen en el calendario. */
 export function PestanaEntrenadores({ entrenadores, puedeEditar, onCambio }: Props) {
   const [editando, setEditando] = useState<Entrenador | null>(null);
   const [creando, setCreando] = useState(false);
@@ -43,8 +46,8 @@ export function PestanaEntrenadores({ entrenadores, puedeEditar, onCambio }: Pro
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="max-w-xl text-sm text-slate-500">
-          Los entrenadores que se pueden poner en el calendario. Son fichas: no tienen usuario ni contraseña. Para sacar a alguien del
-          calendario hay que liberar primero sus horas.
+          Las fichas de los entrenadores, con su foto y sus datos de contacto. Son fichas: no tienen usuario ni contraseña. Para sacar a
+          alguien del calendario hay que liberar primero sus horas.
         </p>
         {puedeEditar && (
           <button type="button" onClick={() => setCreando(true)} className={botonPrimario}>
@@ -59,12 +62,14 @@ export function PestanaEntrenadores({ entrenadores, puedeEditar, onCambio }: Pro
         </p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-          <table className="w-full min-w-[40rem] border-collapse text-sm">
+          <table className="w-full min-w-[62rem] border-collapse text-sm">
             <caption className="sr-only">Entrenadores del gimnasio</caption>
             <thead>
               <tr className="bg-slate-50 text-left text-slate-700">
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Nombre</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Teléfono</th>
+                <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">WhatsApp</th>
+                <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Email</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Especialidad</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 text-right font-semibold">Horas por semana</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Estado</th>
@@ -98,13 +103,44 @@ interface FilaProps {
   onCambiarEstado: () => void;
 }
 
+/** El WhatsApp con su botón para escribirle; si el número no se puede convertir en un enlace de WhatsApp, queda el texto solo. */
+function ContactoDeWhatsApp({ nombre, whatsApp }: { nombre: string; whatsApp: string | null }) {
+  if (!whatsApp) return <>—</>;
+  const enlace = enlaceDeWhatsAppDeEntrenador(whatsApp);
+  if (!enlace) return <>{whatsApp}</>;
+  return (
+    <a href={enlace} target="_blank" rel="noopener noreferrer" aria-label={`Escribirle por WhatsApp a ${nombre} (${whatsApp}), se abre en otra pestaña`}
+      className={enlaceDeContacto}>
+      <MessageCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" /> {whatsApp}
+    </a>
+  );
+}
+
+function ContactoDeEmail({ nombre, email }: { nombre: string; email: string | null }) {
+  if (!email) return <>—</>;
+  const enlace = enlaceDeEmail(email);
+  if (!enlace) return <span className="break-all">{email}</span>;
+  return (
+    <a href={enlace} aria-label={`Escribirle un email a ${nombre} (${email})`} className={enlaceDeContacto}>
+      <Mail className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden="true" /> <span className="break-all">{email}</span>
+    </a>
+  );
+}
+
 function FilaDeEntrenador({ entrenador: e, puedeEditar, ocupado, aviso, onEditar, onCambiarEstado }: FilaProps) {
-  const columnas = puedeEditar ? 6 : 5;
+  const columnas = puedeEditar ? 8 : 7;
   return (
     <>
       <tr className={e.activo ? '' : 'bg-slate-50 text-slate-500'}>
-        <th scope="row" className="border-t border-slate-200 px-3 py-2.5 text-left font-medium">{e.nombre}</th>
+        <th scope="row" className="border-t border-slate-200 px-3 py-2.5 text-left font-medium">
+          <span className="flex items-center gap-3">
+            <AvatarDeEntrenador entrenador={e} tamano={40} />
+            <span>{e.nombre}</span>
+          </span>
+        </th>
         <td className="border-t border-slate-200 px-3 py-2.5">{e.telefono ?? '—'}</td>
+        <td className="border-t border-slate-200 px-3 py-2.5"><ContactoDeWhatsApp nombre={e.nombre} whatsApp={e.whatsApp} /></td>
+        <td className="border-t border-slate-200 px-3 py-2.5"><ContactoDeEmail nombre={e.nombre} email={e.email} /></td>
         <td className="border-t border-slate-200 px-3 py-2.5">{e.especialidad ?? '—'}</td>
         <td className="border-t border-slate-200 px-3 py-2.5 text-right tabular-nums">{e.horasSemanales}</td>
         <td className="border-t border-slate-200 px-3 py-2.5">

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  BYTES_MAXIMOS_DE_LA_FOTO, LADO_DE_LA_FOTO, codificarHastaQueEntre, enlaceDeEmail, enlaceDeWhatsAppDeEntrenador, iniciales, recorteCuadrado,
+  BYTES_MAXIMOS_DE_LA_FOTO, LADO_DE_LA_FOTO, codificarHastaQueEntre, enlaceDeEmail, enlaceDeWhatsAppDeEntrenador, errorDeEmail, errorDeWhatsApp,
+  iniciales, limpiarWhatsApp, recorteCuadrado,
 } from '../src/features/entrenadores/entrenadoresUtil.ts';
 
 test('la foto se achica a 256 por 256 y pesa hasta 150 000 bytes (lo mismo que acepta el servidor)', () => {
@@ -108,4 +109,33 @@ test('enlaceDeWhatsAppDeEntrenador abre el chat sin mensaje armado', () => {
   for (const malo of ['abc', '', null, undefined]) {
     assert.equal(enlaceDeWhatsAppDeEntrenador(malo as string | null | undefined), null, String(malo));
   }
+});
+
+// ---------- validación del formulario (la misma regla que el servidor, para avisar antes de enviar) ----------
+
+test('errorDeEmail: vacío vale (es opcional), uno con forma de email vale y lo demás explica qué falta', () => {
+  for (const bueno of ['', '   ', 'ana@gym.com', '  ana@gym.com ', 'ana.lopez+gym@mail.gym.com.ar']) {
+    assert.equal(errorDeEmail(bueno), null, JSON.stringify(bueno));
+  }
+  for (const malo of ['sin-arroba', 'a b@c.com', 'a@b', '@c.com', 'ana@gym..com']) {
+    assert.match(errorDeEmail(malo) ?? '', /email/i, malo);
+  }
+  assert.match(errorDeEmail('a'.repeat(247) + '@gym.com') ?? '', /254/);   // 255 caracteres
+  assert.equal(errorDeEmail('a'.repeat(246) + '@gym.com'), null);          // 254 justos
+});
+
+test('limpiarWhatsApp pasa los espacios duros y las rachas de espacios a un solo espacio común', () => {
+  assert.equal(limpiarWhatsApp('+54\u00A011\u00A05555-1234'), '+54 11 5555-1234');
+  assert.equal(limpiarWhatsApp('  +54 \u202F 11   5555-1234  '), '+54 11 5555-1234');
+  assert.equal(limpiarWhatsApp(''), '');
+});
+
+test('errorDeWhatsApp: solo números, espacios y + - ( ); hasta 30 caracteres; los espacios duros pegados no molestan', () => {
+  for (const bueno of ['', '  ', '11 5555-1234', '+54\u00A09\u00A011\u00A05555-1234', '(011) 15 5555-1234', '1'.repeat(30)]) {
+    assert.equal(errorDeWhatsApp(bueno), null, JSON.stringify(bueno));
+  }
+  for (const malo of ['abc', '11.5555.1234', '11 5555-1234 int. 5', '+', '( ) - +']) {
+    assert.match(errorDeWhatsApp(malo) ?? '', /WhatsApp/, malo);
+  }
+  assert.match(errorDeWhatsApp('1'.repeat(31)) ?? '', /30/);
 });
