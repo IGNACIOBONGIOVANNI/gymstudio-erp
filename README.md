@@ -304,21 +304,27 @@ Menú **Rutinas** (y el botón de la pesa en **Socios**):
   anterior se cierra el día que empieza la nueva. Queda el historial.
 - **Imprimir PDF** de la rutina del socio, en blanco y negro, con una columna para anotar el peso.
 
-## Calendario de encargados
+## Calendario de entrenadores
 
-Menú **Calendario** (grupo Recepción): quién está de encargado en el gimnasio, de **lunes a viernes** y de **06:00 a 22:00**
-(16 turnos de una hora por día). Es una semana tipo que se repite: no tiene fechas.
+Menú **Calendario** (grupo Recepción), con dos pestañas. El calendario dice qué entrenador está a cargo del gimnasio, de **lunes a
+viernes** y de **06:00 a 22:00** (16 turnos de una hora por día). Es una semana tipo que se repite: no tiene fechas. Hay una sola
+persona por hora y solo figuran entrenadores: quien hace la parte contable o administrativa no aparece.
 
 - Lo ven todos los usuarios; lo modifican **Administrador y Contador** (el servidor lo exige: Recepción recibe 403).
-- **Editar calendario**: se escribe el nombre en cada hora (Enter y las flechas pasan a la hora de abajo o de arriba) o se usa
-  **Asignar turno** para cargar a una persona en varios días y horas de una vez (por ejemplo, Ana de lunes a viernes de 06:00 a
-  14:00). Los cambios se aplican con **Guardar cambios**; **Cancelar** pide confirmación si hay algo sin guardar.
-- La misma persona en horas seguidas se ve como un solo bloque, con un color suave por persona, y se muestran las horas semanales de cada una.
+- **Pestaña Entrenadores**: la lista de entrenadores (nombre, teléfono, especialidad, horas por semana y estado). Son fichas, no
+  usuarios: no tienen contraseña ni entran al sistema. El nombre no se repite aunque cambien las mayúsculas o los espacios. Un
+  entrenador no se borra: se **desactiva**, y solo si no tiene horas en el calendario (el sistema avisa cuántas son).
+- **Editar calendario**: se escribe el nombre del entrenador en cada hora (aparece la lista de los cargados; Enter y las flechas pasan
+  a la hora de abajo o de arriba) o se usa **Asignar turno** para cargar a un entrenador en varios días y horas de una vez (por ejemplo,
+  Ana de lunes a viernes de 06:00 a 14:00). Un nombre que no es de un entrenador activo se marca en rojo y no deja guardar. Los cambios
+  se aplican con **Guardar cambios**; **Cancelar** pide confirmación si hay algo sin guardar.
+- El mismo entrenador en horas seguidas se ve como un solo bloque, con un color suave por persona, y se muestran las horas semanales de cada uno.
 - **Imprimir (PDF)**: hoja A4 apaisada en blanco y negro, con el logo y los datos del negocio, lista para fotocopiar. Las celdas
   libres quedan en blanco para anotar a mano.
-- Se guarda en la base (tabla `TurnosEncargado`, una fila por celda cargada) con restricciones que repiten las reglas
-  (días 1 a 5, horas 6 a 21, una persona por celda) y con auditoría de quién lo cambió. El servidor guarda solo las diferencias.
-  Entra en las copias de seguridad como cualquier otra tabla.
+- Se guarda en la base: la tabla `Entrenadores` (una fila por ficha, nombre único sin distinguir mayúsculas) y `TurnosEncargado`
+  (una fila por celda cargada, con clave foránea al entrenador que no permite borrar a uno con turnos), con restricciones que repiten
+  las reglas (días 1 a 5, horas 6 a 21, un entrenador por celda) y con auditoría de quién lo cambió. El servidor guarda solo las
+  diferencias. Entran en las copias de seguridad como cualquier otra tabla.
 
 ## Ingreso de socios y riesgo de abandono
 
