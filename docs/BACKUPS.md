@@ -185,6 +185,33 @@ desactivado hasta escribir `RESTAURAR` en mayúsculas, y la restauración devolv
 112 filas, integridad contable 16 de 16, un alta posterior sin choques de numeración y el evento en la auditoría). Con una copia
 idéntica al sistema, la vista previa lo dice y no ofrece restaurar.
 
+**Copia automática:**
+
+- *Regla de horario* (`ReglasDeCopiasAutomaticasTests`, 46 pruebas sin base de datos): el próximo momento de cada frecuencia (cambio de día,
+  de mes y de año, el mes corto, el lunes siguiente, cada 6 y cada 12 horas desde una hora cualquiera), cuándo toca y cuándo no, una
+  sola copia tras varios períodos de apagado, el reintento a los 30 minutos, que reprogramar no dispara una copia atrasada, los rangos
+  de cada campo y que solo se acepten los nombres exactos de las copias (rechaza `..`, barras, un salto de línea final, `.tmp`, mayúsculas
+  y dígitos de otros alfabetos).
+- *Servicio contra PostgreSQL real, con el reloj en la mano* (`CopiasAutomaticasServicioTests`, 31 pruebas): hace la copia a la hora y no
+  antes, queda firmada y se verifica como cualquier copia, no se repite, recupera el apagado con una sola copia, la retención borra solo las
+  copias propias (y deja `notas.zip`, `gymstudio_auto_x.zip`, los `.dump`, los `.bak` y hasta una carpeta con nombre de copia), borra los
+  temporales huérfanos, una carpeta rota se anota sin lanzar excepción y se reintenta a los 30 minutos (y se recupera), la corrida
+  automática a la vez que «Hacer una copia ahora» no deja archivos rotos, 16 programaciones imposibles se rechazan sin cambiar nada,
+  la descarga no abre nada fuera de la carpeta y la auditoría registra cada evento.
+- *API y tarea en segundo plano* (`CopiasAutomaticasApiTests`, 29 pruebas): las 5 rutas dan 401 sin sesión y 403 a Contador y Recepción,
+  12 cuerpos inválidos dan 400 sin cambiar nada, descargar con nombres hostiles da 404, una vuelta que falla se registra y no tumba el
+  servicio, la cancelación no se traga, la tarea está apagada en las pruebas y el `docker-compose.yml` monta la carpeta de la PC.
+- *Base de datos* (`ConfiguracionDeCopiasBaseTests`): la fila inicial, las restricciones aunque se escriba directo, que no admita una
+  segunda fila, la auditoría y la copia de seguridad.
+- *De punta a punta, en un Docker aparte con el volumen nuevo* y el navegador: se apretó «Hacer una copia ahora» y el archivo apareció en
+  la lista y en la carpeta `backups\automaticas` de la PC; se programó una copia diaria para tres minutos después y **se hizo sola** a la
+  hora (23:33:22) sin que nadie la pidiera; las dos copias dieron firma válida y «se puede restaurar» al subirlas a la comparación; se
+  reemplazó la carpeta por un archivo y la pantalla mostró el mensaje de error con el sistema funcionando, y al arreglarla la copia
+  siguiente se guardó, el aviso desapareció y la próxima copia pasó al día siguiente; una cantidad a conservar de 0 se rechazó con el
+  error junto al campo y el foco en él; Enter dentro de un campo guardó la programación sin tocar la configuración de la empresa; la
+  auditoría mostró `AUTOMATICA` (usuario «sistema»), `PROGRAMADA` y `GUARDADA` (con el email del administrador). Recepción no ve
+  Configuración en el menú.
+
 **Con los scripts**, contra una copia local con el ejercicio de la cátedra (30 facturas):
 
 - se hizo una copia, se cargó una factura, un cliente y un usuario, y se restauró;
