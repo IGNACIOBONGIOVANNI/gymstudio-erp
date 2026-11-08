@@ -194,6 +194,9 @@ builder.Services.AddScoped<EstudioContable.Application.Copias.ICopiasDeSeguridad
 // El reloj del sistema (se inyecta para poder probar las copias automáticas fijando la hora) y el servicio de copias automáticas.
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<EstudioContable.Application.Copias.ICopiasAutomaticasService, EstudioContable.Infrastructure.Copias.CopiasAutomaticasService>();
+// La tarea que hace sola las copias programadas. Se apaga con Copias:TareaAutomatica = false (las pruebas lo hacen).
+if (builder.Configuration.GetValue("Copias:TareaAutomatica", true))
+    builder.Services.AddHostedService<EstudioContable.API.Copias.CopiasAutomaticasHostedService>();
 builder.Services.AddScoped<EstudioContable.Application.Interfaces.IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
 // Registro de MediatR (apuntando al Assembly de la capa Application)

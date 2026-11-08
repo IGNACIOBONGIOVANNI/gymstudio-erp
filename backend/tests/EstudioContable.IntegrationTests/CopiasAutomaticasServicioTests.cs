@@ -30,19 +30,7 @@ public class CopiasAutomaticasServicioTests(ApiFixture api)
 
     private static readonly string[] Nombres = { "gymstudio_auto_20261101_220000.zip", "gymstudio_auto_20261102_220000.zip", "gymstudio_auto_20261103_220000.zip" };
 
-    /// <summary>El punto de partida de cada prueba: programación apagada, carpeta vacía y reloj real.</summary>
-    private async Task Reiniciar()
-    {
-        api.Reloj.Liberar();
-        if (Directory.Exists(api.CarpetaDeCopias)) Directory.Delete(api.CarpetaDeCopias, recursive: true);
-        else if (File.Exists(api.CarpetaDeCopias)) File.Delete(api.CarpetaDeCopias);
-        await Ejecutar(api.ConnectionString, """
-            UPDATE contabilidad."ConfiguracionDeCopias"
-            SET "Activa" = false, "Frecuencia" = 'Diaria', "Hora" = 22, "Minuto" = 0, "DiaDeLaSemana" = NULL, "DiaDelMes" = NULL,
-                "Conservar" = 14, "ActivaDesde" = now(), "UltimaCopia" = NULL, "UltimoIntento" = NULL, "UltimoError" = NULL
-            WHERE "Id" = 1
-            """);
-    }
+    private Task Reiniciar() => api.ReiniciarCopias();
 
     /// <summary>Programa con el reloj fijado en <paramref name="ahora"/> (desde ahí se cuenta la próxima copia).</summary>
     private async Task Programar(DateTimeOffset ahora, ProgramacionDeCopias pedido)
