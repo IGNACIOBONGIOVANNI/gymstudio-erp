@@ -61,15 +61,13 @@ export function PestanaEntrenadores({ entrenadores, puedeEditar, onCambio }: Pro
           Todavía no hay entrenadores cargados.{puedeEditar ? ' Apretá «Nuevo entrenador» para cargar el primero.' : ' El Administrador o el Contador los cargan.'}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-          <table className="w-full min-w-[62rem] border-collapse text-sm">
+        <div className="relative overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="w-full min-w-[44rem] border-collapse text-sm">
             <caption className="sr-only">Entrenadores del gimnasio</caption>
             <thead>
               <tr className="bg-slate-50 text-left text-slate-700">
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Nombre</th>
-                <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Teléfono</th>
-                <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">WhatsApp</th>
-                <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Email</th>
+                <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Contacto</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Especialidad</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 text-right font-semibold">Horas por semana</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Estado</th>
@@ -104,43 +102,48 @@ interface FilaProps {
 }
 
 /** El WhatsApp con su botón para escribirle; si el número no se puede convertir en un enlace de WhatsApp, queda el texto solo. */
-function ContactoDeWhatsApp({ nombre, whatsApp }: { nombre: string; whatsApp: string | null }) {
-  if (!whatsApp) return <>—</>;
+function ContactoDeWhatsApp({ nombre, whatsApp }: { nombre: string; whatsApp: string }) {
   const enlace = enlaceDeWhatsAppDeEntrenador(whatsApp);
   if (!enlace) return <>{whatsApp}</>;
   return (
     <a href={enlace} target="_blank" rel="noopener noreferrer" aria-label={`Escribirle por WhatsApp a ${nombre} (${whatsApp}), se abre en otra pestaña`}
-      className={enlaceDeContacto}>
+      className={`${enlaceDeContacto} whitespace-nowrap`}>
       <MessageCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden="true" /> {whatsApp}
     </a>
   );
 }
 
-function ContactoDeEmail({ nombre, email }: { nombre: string; email: string | null }) {
-  if (!email) return <>—</>;
+function ContactoDeEmail({ nombre, email }: { nombre: string; email: string }) {
   const enlace = enlaceDeEmail(email);
-  if (!enlace) return <span className="break-all">{email}</span>;
+  if (!enlace) return <span className="block max-w-[14rem] truncate" title={email}>{email}</span>;
+  // Un email largo se corta con puntos suspensivos (el nombre completo está en el título y en el nombre accesible del enlace).
   return (
-    <a href={enlace} aria-label={`Escribirle un email a ${nombre} (${email})`} className={enlaceDeContacto}>
-      <Mail className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden="true" /> <span className="break-all">{email}</span>
+    <a href={enlace} title={email} aria-label={`Escribirle un email a ${nombre} (${email})`} className={enlaceDeContacto}>
+      <Mail className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden="true" /> <span className="block max-w-[14rem] truncate">{email}</span>
     </a>
   );
 }
 
 function FilaDeEntrenador({ entrenador: e, puedeEditar, ocupado, aviso, onEditar, onCambiarEstado }: FilaProps) {
-  const columnas = puedeEditar ? 8 : 7;
+  const columnas = puedeEditar ? 6 : 5;
   return (
     <>
       <tr className={e.activo ? '' : 'bg-slate-50 text-slate-500'}>
         <th scope="row" className="border-t border-slate-200 px-3 py-2.5 text-left font-medium">
           <span className="flex items-center gap-3">
             <AvatarDeEntrenador entrenador={e} tamano={40} />
-            <span>{e.nombre}</span>
+            <span className="min-w-[9rem]">{e.nombre}</span>
           </span>
         </th>
-        <td className="border-t border-slate-200 px-3 py-2.5">{e.telefono ?? '—'}</td>
-        <td className="border-t border-slate-200 px-3 py-2.5"><ContactoDeWhatsApp nombre={e.nombre} whatsApp={e.whatsApp} /></td>
-        <td className="border-t border-slate-200 px-3 py-2.5"><ContactoDeEmail nombre={e.nombre} email={e.email} /></td>
+        <td className="border-t border-slate-200 px-3 py-2.5">
+          {e.telefono || e.whatsApp || e.email ? (
+            <div className="flex flex-col items-start gap-1">
+              {e.telefono && <span className="whitespace-nowrap"><span className="sr-only">Teléfono: </span>{e.telefono}</span>}
+              {e.whatsApp && <ContactoDeWhatsApp nombre={e.nombre} whatsApp={e.whatsApp} />}
+              {e.email && <ContactoDeEmail nombre={e.nombre} email={e.email} />}
+            </div>
+          ) : '—'}
+        </td>
         <td className="border-t border-slate-200 px-3 py-2.5">{e.especialidad ?? '—'}</td>
         <td className="border-t border-slate-200 px-3 py-2.5 text-right tabular-nums">{e.horasSemanales}</td>
         <td className="border-t border-slate-200 px-3 py-2.5">

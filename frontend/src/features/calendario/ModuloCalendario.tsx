@@ -238,7 +238,7 @@ export function ModuloCalendario({ onIrAEntrenadores }: Props) {
         </datalist>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="relative overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full min-w-[42rem] table-fixed border-collapse text-sm">
           <caption className="sr-only">Calendario semanal de entrenadores a cargo, de lunes a viernes y de 06:00 a 22:00</caption>
           <thead>
