@@ -555,6 +555,10 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
                     b.Property<string>("Especialidad")
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
@@ -571,10 +575,16 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<string>("WhatsApp")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Entrenadores", "contabilidad", t =>
                         {
+                            t.HasCheckConstraint("CK_Entrenadores_Email", "\"Email\" IS NULL OR \"Email\" ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'");
+
                             t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0");
                         });
                 });
@@ -865,6 +875,26 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("facturas_venta", "ventas");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.FotoDeEntrenador", b =>
+                {
+                    b.Property<long>("EntrenadorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("Actualizada")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("Foto")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("EntrenadorId");
+
+                    b.ToTable("FotosDeEntrenador", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_FotosDeEntrenador_Tamano", "octet_length(\"Foto\") BETWEEN 100 AND 150000");
+                        });
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.LineaAsiento", b =>
@@ -1699,6 +1729,15 @@ namespace EstudioContable.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Factura");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.FotoDeEntrenador", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Entrenador", null)
+                        .WithMany()
+                        .HasForeignKey("EntrenadorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.LineaAsiento", b =>

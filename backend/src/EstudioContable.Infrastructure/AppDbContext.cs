@@ -43,6 +43,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<AsistenciaSocio> AsistenciasSocio => Set<AsistenciaSocio>();
         public DbSet<TurnoEncargado> TurnosEncargado => Set<TurnoEncargado>();
         public DbSet<Entrenador> Entrenadores => Set<Entrenador>();
+        public DbSet<FotoDeEntrenador> FotosDeEntrenador => Set<FotoDeEntrenador>();
         public DbSet<ConfiguracionDeCopias> ConfiguracionesDeCopias => Set<ConfiguracionDeCopias>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
@@ -186,7 +187,26 @@ namespace EstudioContable.Infrastructure.Persistence
                 e.Property(x => x.NombreCompleto).HasMaxLength(Entrenador.LargoMaximoDelNombre).IsRequired();
                 e.Property(x => x.Telefono).HasMaxLength(Entrenador.LargoMaximoDelTelefono);
                 e.Property(x => x.Especialidad).HasMaxLength(Entrenador.LargoMaximoDeLaEspecialidad);
-                e.ToTable(t => t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0"));
+                e.Property(x => x.Email).HasMaxLength(Entrenador.LargoMaximoDelEmail);
+                e.Property(x => x.WhatsApp).HasMaxLength(Entrenador.LargoMaximoDelWhatsApp);
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0");
+                    // La misma forma que pide el dominio (algo@dominio.ext, sin espacios), por si alguien escribe directo en la base.
+                    t.HasCheckConstraint("CK_Entrenadores_Email", "\"Email\" IS NULL OR \"Email\" ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'");
+                });
+            });
+
+            // La foto de la ficha vive aparte (una por entrenador, JPEG de hasta 150 000 bytes): la lista y el calendario no cargan
+            // imágenes, y la tabla no tiene disparador de auditoría para que cada foto no se copie entera en la bitácora (las altas y
+            // bajas de foto se registran como eventos desde el controlador). Se va con su ficha si alguna vez se borra.
+            modelBuilder.Entity<FotoDeEntrenador>(e =>
+            {
+                e.HasKey(x => x.EntrenadorId);
+                e.Property(x => x.EntrenadorId).ValueGeneratedNever();
+                e.Property(x => x.Foto).IsRequired();
+                e.HasOne<Entrenador>().WithMany().HasForeignKey(x => x.EntrenadorId).OnDelete(DeleteBehavior.Cascade);
+                e.ToTable(t => t.HasCheckConstraint("CK_FotosDeEntrenador_Tamano", "octet_length(\"Foto\") BETWEEN 100 AND 150000"));
             });
 
             // Calendario semanal de entrenadores a cargo: uno por día y hora, de lunes a viernes y de 06 a 22 hs. No se puede borrar

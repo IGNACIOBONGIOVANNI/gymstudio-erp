@@ -91,6 +91,7 @@ namespace EstudioContable.Application.Copias
             ["contabilidad.AsignacionesRutina"] = ("Rutinas asignadas a socios", "Gimnasio", 57),
             ["contabilidad.TurnosEncargado"] = ("Calendario de entrenadores", "Gimnasio", 58),
             ["contabilidad.Entrenadores"] = ("Entrenadores", "Gimnasio", 59),
+            ["contabilidad.FotosDeEntrenador"] = ("Fotos de los entrenadores", "Gimnasio", 60),
 
             ["contabilidad.Usuario"] = ("Usuarios", "Sistema", 60),
             ["contabilidad.auditoria"] = ("Auditoría", "Sistema", 61),

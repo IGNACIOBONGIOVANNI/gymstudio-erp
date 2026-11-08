@@ -254,7 +254,9 @@ app.Use(async (context, next) =>
         h["Referrer-Policy"] = "no-referrer";
         if (context.Request.Path.StartsWithSegments("/api"))
         {
-            h["Cache-Control"] = "no-store";
+            // Por defecto nada se guarda en caché. Un endpoint que lo dice explícitamente (hoy, solo la foto del entrenador:
+            // «private, no-cache», que el navegador guarda pero revalida con el ETag antes de usar) conserva lo suyo.
+            if (!h.ContainsKey("Cache-Control")) h["Cache-Control"] = "no-store";
             h["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'";
         }
         return Task.CompletedTask;

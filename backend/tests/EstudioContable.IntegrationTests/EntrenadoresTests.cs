@@ -16,11 +16,13 @@ public class EntrenadoresTests(ApiFixture api)
     /// <summary>Un nombre que no se repite entre pruebas (la base es la misma para todas).</summary>
     private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Guid.NewGuid():N}"[..Math.Min(70, baseDelNombre.Length + 9)];
 
-    private static object Datos(string? nombre, string? telefono = null, string? especialidad = null) => new { nombre, telefono, especialidad };
+    private static object Datos(string? nombre, string? telefono = null, string? especialidad = null, string? email = null, string? whatsApp = null)
+        => new { nombre, telefono, especialidad, email, whatsApp };
 
-    private static async Task<long> Crear(HttpClient cliente, string nombre, string? telefono = null, string? especialidad = null)
+    private static async Task<long> Crear(HttpClient cliente, string nombre, string? telefono = null, string? especialidad = null,
+        string? email = null, string? whatsApp = null)
     {
-        var r = await cliente.PostAsJsonAsync("/api/entrenadores", Datos(nombre, telefono, especialidad));
+        var r = await cliente.PostAsJsonAsync("/api/entrenadores", Datos(nombre, telefono, especialidad, email, whatsApp));
         Assert.True(r.StatusCode == HttpStatusCode.Created, $"Alta de «{nombre}»: se esperaba 201 y fue {(int)r.StatusCode}. {await r.Detalle()}");
         return (long)(await r.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
     }
@@ -156,6 +158,69 @@ public class EntrenadoresTests(ApiFixture api)
         Assert.True(cambio.StatusCode == HttpStatusCode.BadRequest, $"{caso} (cambio): se esperaba 400 y fue {(int)cambio.StatusCode}. {await cambio.Detalle()}");
         Assert.Equal(cantidad, (await Lista(jefe)).Count);
         Assert.Equal(nombreValido, (string)(await Ficha(jefe, id))["nombre"]!);
+    }
+
+    // ---------- contacto: email y WhatsApp ----------
+
+    [Fact]
+    public async Task El_alta_y_la_edicion_guardan_el_email_y_el_whatsapp_limpios_y_todos_los_roles_los_ven()
+    {
+        var jefe = await api.Jefe();
+        var nombre = Nuevo("Con Contacto");
+        var id = await Crear(jefe, nombre, email: "  ana@gym.com ", whatsApp: "+54 11 5555-1234");   // el espacio duro lo trae pegar desde el teléfono
+
+        foreach (var cliente in new[] { jefe, await api.Contador(), await api.Recepcion() })
+        {
+            var ficha = await Ficha(cliente, id);
+            Assert.Equal("ana@gym.com", (string)ficha["email"]!);
+            Assert.Equal("+54 11 5555-1234", (string)ficha["whatsApp"]!);
+            Assert.False((bool)ficha["tieneFoto"]!);
+            Assert.Null((string?)ficha["fotoActualizada"]);
+        }
+
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, email: "ana.lopez@gym.com", whatsApp: "(011) 15 5555-1234"))).StatusCode);
+        var editada = await Ficha(jefe, id);
+        Assert.Equal("ana.lopez@gym.com", (string)editada["email"]!);
+        Assert.Equal("(011) 15 5555-1234", (string)editada["whatsApp"]!);
+
+        // Un dato en blanco se guarda como vacío: así se borra un contacto.
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, email: "  ", whatsApp: ""))).StatusCode);
+        var vaciada = await Ficha(jefe, id);
+        Assert.Null((string?)vaciada["email"]);
+        Assert.Null((string?)vaciada["whatsApp"]);
+    }
+
+    public static IEnumerable<object?[]> Contactos_invalidos()
+    {
+        yield return new object?[] { "email sin arroba", "sin-arroba", null };
+        yield return new object?[] { "email con espacio", "a b@c.com", null };
+        yield return new object?[] { "email sin punto en el dominio", "a@b", null };
+        yield return new object?[] { "email de 255 caracteres", new string('a', 247) + "@gym.com", null };
+        yield return new object?[] { "whatsApp con letras", null, "abc" };
+        yield return new object?[] { "whatsApp con punto", null, "11.5555.1234" };
+        yield return new object?[] { "whatsApp de 31 caracteres", null, new string('1', 31) };
+    }
+
+    [Theory]
+    [MemberData(nameof(Contactos_invalidos))]
+    public async Task Email_y_WhatsApp_invalidos_dan_400_y_no_cambian_nada(string caso, string? email, string? whatsApp)
+    {
+        var jefe = await api.Jefe();
+        var nombre = Nuevo("Contacto Valido");
+        var id = await Crear(jefe, nombre, email: "valido@gym.com", whatsApp: "11 5555-1234");
+        var cantidad = (await Lista(jefe)).Count;
+
+        var alta = await jefe.PostAsJsonAsync("/api/entrenadores", Datos(Nuevo("Contacto Nuevo"), email: email, whatsApp: whatsApp));
+        var cambio = await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(Nuevo("Contacto Cambiado"), email: email, whatsApp: whatsApp));
+
+        Assert.True(alta.StatusCode == HttpStatusCode.BadRequest, $"{caso} (alta): se esperaba 400 y fue {(int)alta.StatusCode}. {await alta.Detalle()}");
+        Assert.True(cambio.StatusCode == HttpStatusCode.BadRequest, $"{caso} (cambio): se esperaba 400 y fue {(int)cambio.StatusCode}. {await cambio.Detalle()}");
+        Assert.Equal(cantidad, (await Lista(jefe)).Count);
+        var ficha = await Ficha(jefe, id);
+        Assert.Equal(nombre, (string)ficha["nombre"]!);
+        Assert.Equal("valido@gym.com", (string)ficha["email"]!);
+        Assert.Equal("11 5555-1234", (string)ficha["whatsApp"]!);
     }
 
     [Fact]
