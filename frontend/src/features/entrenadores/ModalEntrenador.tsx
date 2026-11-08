@@ -58,14 +58,20 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
   const archivoRef = useRef<HTMLInputElement>(null);
   const alCerrar = useRef(onCerrar);
   const urlDeLaVistaPrevia = useRef<string | null>(null);
+  const guardandoAhora = useRef(false);
+  const montado = useRef(true);
 
   useEffect(() => { alCerrar.current = onCerrar; }, [onCerrar]);
+  useEffect(() => { guardandoAhora.current = guardando; }, [guardando]);
 
   useEffect(() => {
     nombreRef.current?.focus();
-    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') alCerrar.current(); };
+    montado.current = true;
+    // Mientras se guarda no se cierra: si la foto falla después de guardar los datos, el motivo tiene que poder leerse.
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape' && !guardandoAhora.current) alCerrar.current(); };
     document.addEventListener('keydown', tecla);
     return () => {
+      montado.current = false;
       document.removeEventListener('keydown', tecla);
       if (urlDeLaVistaPrevia.current) URL.revokeObjectURL(urlDeLaVistaPrevia.current);
     };
@@ -94,6 +100,7 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
     limpiarError('foto');
     try {
       const blob = await procesarFoto(archivo);
+      if (!montado.current) return;   // se cerró el diálogo mientras se preparaba: no crear un enlace que nadie va a liberar
       soltarVistaPrevia();
       const url = URL.createObjectURL(blob);
       urlDeLaVistaPrevia.current = url;
@@ -176,7 +183,7 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onCerrar(); }}>
+      onMouseDown={(e) => { if (e.target === e.currentTarget && !guardando) onCerrar(); }}>
       <div role="dialog" aria-modal="true" aria-labelledby="entrenador-titulo"
         className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <div className="flex items-start justify-between gap-4 bg-slate-900 px-6 py-4 text-white">
@@ -184,7 +191,8 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
             <h2 id="entrenador-titulo" className="text-base font-bold">{esEdicion ? 'Editar entrenador' : 'Nuevo entrenador'}</h2>
             <p className="mt-0.5 text-xs text-slate-400">Es una ficha para el calendario: no tiene usuario ni contraseña.</p>
           </div>
-          <button type="button" onClick={onCerrar} aria-label="Cerrar" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white">
+          <button type="button" onClick={onCerrar} disabled={guardando} aria-label="Cerrar"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -253,8 +261,8 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
           </div>
 
           <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
-            <button type="button" onClick={onCerrar}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">Cancelar</button>
+            <button type="button" onClick={onCerrar} disabled={guardando}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">Cancelar</button>
             <button type="submit" disabled={guardando || procesando}
               className="rounded-lg bg-marca-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-marca-700 disabled:opacity-50">
               {guardando ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Cargar entrenador'}

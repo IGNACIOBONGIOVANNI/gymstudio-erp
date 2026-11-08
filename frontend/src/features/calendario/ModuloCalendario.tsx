@@ -31,9 +31,11 @@ const botonSecundario = `${boton} border border-slate-300 bg-white text-slate-70
 interface Props {
   /** Lleva a la pantalla Entrenadores (los entrenadores se cargan ahí, no en el calendario). */
   onIrAEntrenadores: () => void;
+  /** Avisa qué hay sin guardar (o null si nada), para que el menú pregunte antes de irse de la pantalla. */
+  onCambiosSinGuardar: (descripcion: string | null) => void;
 }
 
-export function ModuloCalendario({ onIrAEntrenadores }: Props) {
+export function ModuloCalendario({ onIrAEntrenadores, onCambiosSinGuardar }: Props) {
   const { user } = useAuth();
   // La API es la que decide: acá solo se oculta lo que Recepción no puede hacer.
   const puedeEditar = user?.rol === 'Administrador' || user?.rol === 'Contador';
@@ -87,6 +89,12 @@ export function ModuloCalendario({ onIrAEntrenadores }: Props) {
     window.addEventListener('beforeunload', avisar);
     return () => window.removeEventListener('beforeunload', avisar);
   }, [hayCambios]);
+
+  // El menú pregunta antes de salir si hay cambios sin guardar (el aviso de arriba solo cubre cerrar o recargar la página).
+  useEffect(() => {
+    onCambiosSinGuardar(hayCambios ? 'cambios del calendario' : null);
+    return () => onCambiosSinGuardar(null);
+  }, [hayCambios, onCambiosSinGuardar]);
 
   const empezarAEditar = () => {
     setBorrador(guardada);

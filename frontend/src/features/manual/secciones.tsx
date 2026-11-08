@@ -183,7 +183,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           y elegí <B>Desde las</B> y <B>Hasta las</B> (por ejemplo, Ana de lunes a viernes, de 06:00 a 14:00). El cuadro avisa a cuántos
           turnos ya cargados reemplaza. <B>Dejar libres esas horas</B> vacía ese rango.
         </li>
-        <li>Apretá <B>Guardar cambios</B>. Hasta entonces nada queda guardado; <B>Cancelar</B> pide confirmación si hay cambios sin guardar.</li>
+        <li>Apretá <B>Guardar cambios</B>. Hasta entonces nada queda guardado; <B>Cancelar</B> pide confirmación si hay cambios sin guardar, y si intentás ir a otra pantalla del menú con cambios sin guardar, el sistema también pregunta antes de que se pierdan.</li>
       </Pasos>
       <Lista>
         <li>El mismo entrenador en horas seguidas se ve como un solo bloque, con un color suave por persona. Abajo figuran las horas semanales de cada uno.</li>

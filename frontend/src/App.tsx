@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, type ReactNode } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, type ReactNode } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
@@ -29,6 +29,7 @@ import { SociosGym } from './features/gimnasio/components/SociosGym'
 import { RecepcionGym } from './features/gimnasio/components/RecepcionGym'
 import { ModuloCalendario } from './features/calendario/ModuloCalendario'
 import { ModuloEntrenadores } from './features/entrenadores/ModuloEntrenadores'
+import { ConfirmarSalida } from './components/ConfirmarSalida'
 import { Facturacion } from './features/ventas/components/Facturacion'
 import { LibroStock } from './features/inventario/components/LibroStock'
 import { GestionProductos } from './features/inventario/components/GestionProductos'
@@ -181,6 +182,10 @@ function AppContent() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [mostrarReportes, setMostrarReportes] = useState(false)
   const [mostrarAcerca, setMostrarAcerca] = useState(false)
+  // Lo que la pantalla actual tiene sin guardar (null si nada). Al cambiar de pantalla se pregunta antes de perderlo.
+  const sinGuardar = useRef<string | null>(null)
+  const marcarSinGuardar = useCallback((descripcion: string | null) => { sinGuardar.current = descripcion }, [])
+  const [salidaPendiente, setSalidaPendiente] = useState<{ destino: string; descripcion: string } | null>(null)
 
   // Si el rol cambia (otro usuario inicia sesión) y la vista ya no está permitida, volver al inicio.
   useEffect(() => {
@@ -197,8 +202,12 @@ function AppContent() {
   const negocio = obtenerConfiguracion().nombreFantasia || obtenerConfiguracion().razonSocial
 
   const irA = (id: string) => {
-    setVistaId(id)
     setMenuAbierto(false)
+    if (id !== vistaId && sinGuardar.current) {
+      setSalidaPendiente({ destino: id, descripcion: sinGuardar.current })
+      return
+    }
+    setVistaId(id)
     window.scrollTo({ top: 0 })
   }
 
@@ -211,7 +220,7 @@ function AppContent() {
       case 'socios': return <SociosGym />
       case 'planes': return <PlanesGym />
       case 'rutinas': return <RutinasGym />
-      case 'calendario': return <ModuloCalendario onIrAEntrenadores={() => irA('entrenadores')} />
+      case 'calendario': return <ModuloCalendario onIrAEntrenadores={() => irA('entrenadores')} onCambiosSinGuardar={marcarSinGuardar} />
       case 'entrenadores': return <ModuloEntrenadores />
       case 'facturar': return <Facturacion />
       case 'ventas': return <LibroVenta />
@@ -387,6 +396,18 @@ function AppContent() {
       </main>
 
       {mostrarReportes && <ModalGenerarReporte onClose={() => setMostrarReportes(false)} />}
+      {salidaPendiente && (
+        <ConfirmarSalida
+          descripcion={salidaPendiente.descripcion}
+          onSeguir={() => setSalidaPendiente(null)}
+          onSalir={() => {
+            const { destino } = salidaPendiente
+            sinGuardar.current = null
+            setSalidaPendiente(null)
+            irA(destino)
+          }}
+        />
+      )}
       {mostrarAcerca && (
         <AcercaDe
           usuario={`${user.nombre} (${ETIQUETA_ROL[user.rol] ?? user.rol})`}

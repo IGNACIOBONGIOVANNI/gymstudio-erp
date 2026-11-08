@@ -59,6 +59,7 @@ public class ReglasDeFotoTests
         yield return new object?[] { "JPEG sin cabecera de tamaño", new byte[] { 0xFF, 0xD8 }.Concat(new byte[] { 0xFF, 0xFE, 0x00, 0x7A }).Concat(new byte[120]).Concat(new byte[] { 0xFF, 0xD9 }).ToArray() };
         yield return new object?[] { "DHT (C4) que no es una cabecera de tamaño", JpegDePrueba.Crear(256, 256, marcadorSof: 0xC4) };
         yield return new object?[] { "DAC (CC) que no es una cabecera de tamaño", JpegDePrueba.Crear(256, 256, marcadorSof: 0xCC) };
+        yield return new object?[] { "JPG (C8) que no es una cabecera de tamaño", JpegDePrueba.Crear(256, 256, marcadorSof: 0xC8) };
     }
 
     [Theory]
@@ -75,6 +76,38 @@ public class ReglasDeFotoTests
         Assert.Equal((300, 200), ReglasDeFoto.TamanoDelJpeg(JpegDePrueba.Crear(300, 200)));
         Assert.Null(ReglasDeFoto.TamanoDelJpeg(new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 }));
         Assert.Null(ReglasDeFoto.TamanoDelJpeg(Encoding.UTF8.GetBytes("no es un jpeg")));
+    }
+
+    private static byte[] Insertar(byte[] jpeg, int posicion, params byte[] bytes) => jpeg[..posicion].Concat(bytes).Concat(jpeg[posicion..]).ToArray();
+
+    [Fact]
+    public void El_relleno_FF_y_los_marcadores_sin_largo_antes_de_la_cabecera_no_confunden_la_lectura()
+    {
+        var jpeg = JpegDePrueba.Crear(300, 200);
+
+        Assert.Equal((300, 200), ReglasDeFoto.TamanoDelJpeg(Insertar(jpeg, 2, 0xFF, 0xFF, 0xFF)));   // relleno FF antes de un marcador
+        Assert.Equal((300, 200), ReglasDeFoto.TamanoDelJpeg(Insertar(jpeg, 2, 0xFF, 0xD0)));         // RST0: marcador sin largo
+        Assert.Equal((300, 200), ReglasDeFoto.TamanoDelJpeg(Insertar(jpeg, 2, 0xFF, 0x01)));         // TEM: marcador sin largo
+    }
+
+    [Fact]
+    public void Si_empiezan_los_datos_de_imagen_antes_de_la_cabecera_de_tamano_no_hay_tamano()
+    {
+        var conSosAntes = Insertar(JpegDePrueba.Crear(300, 200), 2, 0xFF, 0xDA, 0x00, 0x02);   // SOS: de ahí en adelante ya no hay marcadores
+
+        Assert.Null(ReglasDeFoto.TamanoDelJpeg(conSosAntes));
+        Assert.Throws<ArgumentException>(() => ReglasDeFoto.Validar(conSosAntes));
+    }
+
+    [Fact]
+    public void Una_cabecera_de_tamano_demasiado_corta_o_un_segmento_que_se_pasa_del_archivo_no_dan_tamano()
+    {
+        // SOF con largo 5 (hacen falta al menos 8 para precisión, alto, ancho y componentes).
+        Assert.Null(ReglasDeFoto.TamanoDelJpeg(new byte[] { 0xFF, 0xD8, 0xFF, 0xC0, 0x00, 0x05, 0x08, 0x01, 0x00, 0x01, 0x00, 0xFF, 0xD9 }));
+        // Un comentario que dice medir 65 535 bytes en un archivo de diez.
+        Assert.Null(ReglasDeFoto.TamanoDelJpeg(new byte[] { 0xFF, 0xD8, 0xFF, 0xFE, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xD9 }));
+        // Un SOF cortado a la mitad.
+        Assert.Null(ReglasDeFoto.TamanoDelJpeg(new byte[] { 0xFF, 0xD8, 0xFF, 0xC0, 0x00, 0x11, 0x08, 0x01 }));
     }
 }
 
