@@ -15,7 +15,7 @@ namespace EstudioContable.Application.Copias
     /// </summary>
     public record TablaComparada(
         string Tabla, string Etiqueta, string Grupo, int Orden,
-        long? FilasCopia, long? FilasAhora, string Estado, bool EsAuditoria);
+        long? FilasCopia, long? FilasAhora, string Estado, bool EsAuditoria);   // EsAuditoria: se actualiza sola (ver EtiquetasDeTablas.SeActualizaSola)
 
     /// <summary>
     /// Qué pasaría al cargar una copia, sin haber cambiado nada. Veredicto: "identica" (los datos son los mismos que ahora),
@@ -102,6 +102,14 @@ namespace EstudioContable.Application.Copias
             => Conocidas.TryGetValue(tabla, out var datos) ? datos : (tabla, "Otras tablas", 99);
 
         public const string TablaDeAuditoria = "contabilidad.auditoria";
+        public const string TablaDeProgramacionDeCopias = "contabilidad.ConfiguracionDeCopias";
         public const string TablaDeMigraciones = "public.__EFMigrationsHistory";
+
+        /// <summary>
+        /// Las tablas que cambian solas con cada acción y por eso no cuentan para decir si los datos de una copia son los mismos que los
+        /// de ahora: la auditoría (crece hasta con descargar la copia) y la programación de las copias automáticas (anota la última copia
+        /// después de sacarla). Sin esto, comparar una copia recién hecha nunca daría «idéntica».
+        /// </summary>
+        public static bool SeActualizaSola(string tabla) => tabla == TablaDeAuditoria || tabla == TablaDeProgramacionDeCopias;
     }
 }

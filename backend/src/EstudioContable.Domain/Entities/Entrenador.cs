@@ -14,7 +14,10 @@ namespace EstudioContable.Domain.Entities
         public const int LargoMaximoDelTelefono = 30;
         public const int LargoMaximoDeLaEspecialidad = 60;
 
-        private static readonly Regex EspaciosRepetidos = new(" {2,}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+        // El espacio común y los de otros tipos (el duro que trae pegar desde WhatsApp o Word, el angosto, el largo, el ideográfico...):
+        // cualquier racha pasa a un solo espacio común, así «Ana López» y «Ana López» con espacio duro son la misma ficha. El tabulador
+        // y el salto de línea no están acá: son caracteres de control y el nombre que los trae se rechaza.
+        private static readonly Regex EspaciosRepetidos = new(@"[    -     　]+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         public long Id { get; private set; }
         public string NombreCompleto { get; private set; } = string.Empty;

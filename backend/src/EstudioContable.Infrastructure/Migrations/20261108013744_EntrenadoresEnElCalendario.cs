@@ -14,8 +14,9 @@ namespace EstudioContable.Infrastructure.Migrations
     /// </summary>
     public partial class EntrenadoresEnElCalendario : Migration
     {
-        // Nombre limpio, como lo guarda Entrenador.LimpiarNombre: sin espacios sobrantes ni repetidos.
-        private static string NombreLimpio(string columna) => $@"regexp_replace(btrim({columna}), '\s+', ' ', 'g')";
+        // Nombre limpio, como lo guarda Entrenador.LimpiarNombre: cualquier racha de espacios (también el duro y otros espacios Unicode)
+        // pasa a un solo espacio y se recortan los extremos.
+        private static string NombreLimpio(string columna) => $@"btrim(regexp_replace({columna}, '[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+', ' ', 'g'))";
 
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

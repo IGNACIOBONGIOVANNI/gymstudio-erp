@@ -165,6 +165,24 @@ public class CopiasAutomaticasApiTests(ApiFixture api)
     }
 
     [Fact]
+    public async Task Una_copia_hecha_ahora_se_compara_como_identica_porque_la_programacion_se_actualiza_sola()
+    {
+        // Lo primero que se hace en una demostración: «Hacer una copia ahora» y compararla con el sistema.
+        await api.ReiniciarCopias();
+        var jefe = await api.Jefe();
+        var copia = (await (await jefe.PostAsync(Programacion + "/ahora", null)).Content.ReadFromJsonAsync<JsonObject>())!;
+        var zip = await jefe.GetByteArrayAsync("/api/copias/automaticas/" + (string)copia["nombre"]!);
+
+        var formulario = new MultipartFormDataContent { { new ByteArrayContent(zip), "file", (string)copia["nombre"]! } };
+        var comparacion = (await (await jefe.PostAsync("/api/copias/comparar", formulario)).Content.ReadFromJsonAsync<JsonObject>())!;
+
+        Assert.Equal("identica", (string)comparacion["veredicto"]!);
+        var tabla = comparacion["tablas"]!.AsArray().First(t => (string?)t!["tabla"] == "contabilidad.ConfiguracionDeCopias")!;
+        Assert.True((bool)tabla["esAuditoria"]!);   // se muestra como «Se actualiza sola», igual que la auditoría
+        await api.ReiniciarCopias();
+    }
+
+    [Fact]
     public async Task Hacer_una_copia_ahora_con_la_carpeta_rota_da_400_con_un_mensaje_claro()
     {
         await api.ReiniciarCopias();

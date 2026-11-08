@@ -24,7 +24,9 @@ En *Configuración › Copia de seguridad › Copia completa del sistema* (solo 
   asientos, caja, banco, stock, socios, usuarios y auditoría).
 - **Seleccionar copia (.zip):** verifica la copia y muestra una vista previa que la compara con el sistema actual, **tabla por
   tabla** y agrupada por módulo: filas en la copia, filas ahora y si cambia, con la opción de ver solo lo que cambia. No modifica nada.
-  La auditoría se muestra aparte («se actualiza sola»): crece con cada acción, hasta con descargar la copia.
+  La auditoría y la **programación de las copias automáticas** se muestran aparte («se actualiza sola») y no cuentan para decir si los
+  datos son iguales: la auditoría crece con cada acción, hasta con descargar la copia, y la programación anota la última copia después de
+  sacarla. Por eso una copia recién hecha se compara como **idéntica** al sistema.
 - **Restaurar:** desde esa vista previa. Pide escribir `RESTAURAR`, descarga antes una copia de lo que hay
   (`gymstudio_antes-de-restaurar_*.zip`) y reemplaza **todos** los datos.
 

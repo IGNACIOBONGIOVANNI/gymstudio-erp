@@ -174,11 +174,12 @@ namespace EstudioContable.Infrastructure.Copias
                         : ahora == null ? "solo-copia"
                         : enCopia.Filas == ahora.Value.Filas && enCopia.Huella == ahora.Value.Huella ? "igual" : "cambia";
                     var (etiqueta, grupo, orden) = EtiquetasDeTablas.De(nombre);
-                    tablas.Add(new TablaComparada(nombre, etiqueta, grupo, orden, enCopia?.Filas, ahora?.Filas, estado, nombre == EtiquetasDeTablas.TablaDeAuditoria));
+                    tablas.Add(new TablaComparada(nombre, etiqueta, grupo, orden, enCopia?.Filas, ahora?.Filas, estado, EtiquetasDeTablas.SeActualizaSola(nombre)));
                 }
                 tablas = tablas.OrderBy(t => t.Orden).ThenBy(t => t.Tabla, StringComparer.Ordinal).ToList();
 
-                // La auditoría crece con cada acción (hasta con descargar la copia), así que no cuenta para decir si los datos son iguales.
+                // La auditoría crece con cada acción (hasta con descargar la copia) y la programación de las copias anota la última copia después
+                // de sacarla: no cuentan para decir si los datos son iguales (ver EtiquetasDeTablas.SeActualizaSola).
                 var veredicto = !mismoEsquema ? "otra-version"
                     : tablas.Any(t => !t.EsAuditoria && t.Estado != "igual") ? "anterior"
                     : "identica";

@@ -11,6 +11,20 @@ public class EntrenadorTests
         Assert.Equal("Ana López", new Entrenador("  Ana    López ", null, null).NombreCompleto);
     }
 
+    [Theory]
+    [InlineData('\u00A0')]   // espacio duro: el que trae pegar desde WhatsApp o Word
+    [InlineData('\u202F')]   // espacio duro angosto
+    [InlineData('\u2007')]
+    [InlineData('\u2003')]   // espacio largo
+    [InlineData('\u3000')]   // espacio ideográfico
+    [InlineData('\u1680')]
+    public void Un_espacio_de_otro_tipo_cuenta_como_un_espacio_comun_para_que_sea_la_misma_ficha(char espacio)
+    {
+        Assert.Equal("Ana López", Entrenador.LimpiarNombre($"Ana{espacio}López"));
+        Assert.Equal("Ana López", Entrenador.LimpiarNombre($"{espacio}Ana {espacio}{espacio} López{espacio}"));
+        Assert.Equal(Entrenador.LimpiarNombre("Ana López"), new Entrenador($"Ana{espacio}López", null, null).NombreCompleto);
+    }
+
     [Fact]
     public void Las_mayusculas_y_los_acentos_se_conservan_como_se_escribieron()
         => Assert.Equal("ANA López-Núñez", Entrenador.LimpiarNombre("ANA López-Núñez"));

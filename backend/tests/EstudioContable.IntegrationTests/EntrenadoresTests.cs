@@ -107,6 +107,21 @@ public class EntrenadoresTests(ApiFixture api)
         Assert.Equal(baseDelNombre.ToUpperInvariant(), (string)(await Ficha(jefe, id))["nombre"]!);
     }
 
+    [Fact]
+    public async Task Un_nombre_con_espacio_duro_es_el_mismo_entrenador_y_se_rechaza_como_repetido()
+    {
+        var jefe = await api.Jefe();
+        var nombre = Nuevo("Ana López");
+        await Crear(jefe, nombre);
+
+        // Pegar un nombre desde WhatsApp o Word trae espacios duros en lugar de espacios comunes.
+        var conEspacioDuro = nombre.Replace(" ", "\u00A0");
+        var repetido = await jefe.PostAsJsonAsync("/api/entrenadores", Datos(conEspacioDuro));
+
+        Assert.Equal(HttpStatusCode.BadRequest, repetido.StatusCode);
+        Assert.Contains("Ya hay un entrenador", await repetido.Detalle());
+    }
+
     // ---------- validación en el servidor ----------
 
     // Marca los casos en que el nombre es válido y lo inválido es otro campo: la prueba le pone un nombre único.

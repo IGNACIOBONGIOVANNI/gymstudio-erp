@@ -13,7 +13,8 @@ public class MigracionDeEntrenadoresTests(ApiFixture api)
 
     private const string TurnosViejos = """
         INSERT INTO contabilidad."TurnosEncargado" ("DiaSemana", "Hora", "Encargado") VALUES
-            (1, 6, 'Ana'), (1, 7, '  ana  '), (2, 6, 'Ana  López'), (2, 7, 'ana lópez'), (3, 6, 'Beto')
+            (1, 6, 'Ana'), (1, 7, '  ana  '), (2, 6, 'Ana  López'), (2, 7, 'ana lópez'), (3, 6, 'Beto'),
+            (3, 7, U&'Ana\00A0L\00F3pez'), (3, 8, 'ANA LÓPEZ')   -- con espacio duro y con mayúscula acentuada: es la misma persona
         """;
 
     [Fact]
@@ -29,7 +30,7 @@ public class MigracionDeEntrenadoresTests(ApiFixture api)
         Assert.Equal(new[] { "Ana|True", "Ana López|True", "Beto|True" },
             await Leer(cadena, """SELECT "NombreCompleto", "Activo" FROM contabilidad."Entrenadores" ORDER BY "NombreCompleto" """));
         // Cada turno apunta a la ficha de su persona.
-        Assert.Equal(new[] { "1|6|Ana", "1|7|Ana", "2|6|Ana López", "2|7|Ana López", "3|6|Beto" },
+        Assert.Equal(new[] { "1|6|Ana", "1|7|Ana", "2|6|Ana López", "2|7|Ana López", "3|6|Beto", "3|7|Ana López", "3|8|Ana López" },
             await Leer(cadena, """
                 SELECT t."DiaSemana", t."Hora", e."NombreCompleto"
                 FROM contabilidad."TurnosEncargado" t JOIN contabilidad."Entrenadores" e ON e."Id" = t."EntrenadorId"
@@ -42,7 +43,7 @@ public class MigracionDeEntrenadoresTests(ApiFixture api)
 
         // Hacia atrás: vuelve el texto, con el nombre de la ficha, y no queda la tabla de entrenadores.
         await Migrar(cadena, Anterior);
-        Assert.Equal(new[] { "1|6|Ana", "1|7|Ana", "2|6|Ana López", "2|7|Ana López", "3|6|Beto" },
+        Assert.Equal(new[] { "1|6|Ana", "1|7|Ana", "2|6|Ana López", "2|7|Ana López", "3|6|Beto", "3|7|Ana López", "3|8|Ana López" },
             await Leer(cadena, """SELECT "DiaSemana", "Hora", "Encargado" FROM contabilidad."TurnosEncargado" ORDER BY "DiaSemana", "Hora" """));
         Assert.Equal(new[] { "" }, await Leer(cadena, """SELECT coalesce(to_regclass('contabilidad."Entrenadores"')::text, '')"""));
     }
