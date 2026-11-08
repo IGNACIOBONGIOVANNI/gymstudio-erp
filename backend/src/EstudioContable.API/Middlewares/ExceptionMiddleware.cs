@@ -69,6 +69,15 @@ namespace EstudioContable.API.Middlewares
                 _logger.LogWarning(ex, "Domain validation error");
                 await Responder(context, HttpStatusCode.BadRequest, "Error de Validación", ex.Message);
             }
+            catch (BadHttpRequestException ex)
+            {
+                // El servidor cortó el pedido al leerlo: el cuerpo pasó el tope de la ruta (413) o llegó mal formado o incompleto. No es un
+                // error del sistema: se contesta con el código que corresponde y un mensaje propio (el texto de Kestrel no se muestra).
+                _logger.LogWarning(ex, "Bad HTTP request {StatusCode}", ex.StatusCode);
+                await (ex.StatusCode == StatusCodes.Status413PayloadTooLarge
+                    ? Responder(context, HttpStatusCode.RequestEntityTooLarge, "Archivo demasiado grande", "Lo que intentaste subir es demasiado grande. Probá con uno más chico.")
+                    : Responder(context, (HttpStatusCode)ex.StatusCode, "Pedido no válido", "No se pudo leer el pedido. Volvé a intentarlo."));
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception");
