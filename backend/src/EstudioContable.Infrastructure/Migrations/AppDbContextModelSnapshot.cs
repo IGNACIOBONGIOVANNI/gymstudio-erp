@@ -483,6 +483,41 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.ToTable("Ejercicios", "contabilidad");
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.Entrenador", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Especialidad")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTimeOffset>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NombreCompleto")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Entrenadores", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.Factura", b =>
                 {
                     b.Property<long>("Id")
@@ -1421,15 +1456,15 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.Property<int>("DiaSemana")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Encargado")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
+                    b.Property<long>("EntrenadorId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Hora")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EntrenadorId");
 
                     b.HasIndex("DiaSemana", "Hora")
                         .IsUnique()
@@ -1440,8 +1475,6 @@ namespace EstudioContable.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_TurnosEncargado_Dia", "\"DiaSemana\" BETWEEN 1 AND 5");
 
                             t.HasCheckConstraint("CK_TurnosEncargado_Hora", "\"Hora\" BETWEEN 6 AND 21");
-
-                            t.HasCheckConstraint("CK_TurnosEncargado_Nombre", "char_length(btrim(\"Encargado\")) > 0");
                         });
                 });
 
@@ -1736,6 +1769,17 @@ namespace EstudioContable.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("PlanActualObj");
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.TurnoEncargado", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Entrenador", "Entrenador")
+                        .WithMany()
+                        .HasForeignKey("EntrenadorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Entrenador");
                 });
 
             modelBuilder.Entity("EstudioContable.Domain.Entities.Usuario", b =>

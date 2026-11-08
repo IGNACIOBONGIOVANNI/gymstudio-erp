@@ -116,6 +116,8 @@ namespace EstudioContable.API.Middlewares
                 => "Ya existe un ejercicio con ese nombre.",
             "23505" when pg.ConstraintName == "ux_rutinas_nombre"
                 => "Ya existe una rutina con ese nombre.",
+            "23505" when pg.ConstraintName == "ux_entrenadores_nombre"
+                => "Ya hay un entrenador con ese nombre.",
             "23505" => "Ya existe un registro con esos datos.",
             "23514" => $"Los datos no cumplen una regla de la base de datos ({pg.ConstraintName}).",
             _ => "La base de datos rechazó la operación."

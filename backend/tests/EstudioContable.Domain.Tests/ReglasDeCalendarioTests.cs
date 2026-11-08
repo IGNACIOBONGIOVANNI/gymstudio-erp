@@ -33,42 +33,19 @@ public class ReglasDeCalendarioTests
     }
 
     [Fact]
-    public void El_nombre_se_recorta_y_se_conserva_tal_cual()
+    public void Un_turno_se_crea_y_cambia_de_entrenador_con_las_mismas_reglas()
     {
-        Assert.Equal("María José", ReglasDeCalendario.NombreDelEncargado("  María José  "));
-        Assert.Equal("Ana / Beto", ReglasDeCalendario.NombreDelEncargado("Ana / Beto"));
-        Assert.Equal("<b>x</b>'; --", ReglasDeCalendario.NombreDelEncargado("<b>x</b>'; --"));
-    }
+        var turno = new TurnoEncargado(2, 9, 7);
+        Assert.Equal((2, 9, 7L), (turno.DiaSemana, turno.Hora, turno.EntrenadorId));
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("    ")]
-    [InlineData("Ana\u0000")]
-    [InlineData("Ana\nBeto")]
-    public void Un_nombre_vacio_o_con_caracteres_de_control_se_rechaza(string? nombre)
-        => Assert.Throws<ArgumentException>(() => ReglasDeCalendario.NombreDelEncargado(nombre));
+        turno.CambiarEntrenador(8);
+        Assert.Equal(8, turno.EntrenadorId);
+        Assert.Throws<ArgumentException>(() => turno.CambiarEntrenador(0));
+        Assert.Throws<ArgumentException>(() => turno.CambiarEntrenador(-3));
+        Assert.Equal(8, turno.EntrenadorId);   // un cambio inválido no cambia nada
 
-    [Fact]
-    public void El_nombre_tiene_un_largo_maximo()
-    {
-        Assert.Equal(80, ReglasDeCalendario.NombreDelEncargado(new string('x', 80)).Length);
-        Assert.Throws<ArgumentException>(() => ReglasDeCalendario.NombreDelEncargado(new string('x', 81)));
-    }
-
-    [Fact]
-    public void Un_turno_se_crea_y_cambia_de_encargado_con_las_mismas_reglas()
-    {
-        var turno = new TurnoEncargado(2, 9, " Ana ");
-        Assert.Equal((2, 9, "Ana"), (turno.DiaSemana, turno.Hora, turno.Encargado));
-
-        turno.CambiarEncargado("Beto");
-        Assert.Equal("Beto", turno.Encargado);
-        Assert.Throws<ArgumentException>(() => turno.CambiarEncargado("  "));
-        Assert.Equal("Beto", turno.Encargado);
-
-        Assert.Throws<ArgumentException>(() => new TurnoEncargado(6, 9, "Ana"));
-        Assert.Throws<ArgumentException>(() => new TurnoEncargado(2, 22, "Ana"));
-        Assert.Throws<ArgumentException>(() => new TurnoEncargado(2, 9, ""));
+        Assert.Throws<ArgumentException>(() => new TurnoEncargado(6, 9, 7));    // sábado
+        Assert.Throws<ArgumentException>(() => new TurnoEncargado(2, 22, 7));   // el gimnasio ya cerró
+        Assert.Throws<ArgumentException>(() => new TurnoEncargado(2, 9, 0));    // sin entrenador
     }
 }

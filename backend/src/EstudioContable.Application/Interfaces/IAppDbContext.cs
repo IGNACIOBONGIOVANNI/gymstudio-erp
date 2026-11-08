@@ -36,6 +36,7 @@ namespace EstudioContable.Application.Interfaces
         DbSet<MedicionSocio> MedicionesSocio { get; }
         DbSet<AsistenciaSocio> AsistenciasSocio { get; }
         DbSet<TurnoEncargado> TurnosEncargado { get; }
+        DbSet<Entrenador> Entrenadores { get; }
 
         /// <summary>Vista contabilidad.v_libro_mayor: saldos por cuenta de los asientos confirmados.</summary>
         IQueryable<SaldoCuentaMayor> LibroMayor { get; }

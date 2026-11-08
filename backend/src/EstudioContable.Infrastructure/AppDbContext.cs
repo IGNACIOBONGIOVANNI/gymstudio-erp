@@ -42,6 +42,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<MedicionSocio> MedicionesSocio => Set<MedicionSocio>();
         public DbSet<AsistenciaSocio> AsistenciasSocio => Set<AsistenciaSocio>();
         public DbSet<TurnoEncargado> TurnosEncargado => Set<TurnoEncargado>();
+        public DbSet<Entrenador> Entrenadores => Set<Entrenador>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -176,17 +177,28 @@ namespace EstudioContable.Infrastructure.Persistence
                 e.HasIndex(x => x.Fecha).HasDatabaseName("ix_asistencias_fecha");
             });
 
-            // Calendario semanal de encargados: una persona por día y hora, de lunes a viernes y de 06 a 22 hs.
-            // La base repite las reglas del dominio (ReglasDeCalendario) para que valgan aunque alguien escriba directo en ella.
+            // Entrenadores: fichas sin acceso al sistema, para ponerlas en el calendario. El nombre no se repite sin importar las
+            // mayúsculas: lo garantiza el índice único ux_entrenadores_nombre sobre lower("NombreCompleto"), que se crea en la
+            // migración con SQL porque el modelo de EF no sabe describir un índice sobre una expresión.
+            modelBuilder.Entity<Entrenador>(e =>
+            {
+                e.Property(x => x.NombreCompleto).HasMaxLength(Entrenador.LargoMaximoDelNombre).IsRequired();
+                e.Property(x => x.Telefono).HasMaxLength(Entrenador.LargoMaximoDelTelefono);
+                e.Property(x => x.Especialidad).HasMaxLength(Entrenador.LargoMaximoDeLaEspecialidad);
+                e.ToTable(t => t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0"));
+            });
+
+            // Calendario semanal de entrenadores a cargo: uno por día y hora, de lunes a viernes y de 06 a 22 hs. No se puede borrar
+            // un entrenador que tiene turnos. La base repite las reglas del dominio (ReglasDeCalendario) para que valgan aunque
+            // alguien escriba directo en ella.
             modelBuilder.Entity<TurnoEncargado>(e =>
             {
-                e.Property(x => x.Encargado).HasMaxLength(Domain.ReglasDeCalendario.LargoMaximoDelNombre);
+                e.HasOne(x => x.Entrenador).WithMany().HasForeignKey(x => x.EntrenadorId).OnDelete(DeleteBehavior.Restrict);
                 e.HasIndex(x => new { x.DiaSemana, x.Hora }).IsUnique().HasDatabaseName("ux_turnos_encargado_dia_hora");
                 e.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_TurnosEncargado_Dia", $"\"DiaSemana\" BETWEEN {Domain.ReglasDeCalendario.PrimerDia} AND {Domain.ReglasDeCalendario.UltimoDia}");
                     t.HasCheckConstraint("CK_TurnosEncargado_Hora", $"\"Hora\" BETWEEN {Domain.ReglasDeCalendario.PrimeraHora} AND {Domain.ReglasDeCalendario.UltimaHora}");
-                    t.HasCheckConstraint("CK_TurnosEncargado_Nombre", "char_length(btrim(\"Encargado\")) > 0");
                 });
             });
 
