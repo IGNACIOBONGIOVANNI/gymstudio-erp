@@ -139,6 +139,8 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
       id = await guardarEntrenador({
         id: idActual, nombre: limpiarNombre(nombre), telefono: telefono.trim(), especialidad: especialidad.trim(),
         email: email.trim(), whatsApp: limpiarWhatsApp(whatsApp),
+        // El valor de la hora todavía no se edita en este diálogo: se manda el que ya tenía la ficha para no borrarlo.
+        valorHora: entrenador?.valorHora == null ? '' : String(entrenador.valorHora),
       });
     } catch (error) {
       // Si el servidor rechaza un dato, el mensaje va junto a ese campo; lo demás (conexión, permisos) es un aviso.

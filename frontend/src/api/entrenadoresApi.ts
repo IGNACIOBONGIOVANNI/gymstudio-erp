@@ -1,6 +1,7 @@
 // Entrenadores del gimnasio: los ven todos los roles; los cargan, editan y desactivan el Administrador y el Contador.
 import { ERROR_DE_CONEXION, mensajeDeError } from './errores';
 import type { Entrenador } from '../features/calendario/calendarioUtil';
+import { mensajeDeValorHora, parsearValorHora } from '../features/entrenadores/horasUtil';
 
 async function pedir(url: string, init: RequestInit | undefined, porDefecto: string): Promise<Response> {
   let res: Response;
@@ -32,11 +33,16 @@ export interface DatosDeEntrenador {
   especialidad: string
   email: string
   whatsApp: string
+  /** Como se escribió («1500,50»); vacío = sin valor. Lo cargan solo el Administrador y el Contador. */
+  valorHora: string
 }
 
 /** Da de alta o edita la ficha y devuelve su id (el del alta, o el recibido en una edición): hace falta para subirle la foto. */
-export async function guardarEntrenador({ id, nombre, telefono, especialidad, email, whatsApp }: DatosDeEntrenador): Promise<number> {
-  const cuerpo = { nombre, telefono, especialidad, email, whatsApp };
+export async function guardarEntrenador({ id, nombre, telefono, especialidad, email, whatsApp, valorHora }: DatosDeEntrenador): Promise<number> {
+  // Un valor ausente o vacío borra el valor de la hora en el servidor: por eso uno ilegible no se manda, se avisa.
+  const valor = parsearValorHora(valorHora);
+  if (valor === 'invalido') throw new Error(mensajeDeValorHora(valorHora) ?? 'El valor de la hora no es válido.');
+  const cuerpo = { nombre, telefono, especialidad, email, whatsApp, valorHora: valor };
   if (id !== undefined) {
     await pedir(`/api/entrenadores/${id}`, conJson('PUT', cuerpo), 'No se pudo guardar el entrenador.');
     return id;

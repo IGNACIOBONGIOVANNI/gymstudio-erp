@@ -194,6 +194,8 @@ export interface Entrenador {
   /** Horas que tiene por semana en el calendario. */
   horasSemanales: number
   tieneFoto: boolean
+  /** Lo que se le paga por hora. Solo lo ve la gestión: para Recepción el servidor manda siempre null (igual que «sin valor»). */
+  valorHora: number | null
   /** Cuándo se subió la foto vigente (sirve para saber si hay que volver a pedirla); null si no tiene. */
   fotoActualizada: string | null
 }

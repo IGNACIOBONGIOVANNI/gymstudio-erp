@@ -139,7 +139,7 @@ test('los nombres distintos y las horas de cada persona', () => {
 // ---------- entrenadores: la grilla solo acepta nombres de fichas activas ----------
 
 const ficha = (id: number, nombre: string, activo = true): Entrenador =>
-  ({ id, nombre, telefono: null, especialidad: null, email: null, whatsApp: null, activo, horasSemanales: 0, tieneFoto: false, fotoActualizada: null });
+  ({ id, nombre, telefono: null, especialidad: null, email: null, whatsApp: null, activo, horasSemanales: 0, tieneFoto: false, fotoActualizada: null, valorHora: null });
 const entrenadores = [ficha(1, 'Ana López'), ficha(2, 'Beto'), ficha(3, 'Carla', false)];
 
 test('buscarEntrenador encuentra sin distinguir mayúsculas ni espacios repetidos, pero los acentos sí cuentan', () => {
