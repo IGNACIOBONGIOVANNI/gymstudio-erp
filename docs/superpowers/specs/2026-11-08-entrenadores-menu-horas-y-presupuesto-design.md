@@ -98,7 +98,7 @@ Administrador y el Contador.
 
 ### Valor de la hora
 
-`contabilidad."Entrenadores"."ValorHora"` `numeric(12,2)` nulo (nulo = todavía sin valor), `CK_Entrenadores_ValorHora` (`>= 0` y
+`contabilidad."Entrenadores"."ValorHora"` `numeric(18,2)` nulo (nulo = todavía sin valor), `CK_Entrenadores_ValorHora` (`>= 0` y
 `<= 999999999999`). Lo cargan y lo ven **solo** el Administrador y el Contador: para Recepción la API devuelve siempre `valorHora: null`
 (el servidor lo oculta, no la pantalla). Cambiarlo queda en la auditoría de `Entrenadores`. Editar la ficha con `valorHora` ausente o nulo
 lo borra.
@@ -113,7 +113,7 @@ lo borra.
 | `EntrenadorId` | clave foránea a `Entrenadores`, `ON DELETE RESTRICT` (no se borra a quien tiene horas), con índice |
 | `Fecha` | `date` |
 | `Horas` | `numeric(4,2)`, de 0 a 24 y múltiplo de 0,25 (`CK_HorasDeEntrenador_Horas`); **0 = faltó** |
-| `ValorHora` | `numeric(12,2)` no nulo, `>= 0`: **el valor de la hora de ese momento**, copiado al crear el día; no cambia si el del entrenador sube después |
+| `ValorHora` | `numeric(18,2)` no nulo, `>= 0`: **el valor de la hora de ese momento**, copiado al crear el día; no cambia si el del entrenador sube después |
 | `Nota` | `varchar(200)` nula, sin caracteres de control |
 
 Un solo registro por entrenador y día (`ux_horas_entrenador_fecha`). Migración `HorasYValorDeEntrenador` (con `Down`), disparador de

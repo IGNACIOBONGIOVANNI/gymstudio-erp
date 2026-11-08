@@ -38,6 +38,7 @@ namespace EstudioContable.Application.Interfaces
         DbSet<TurnoEncargado> TurnosEncargado { get; }
         DbSet<Entrenador> Entrenadores { get; }
         DbSet<FotoDeEntrenador> FotosDeEntrenador { get; }
+        DbSet<HoraDeEntrenador> HorasDeEntrenador { get; }
         DbSet<ConfiguracionDeCopias> ConfiguracionesDeCopias { get; }
 
         /// <summary>Vista contabilidad.v_libro_mayor: saldos por cuenta de los asientos confirmados.</summary>

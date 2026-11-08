@@ -2,6 +2,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using EstudioContable.Domain;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Domain.Enums;
 using EstudioContable.Domain.Exceptions;
@@ -44,6 +45,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<TurnoEncargado> TurnosEncargado => Set<TurnoEncargado>();
         public DbSet<Entrenador> Entrenadores => Set<Entrenador>();
         public DbSet<FotoDeEntrenador> FotosDeEntrenador => Set<FotoDeEntrenador>();
+        public DbSet<HoraDeEntrenador> HorasDeEntrenador => Set<HoraDeEntrenador>();
         public DbSet<ConfiguracionDeCopias> ConfiguracionesDeCopias => Set<ConfiguracionDeCopias>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
@@ -189,11 +191,32 @@ namespace EstudioContable.Infrastructure.Persistence
                 e.Property(x => x.Especialidad).HasMaxLength(Entrenador.LargoMaximoDeLaEspecialidad);
                 e.Property(x => x.Email).HasMaxLength(Entrenador.LargoMaximoDelEmail);
                 e.Property(x => x.WhatsApp).HasMaxLength(Entrenador.LargoMaximoDelWhatsApp);
+                e.Property(x => x.ValorHora).HasPrecision(18, 2);
                 e.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0");
                     // La misma forma que pide el dominio (algo@dominio.ext, sin espacios), por si alguien escribe directo en la base.
                     t.HasCheckConstraint("CK_Entrenadores_Email", "\"Email\" IS NULL OR \"Email\" ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'");
+                    // El valor de la hora: vacío (todavía sin valor) o de 0 al mismo tope que el resto del dinero del sistema.
+                    t.HasCheckConstraint("CK_Entrenadores_ValorHora", "\"ValorHora\" IS NULL OR \"ValorHora\" BETWEEN 0 AND 999999999999");
+                });
+            });
+
+            // Horas cumplidas por entrenador y día, con el valor de la hora de ese momento (no cambia si el de la ficha sube). Un registro
+            // por entrenador y día, y no se puede borrar a un entrenador que tiene horas. La base repite las reglas del dominio
+            // (ReglasDeHoras: de 0 a 24 horas y de a cuarto de hora) para que valgan aunque alguien escriba directo en ella. Tiene
+            // disparador de auditoría, que se crea en la migración porque el modelo de EF no sabe describirlo.
+            modelBuilder.Entity<HoraDeEntrenador>(e =>
+            {
+                e.Property(x => x.Horas).HasPrecision(4, 2);
+                e.Property(x => x.ValorHora).HasPrecision(18, 2);
+                e.Property(x => x.Nota).HasMaxLength(ReglasDeHoras.LargoMaximoDeLaNota);
+                e.HasOne<Entrenador>().WithMany().HasForeignKey(x => x.EntrenadorId).OnDelete(DeleteBehavior.Restrict);
+                e.HasIndex(x => new { x.EntrenadorId, x.Fecha }).IsUnique().HasDatabaseName("ux_horas_entrenador_fecha");
+                e.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_HorasDeEntrenador_Horas", "\"Horas\" BETWEEN 0 AND 24 AND \"Horas\" * 4 = trunc(\"Horas\" * 4)");
+                    t.HasCheckConstraint("CK_HorasDeEntrenador_ValorHora", "\"ValorHora\" BETWEEN 0 AND 999999999999");
                 });
             });
 

@@ -42,9 +42,9 @@ namespace EstudioContable.API.Controllers
         }
 
         public record EntrenadorDto(long Id, string Nombre, string? Telefono, string? Especialidad, string? Email, string? WhatsApp,
-            bool Activo, int HorasSemanales, bool TieneFoto, DateTimeOffset? FotoActualizada);
+            bool Activo, int HorasSemanales, bool TieneFoto, DateTimeOffset? FotoActualizada, decimal? ValorHora);
 
-        public record GuardarEntrenadorRequest(string? Nombre, string? Telefono, string? Especialidad, string? Email, string? WhatsApp);
+        public record GuardarEntrenadorRequest(string? Nombre, string? Telefono, string? Especialidad, string? Email, string? WhatsApp, decimal? ValorHora);
 
         public record CambiarEstadoRequest(bool Activo);
 
@@ -65,16 +65,20 @@ namespace EstudioContable.API.Controllers
                 .Select(f => new { f.EntrenadorId, f.Actualizada })
                 .ToDictionaryAsync(f => f.EntrenadorId, f => f.Actualizada, cancellationToken);
 
+            // El valor de la hora es dinero: lo ven solo el Administrador y el Contador. Para Recepción lo oculta el servidor (null), no la pantalla.
+            var veElValor = User.IsInRole(Roles.Administrador) || User.IsInRole(Roles.Contador);
+
             return Ok(fichas.Select(e => new EntrenadorDto(
                 e.Id, e.NombreCompleto, e.Telefono, e.Especialidad, e.Email, e.WhatsApp, e.Activo, horas.GetValueOrDefault(e.Id),
-                fotos.ContainsKey(e.Id), fotos.TryGetValue(e.Id, out var actualizada) ? actualizada : null)));
+                fotos.ContainsKey(e.Id), fotos.TryGetValue(e.Id, out var actualizada) ? actualizada : null,
+                veElValor ? e.ValorHora : null)));
         }
 
         [Authorize(Roles = Roles.Gestion)]
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] GuardarEntrenadorRequest request, CancellationToken cancellationToken)
         {
-            var entrenador = new Entrenador(request.Nombre, request.Telefono, request.Especialidad, request.Email, request.WhatsApp);
+            var entrenador = new Entrenador(request.Nombre, request.Telefono, request.Especialidad, request.Email, request.WhatsApp, request.ValorHora);
             await ValidarNombreLibreAsync(entrenador.NombreCompleto, idExcluido: null, cancellationToken);
 
             _context.Entrenadores.Add(entrenador);
@@ -87,7 +91,7 @@ namespace EstudioContable.API.Controllers
         public async Task<IActionResult> Actualizar(long id, [FromBody] GuardarEntrenadorRequest request, CancellationToken cancellationToken)
         {
             var entrenador = await BuscarAsync(id, cancellationToken);
-            entrenador.ActualizarDatos(request.Nombre, request.Telefono, request.Especialidad, request.Email, request.WhatsApp);
+            entrenador.ActualizarDatos(request.Nombre, request.Telefono, request.Especialidad, request.Email, request.WhatsApp, request.ValorHora);
             await ValidarNombreLibreAsync(entrenador.NombreCompleto, id, cancellationToken);
 
             await _context.SaveChangesAsync(cancellationToken);

@@ -575,6 +575,10 @@ namespace EstudioContable.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<decimal?>("ValorHora")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<string>("WhatsApp")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
@@ -586,6 +590,8 @@ namespace EstudioContable.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_Entrenadores_Email", "\"Email\" IS NULL OR \"Email\" ~ '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'");
 
                             t.HasCheckConstraint("CK_Entrenadores_Nombre", "char_length(btrim(\"NombreCompleto\")) > 0");
+
+                            t.HasCheckConstraint("CK_Entrenadores_ValorHora", "\"ValorHora\" IS NULL OR \"ValorHora\" BETWEEN 0 AND 999999999999");
                         });
                 });
 
@@ -894,6 +900,46 @@ namespace EstudioContable.Infrastructure.Migrations
                     b.ToTable("FotosDeEntrenador", "contabilidad", t =>
                         {
                             t.HasCheckConstraint("CK_FotosDeEntrenador_Tamano", "octet_length(\"Foto\") BETWEEN 100 AND 150000");
+                        });
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.HoraDeEntrenador", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("EntrenadorId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Horas")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)");
+
+                    b.Property<string>("Nota")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("ValorHora")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntrenadorId", "Fecha")
+                        .IsUnique()
+                        .HasDatabaseName("ux_horas_entrenador_fecha");
+
+                    b.ToTable("HorasDeEntrenador", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_HorasDeEntrenador_Horas", "\"Horas\" BETWEEN 0 AND 24 AND \"Horas\" * 4 = trunc(\"Horas\" * 4)");
+
+                            t.HasCheckConstraint("CK_HorasDeEntrenador_ValorHora", "\"ValorHora\" BETWEEN 0 AND 999999999999");
                         });
                 });
 
@@ -1737,6 +1783,15 @@ namespace EstudioContable.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("EntrenadorId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EstudioContable.Domain.Entities.HoraDeEntrenador", b =>
+                {
+                    b.HasOne("EstudioContable.Domain.Entities.Entrenador", null)
+                        .WithMany()
+                        .HasForeignKey("EntrenadorId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

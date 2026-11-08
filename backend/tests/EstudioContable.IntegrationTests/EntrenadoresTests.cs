@@ -16,13 +16,14 @@ public class EntrenadoresTests(ApiFixture api)
     /// <summary>Un nombre que no se repite entre pruebas (la base es la misma para todas).</summary>
     private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Guid.NewGuid():N}"[..Math.Min(70, baseDelNombre.Length + 9)];
 
-    private static object Datos(string? nombre, string? telefono = null, string? especialidad = null, string? email = null, string? whatsApp = null)
-        => new { nombre, telefono, especialidad, email, whatsApp };
+    private static object Datos(string? nombre, string? telefono = null, string? especialidad = null, string? email = null, string? whatsApp = null,
+        decimal? valorHora = null)
+        => new { nombre, telefono, especialidad, email, whatsApp, valorHora };
 
     private static async Task<long> Crear(HttpClient cliente, string nombre, string? telefono = null, string? especialidad = null,
-        string? email = null, string? whatsApp = null)
+        string? email = null, string? whatsApp = null, decimal? valorHora = null)
     {
-        var r = await cliente.PostAsJsonAsync("/api/entrenadores", Datos(nombre, telefono, especialidad, email, whatsApp));
+        var r = await cliente.PostAsJsonAsync("/api/entrenadores", Datos(nombre, telefono, especialidad, email, whatsApp, valorHora));
         Assert.True(r.StatusCode == HttpStatusCode.Created, $"Alta de «{nombre}»: se esperaba 201 y fue {(int)r.StatusCode}. {await r.Detalle()}");
         return (long)(await r.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
     }
@@ -221,6 +222,77 @@ public class EntrenadoresTests(ApiFixture api)
         Assert.Equal(nombre, (string)ficha["nombre"]!);
         Assert.Equal("valido@gym.com", (string)ficha["email"]!);
         Assert.Equal("11 5555-1234", (string)ficha["whatsApp"]!);
+    }
+
+    // ---------- valor de la hora (solo para la gestión) ----------
+
+    [Fact]
+    public async Task La_gestion_ve_y_carga_el_valor_de_la_hora_y_Recepcion_siempre_ve_null()
+    {
+        var jefe = await api.Jefe();
+        var id = await Crear(jefe, Nuevo("Con Valor"), valorHora: 1500.50m);
+
+        foreach (var gestion in new[] { jefe, await api.Contador() })
+            Assert.Equal(1500.50m, (decimal)(await Ficha(gestion, id))["valorHora"]!);
+
+        var recepcion = await api.Recepcion();
+        var vista = await Ficha(recepcion, id);
+        Assert.Null((string?)vista["valorHora"]);   // el servidor lo oculta: no llega ni como cero
+        Assert.Contains("\"valorHora\":null", (await (await recepcion.GetAsync("/api/entrenadores")).Content.ReadAsStringAsync()).Replace(" ", ""));
+    }
+
+    [Fact]
+    public async Task Editar_sin_valor_de_hora_lo_borra_y_con_valor_lo_cambia()
+    {
+        var jefe = await api.Jefe();
+        var nombre = Nuevo("Cambia Valor");
+        var id = await Crear(jefe, nombre, valorHora: 1000m);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, valorHora: 1200.25m))).StatusCode);
+        Assert.Equal(1200.25m, (decimal)(await Ficha(jefe, id))["valorHora"]!);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre))).StatusCode);   // sin valorHora
+        Assert.Null((string?)(await Ficha(jefe, id))["valorHora"]);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, valorHora: 0m))).StatusCode);
+        Assert.Equal(0m, (decimal)(await Ficha(jefe, id))["valorHora"]!);   // cero es un valor, no «sin valor»
+    }
+
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("1000000000000")]
+    [InlineData("1.234")]
+    public async Task Un_valor_de_hora_invalido_da_400_y_no_cambia_nada(string valor)
+    {
+        var jefe = await api.Jefe();
+        var nombre = Nuevo("Valor Valido");
+        var id = await Crear(jefe, nombre, valorHora: 1000m);
+        var cantidad = (await Lista(jefe)).Count;
+        var numero = decimal.Parse(valor, System.Globalization.CultureInfo.InvariantCulture);
+
+        var alta = await jefe.PostAsJsonAsync("/api/entrenadores", Datos(Nuevo("Valor Nuevo"), valorHora: numero));
+        var cambio = await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(Nuevo("Valor Cambiado"), valorHora: numero));
+
+        Assert.True(alta.StatusCode == HttpStatusCode.BadRequest, $"alta: se esperaba 400 y fue {(int)alta.StatusCode}. {await alta.Detalle()}");
+        Assert.True(cambio.StatusCode == HttpStatusCode.BadRequest, $"cambio: se esperaba 400 y fue {(int)cambio.StatusCode}. {await cambio.Detalle()}");
+        Assert.Contains("valor de la hora", await alta.Detalle(), StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(cantidad, (await Lista(jefe)).Count);
+        var ficha = await Ficha(jefe, id);
+        Assert.Equal(nombre, (string)ficha["nombre"]!);
+        Assert.Equal(1000m, (decimal)ficha["valorHora"]!);
+    }
+
+    [Fact]
+    public async Task Recepcion_no_puede_cargar_ni_cambiar_el_valor_de_la_hora()
+    {
+        var jefe = await api.Jefe();
+        var nombre = Nuevo("Sin Permiso");
+        var id = await Crear(jefe, nombre, valorHora: 1000m);
+        var recepcion = await api.Recepcion();
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await recepcion.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, valorHora: 5m))).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await recepcion.PostAsJsonAsync("/api/entrenadores", Datos(Nuevo("Intruso"), valorHora: 5m))).StatusCode);
+        Assert.Equal(1000m, (decimal)(await Ficha(jefe, id))["valorHora"]!);
     }
 
     [Fact]
