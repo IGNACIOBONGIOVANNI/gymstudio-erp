@@ -205,6 +205,31 @@ que después se convierten en los enlaces `mailto:` y `wa.me`. Cómo se limitó 
 Lo que **no** resuelve: la foto es un dato personal que queda en la base y en las copias, que no están cifradas; su custodia depende de
 quien las guarda.
 
+## Sexta revisión (horas y presupuesto de los entrenadores)
+
+Se suma dinero al sistema: el valor de la hora de cada entrenador, las horas que cumplió por día y el presupuesto de pago. Cómo se limitó el
+riesgo (cada punto tiene su prueba en `HorasDeEntrenadoresTests`, `HorasDeEntrenadorBaseTests`, `EntrenadoresTests` y `ReglasDeHorasTests`):
+
+1. **Solo la gestión.** Las cuatro rutas (ver, guardar, precargar y presupuesto) dan 401 sin sesión y 403 a Recepción. En la lista de
+   entrenadores, Recepción recibe siempre `valorHora: null`: lo oculta el servidor, no la pantalla (que además no le muestra las pestañas).
+   Recepción tampoco puede cargarlo (403 al editar la ficha).
+2. **El valor de cada día no se reescribe hacia atrás.** Un día guarda el valor de la hora de cuando se cargó. Subir el valor de la ficha no cambia
+   los días anteriores, y el cliente ni siquiera manda un valor por día: lo pone el servidor.
+3. **Dinero en `decimal`, con el redondeo definido.** El valor de la hora admite hasta 2 decimales (más se rechaza, no se redondea en silencio) y
+   va de 0 al tope del dinero del sistema. El monto de un día se redondea al centavo con el medio centavo hacia arriba y el total es la suma
+   de los días, no un redondeo de la suma.
+4. **Fechas y horas validadas en el servidor y en la base.** No se cargan días que todavía no pasaron (el «hoy» es el de Argentina, UTC-3: a las
+   22:30 de allá, que en UTC ya es el día siguiente, «hoy» sigue siendo el mismo día). Las horas van de 0 a 24 y de a cuarto de hora; la base
+   lo repite con restricciones, tiene un índice único por entrenador y día y no deja borrar a un entrenador que tiene horas.
+5. **Todo o nada y con tope.** Guardar valida todo antes de tocar la base y falla entero (hasta 500 renglones por pedido; períodos de hasta 62
+   días): un pedido malo o enorme no deja datos a medias ni consulta un rango sin límite.
+6. **Queda registrado.** Cada día de horas que se carga, se corrige o se borra queda en la auditoría por el disparador de la tabla, con el usuario
+   y el equipo; el cambio del valor de la hora, por el de la ficha. Las horas entran en la copia de seguridad.
+7. **El PDF se arma en el navegador** con lo que contesta el servidor: no hay archivos nuevos que se suban ni se guarden.
+
+Lo que **no** es: el presupuesto es una cuenta de horas por valor de la hora, para estimar un pago. No es una liquidación de sueldos ni genera
+asientos contables.
+
 ## Pendiente antes de usarlo con datos reales
 
 - Cambiar la contraseña del administrador inicial (`jefe@gym.com`, clave de desarrollo) y la clave `Jwt:Key` de `appsettings.Development.json`.

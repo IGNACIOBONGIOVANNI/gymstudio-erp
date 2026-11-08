@@ -91,8 +91,9 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `MedicionesSocio` | `CK_MedicionesSocio_Peso` / `_Grasa` / `_Perimetros` | Peso 20 a 400 kg, grasa 2 a 70 %, perímetros dentro de rangos humanos |
 | `movimientos_caja` / `movimientos_banco` | `CK_..._importe_positivo` | `Importe > 0` |
 | `TurnosEncargado` | `CK_TurnosEncargado_Dia` / `_Hora` | Día 1 a 5 (lunes a viernes) y hora 6 a 21 (turnos de 06:00 a 22:00) |
-| `Entrenadores` | `CK_Entrenadores_Nombre` / `CK_Entrenadores_Email` | Nombre no vacío; el email, si está, tiene forma de email (`algo@dominio.ext`, sin espacios) |
+| `Entrenadores` | `CK_Entrenadores_Nombre` / `CK_Entrenadores_Email` / `CK_Entrenadores_ValorHora` | Nombre no vacío; el email, si está, tiene forma de email (`algo@dominio.ext`, sin espacios); el valor de la hora, si está, va de 0 a 999 999 999 999 |
 | `FotosDeEntrenador` | `CK_FotosDeEntrenador_Tamano` | La foto pesa de 100 a 150 000 bytes |
+| `HorasDeEntrenador` | `CK_HorasDeEntrenador_Horas` / `CK_HorasDeEntrenador_ValorHora` | Horas de 0 a 24 y de a cuarto de hora (`Horas * 4` entero; 0 = faltó); valor de la hora de 0 a 999 999 999 999 |
 | `ConfiguracionDeCopias` | `CK_ConfiguracionDeCopias_Unica` / `_Hora` / `_Minuto` / `_Conservar` / `_DiaSemana` / `_DiaMes` / `_Frecuencia` | Una sola fila (`Id = 1`), hora 0 a 23, minuto 0 a 59, copias a conservar 1 a 60, día de la semana 1 a 7, día del mes 1 a 28 y una de las cinco frecuencias |
 
 ### Únicas y claves foráneas
@@ -112,12 +113,18 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
   no se borra: se desactiva, y la API lo permite solo si no tiene horas en el calendario).
 - `Entrenadores`: nombre único sin distinguir mayúsculas (índice `ux_entrenadores_nombre` sobre `lower("NombreCompleto")`).
   Son fichas sin acceso al sistema (no son filas de `Usuario`). Además del teléfono y la especialidad, guardan un `Email`
-  (`varchar(254)`) y un `WhatsApp` (`varchar(30)`), nulos si no se cargaron. Tiene disparador de auditoría.
+  (`varchar(254)`) y un `WhatsApp` (`varchar(30)`), nulos si no se cargaron, y el `ValorHora` (`numeric(18,2)`, nulo = todavía sin valor), que solo ven y
+  cargan el Administrador y el Contador: la API se lo oculta a Recepción. Tiene disparador de auditoría (también del cambio del valor de la hora).
 - `FotosDeEntrenador (EntrenadorId)`: la foto de la ficha, una por entrenador (`EntrenadorId` es la clave primaria y una FK a
   `Entrenadores` `ON DELETE CASCADE`), en una columna `Foto` `bytea` con la fecha de la última subida (`Actualizada`). Está **aparte** de
   `Entrenadores` para que la lista y el calendario no carguen imágenes, y **no tiene disparador de auditoría**: el disparador guarda
   la fila entera en cada cambio y copiaría hasta 150 KB por foto en la bitácora. Las altas y bajas de foto se registran como eventos
   (`entrenador` / `FOTO` y `FOTO_BAJA`) desde la API. Entra en la copia de seguridad como cualquier otra tabla.
+- `HorasDeEntrenador (EntrenadorId, Fecha)` único (`ux_horas_entrenador_fecha`): las horas que cumplió un entrenador en un día, con un registro por
+  entrenador y día. Guarda el `ValorHora` (`numeric(18,2)`) **de ese momento**, copiado de la ficha al crear el día: si el valor del entrenador
+  sube después, los días ya cargados no cambian y un presupuesto viejo da siempre lo mismo. `Horas` es `numeric(4,2)`; `Nota`, `varchar(200)`.
+  La FK a `Entrenadores` es `RESTRICT`: no se puede borrar a un entrenador que tiene horas. Tiene disparador de auditoría (`trg_auditar_horas_entrenador`)
+  y entra en la copia de seguridad como cualquier otra tabla. Solo la gestión la usa (la API no se la da a Recepción).
 - `ConfiguracionDeCopias`: **una sola fila** (`Id = 1`, `CHECK` y clave primaria), que la migración deja creada: copia automática apagada,
   diaria a las 22:00 y las últimas 14 copias. Es la programación de las copias automáticas y cómo le fue a la última (`UltimaCopia`,
   `UltimoIntento`, `UltimoError`). Tiene disparador de auditoría y entra en la copia de seguridad como cualquier otra tabla (por eso
@@ -133,7 +140,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 |---|---|---|---|
 | `trg_validar_balance_lineas` / `trg_validar_balance_asiento` | `lineas_asiento`, `asientos_contables` | `AFTER`, **diferido** al `COMMIT` | Un asiento Confirmado debe cumplir la partida doble: Debe = Haber, más de 0 y al menos 2 líneas |
 | `trg_proteger_lineas_asiento` / `trg_proteger_asiento` | `lineas_asiento`, `asientos_contables` | `BEFORE UPDATE OR DELETE` | Un asiento Confirmado o Anulado es inmutable: no se borra, no vuelve a Borrador y sus líneas no cambian |
-| `trg_auditar_*` (14 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de entrenadores, entrenadores, programación de copias automáticas | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
+| `trg_auditar_*` (15 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de entrenadores, entrenadores, horas de los entrenadores, programación de copias automáticas | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
 | `trg_auditoria_solo_lectura` / `trg_auditoria_sin_truncate` | `auditoria` | `BEFORE UPDATE OR DELETE` / `BEFORE TRUNCATE` | La auditoría no se puede alterar |
 
 **¿Por qué el trigger de balance es diferido?** Al confirmar una factura se inserta

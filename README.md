@@ -331,6 +331,19 @@ Dos ítems del menú, en el grupo Recepción: **Entrenadores** (las fichas) y **
   evento) y entra en las copias de seguridad.
 - El WhatsApp admite números, espacios y los signos + - ( ); el espacio duro que trae pegar desde el teléfono se arregla solo.
 
+### Horas cumplidas y presupuesto de pago
+
+- Solo para el **Administrador y el Contador** (el servidor lo exige: Recepción recibe 403 y ni siquiera recibe el valor de la hora). Son dos
+  pestañas más de **Entrenadores**, al lado de la **Lista**.
+- En la ficha, el **valor de la hora** de cada entrenador (vacío = sin valor: todavía no se le pueden cargar horas).
+- **Horas**: por mes, cada día muestra las horas que le tocaban según el calendario («Le tocaba») y las que cumplió («Cumplió», de a cuarto
+  de hora; 0 = faltó; vacío = sin cargar). **Precargar desde el calendario** carga de una vez, hasta hoy, lo que le tocaba a cada entrenador con
+  valor de la hora, sin pisar lo ya cargado y repetible; después se corrige lo que haga falta y se pueden **agregar días** que el calendario no
+  tenía. Cada día guarda el valor de la hora que tenía al cargarse: si el valor sube después, los días ya cargados no cambian.
+- **Presupuesto**: por período (hasta 62 días), las horas, el valor de la hora y el monto de cada entrenador y el total, con **Descargar PDF**
+  (A4 en blanco y negro). El monto de un día es horas por valor, redondeado al centavo; el total es la suma de los días.
+- Se guarda en `HorasDeEntrenador` (un registro por entrenador y día, con restricciones y auditoría) y entra en las copias de seguridad.
+
 ### Calendario
 
 El calendario dice qué entrenador está a cargo del gimnasio, de **lunes a viernes** y de **06:00 a 22:00** (16 turnos de una hora por
