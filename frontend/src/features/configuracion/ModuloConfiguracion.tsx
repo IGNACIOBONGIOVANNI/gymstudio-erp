@@ -13,6 +13,7 @@ import toast from 'react-hot-toast';
 import { compararConfiguracion, leerArchivoDeConfiguracion, type Comparacion, type ValorInvalido } from './compararConfiguracion';
 import { VistaPreviaDeConfiguracion } from './VistaPreviaDeConfiguracion';
 import { VistaPreviaDeCopia } from './VistaPreviaDeCopia';
+import { CopiasAutomaticas } from './CopiasAutomaticas';
 import { compararCopia, descargarCopia, guardarArchivo } from '../../api/copiasApi';
 import { nombreDeArchivoDeCopia, type ComparacionDeCopia } from './copiasUtil';
 import { abrirManual } from '../../acercaDe';
@@ -598,7 +599,7 @@ export default function ModuloConfiguracion() {
                   <h4 className="font-bold text-slate-900 text-sm">Datos contables (lo más importante)</h4>
                   <p className="text-xs text-slate-700 mt-1">
                     Las facturas, los asientos y el resto de los datos están en la base de datos. Se copian desde esta pantalla
-                    (<strong>Copia completa del sistema</strong>, más abajo) o, también, desde la carpeta del proyecto, en una terminal de PowerShell:
+                    (<strong>Copia completa del sistema</strong>, y <strong>Copia automática</strong> para que se haga sola, más abajo) o, también, desde la carpeta del proyecto, en una terminal de PowerShell:
                   </p>
                 </div>
               </div>
@@ -660,6 +661,8 @@ export default function ModuloConfiguracion() {
                 </div>
               </div>
             </div>
+
+            <CopiasAutomaticas />
 
             <h4 className="font-bold text-slate-900 text-sm pt-2">Configuración de la empresa</h4>
 

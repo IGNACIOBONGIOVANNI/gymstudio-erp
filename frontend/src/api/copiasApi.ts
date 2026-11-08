@@ -1,6 +1,7 @@
 // Copia de seguridad completa del sistema (solo Administrador): descargar, comparar con el sistema actual y restaurar.
 import { ERROR_DE_CONEXION, mensajeDeError } from './errores';
 import type { ComparacionDeCopia } from '../features/configuracion/copiasUtil';
+import type { CopiaGuardada, EstadoDeCopias, Programacion } from '../features/configuracion/copiasAutomaticasUtil';
 
 async function pedir(url: string, init: RequestInit | undefined, porDefecto: string): Promise<Response> {
   let res: Response;
@@ -41,6 +42,35 @@ export interface ResultadoDeRestauracion {
 export async function restaurarCopia(archivo: File, confirmacion: string): Promise<ResultadoDeRestauracion> {
   const res = await pedir('/api/copias/restaurar', { method: 'POST', body: formulario(archivo, confirmacion) }, 'No se pudo restaurar la copia.');
   return res.json();
+}
+
+/** La programación de las copias automáticas, cuándo es la próxima y cómo le fue a la última. */
+export async function obtenerProgramacion(): Promise<EstadoDeCopias> {
+  return (await pedir('/api/copias/programacion', undefined, 'No se pudo cargar la programación de las copias.')).json();
+}
+
+/** Cambia la programación: el servidor la valida entera (400 con el motivo) y devuelve cómo quedó. */
+export async function guardarProgramacion(programacion: Programacion): Promise<EstadoDeCopias> {
+  const res = await pedir(
+    '/api/copias/programacion',
+    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(programacion) },
+    'No se pudo guardar la programación.',
+  );
+  return res.json();
+}
+
+/** Hace una copia en la carpeta de copias automáticas en este momento. */
+export async function hacerCopiaAhora(): Promise<CopiaGuardada> {
+  return (await pedir('/api/copias/programacion/ahora', { method: 'POST' }, 'No se pudo hacer la copia.')).json();
+}
+
+/** Las copias guardadas en la carpeta, de la más nueva a la más vieja. */
+export async function listarCopiasAutomaticas(): Promise<CopiaGuardada[]> {
+  return (await pedir('/api/copias/automaticas', undefined, 'No se pudo cargar la lista de copias.')).json();
+}
+
+export async function descargarCopiaAutomatica(nombre: string): Promise<Blob> {
+  return (await pedir(`/api/copias/automaticas/${encodeURIComponent(nombre)}`, undefined, 'No se pudo descargar la copia.')).blob();
 }
 
 /** Guarda un archivo en la PC (lo mismo que hace "Descargar" en el navegador). */

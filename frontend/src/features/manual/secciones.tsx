@@ -516,6 +516,35 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         La copia incluye los datos de los socios y las contraseñas (en forma de hash), y no está cifrada: guardala en un lugar
         privado. Restaurar reemplaza <strong>todos</strong> los datos actuales.
       </Nota>
+      <Sub>Copia automática</Sub>
+      <p>
+        En la misma pestaña, el bloque <B>Copia automática</B> hace las copias solo, sin que tengas que acordarte.
+      </p>
+      <Pasos>
+        <li>
+          Activá <B>Copia automática activada</B> y elegí cada cuánto: cada 6 horas, cada 12 horas, todos los días, una vez por semana (con el
+          día) o una vez por mes (con el día, del 1 al 28).
+        </li>
+        <li>Elegí la hora (es hora de Argentina) y cuántas copias conservar: al hacer una nueva se borran las más viejas.</li>
+        <li>Apretá <B>Guardar programación</B>. Abajo se lee cuándo es la <B>Próxima copia</B> y cuándo se hizo la <B>Última copia</B>.</li>
+      </Pasos>
+      <Lista>
+        <li>
+          Las copias se guardan, firmadas, en la carpeta <B>backupsutomaticas</B> del proyecto y aparecen en la lista del bloque, con su
+          botón <B>Descargar</B>. Son iguales a la copia completa: se comparan y se restauran con <B>Seleccionar copia (.zip)</B>.
+        </li>
+        <li><B>Hacer una copia ahora</B> guarda una en el momento, sin esperar a la programada.</li>
+        <li>
+          Docker tiene que estar abierto a esa hora. Si estaba apagado, el sistema hace una copia apenas arranca (una sola, aunque se
+          hayan salteado varias).
+        </li>
+        <li>Si una copia falla (por ejemplo, porque el disco está lleno) se avisa en pantalla y se reintenta a los 30 minutos.</li>
+        <li>Cada cambio de la programación y cada copia (hecha sola, a pedido o fallida) quedan en la <B>Auditoría</B>.</li>
+      </Lista>
+      <Nota tipo="ojo">
+        Restaurar una copia también devuelve la programación a como estaba cuando se hizo esa copia. Las copias no están cifradas: la
+        carpeta <strong>backups</strong> es privada, igual que las demás copias.
+      </Nota>
       <Sub>Desde PowerShell</Sub>
       <p>
         También se pueden pedir desde PowerShell, en la carpeta del sistema y con el sistema encendido (lo que usa la copia programada de las 22:00):
