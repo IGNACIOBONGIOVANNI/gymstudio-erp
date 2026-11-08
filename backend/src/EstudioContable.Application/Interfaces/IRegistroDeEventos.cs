@@ -13,6 +13,7 @@ namespace EstudioContable.Application.Interfaces
         /// <param name="tabla">Tabla lógica del evento, por ejemplo "acceso" o "copia".</param>
         /// <param name="operacion">Hasta 10 caracteres, por ejemplo "INGRESO" o "RESTAURADA".</param>
         /// <param name="usuario">Quién lo hizo (el email, o el que se probó en un acceso fallido).</param>
-        Task RegistrarAsync(string tabla, string operacion, string usuario, CancellationToken cancellationToken);
+        /// <param name="registroId">Sobre qué fila ocurrió, si el hecho es de una fila (por ejemplo, el id del entrenador al que se le cambió la foto). Hasta 50 caracteres.</param>
+        Task RegistrarAsync(string tabla, string operacion, string usuario, CancellationToken cancellationToken, string? registroId = null);
     }
 }

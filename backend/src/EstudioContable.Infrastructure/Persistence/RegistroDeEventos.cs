@@ -12,6 +12,7 @@ namespace EstudioContable.Infrastructure.Persistence
     public class RegistroDeEventos : IRegistroDeEventos
     {
         private const int LargoMaximoDelUsuario = 254;
+        private const int LargoMaximoDelRegistro = 50;   // auditoria.registro_id es varchar(50)
 
         private readonly AppDbContext _context;
         private readonly IUsuarioActual _equipo;
@@ -24,16 +25,17 @@ namespace EstudioContable.Infrastructure.Persistence
             _log = log;
         }
 
-        public async Task RegistrarAsync(string tabla, string operacion, string usuario, CancellationToken cancellationToken)
+        public async Task RegistrarAsync(string tabla, string operacion, string usuario, CancellationToken cancellationToken, string? registroId = null)
         {
             try
             {
                 var quien = Sanear(usuario, LargoMaximoDelUsuario);
+                var fila = string.IsNullOrWhiteSpace(registroId) ? null : Sanear(registroId, LargoMaximoDelRegistro);
                 await _context.Database.ExecuteSqlInterpolatedAsync($@"
                     INSERT INTO contabilidad.auditoria
                         (tabla, operacion, registro_id, campos_modificados, usuario, fecha, ip, sistema_operativo, navegador)
                     VALUES
-                        ({tabla}, {operacion}, NULL, '{{}}'::text[], {quien}, now(),
+                        ({tabla}, {operacion}, {fila}::varchar, '{{}}'::text[], {quien}, now(),
                          {_equipo.Ip}::varchar, {_equipo.SistemaOperativo}::varchar, {_equipo.Navegador}::varchar)", cancellationToken);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

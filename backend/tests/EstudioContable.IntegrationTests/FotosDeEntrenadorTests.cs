@@ -236,18 +236,25 @@ public class FotosDeEntrenadorTests(ApiFixture api)
     // ---------- auditoría ----------
 
     [Fact]
-    public async Task Subir_y_quitar_la_foto_quedan_en_la_auditoria()
+    public async Task Subir_y_quitar_la_foto_quedan_en_la_auditoria_con_el_entrenador_al_que_corresponden()
     {
         var contador = await api.Contador();
         var jefe = await api.Jefe();
-        var id = await CrearEntrenador(jefe);
+        var a = await CrearEntrenador(jefe, "Auditoria A");
+        var b = await CrearEntrenador(jefe, "Auditoria B");
 
-        Assert.Equal(HttpStatusCode.NoContent, (await Subir(contador, id, JpegDePrueba.Crear(256, 256))).StatusCode);
-        Assert.Equal(HttpStatusCode.NoContent, (await Quitar(contador, id)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await Subir(contador, a, JpegDePrueba.Crear(256, 256))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await Subir(contador, b, JpegDePrueba.Crear(256, 256))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await Quitar(contador, b)).StatusCode);
 
-        var registros = (await jefe.GetJson("/api/auditoria?tabla=entrenador&cantidad=50")).AsArray();
-        Assert.Contains(registros, x => (string?)x!["operacion"] == "FOTO" && (string?)x["usuario"] == "contador@gymstudio.com");
-        Assert.Contains(registros, x => (string?)x!["operacion"] == "FOTO_BAJA" && (string?)x["usuario"] == "contador@gymstudio.com");
+        // Cada evento dice quién lo hizo y a qué entrenador le tocó: sin eso, dos renglones «FOTO» no se pueden distinguir.
+        var registros = (await jefe.GetJson("/api/auditoria?tabla=entrenador&cantidad=100")).AsArray();
+        bool Hay(string operacion, long entrenadorId) => registros.Any(x =>
+            (string?)x!["operacion"] == operacion && (string?)x["usuario"] == "contador@gymstudio.com" && (string?)x["registroId"] == entrenadorId.ToString());
+        Assert.True(Hay("FOTO", a), "falta el evento FOTO del entrenador A");
+        Assert.True(Hay("FOTO", b), "falta el evento FOTO del entrenador B");
+        Assert.True(Hay("FOTO_BAJA", b), "falta el evento FOTO_BAJA del entrenador B");
+        Assert.False(Hay("FOTO_BAJA", a), "A no perdió su foto: no tiene que haber FOTO_BAJA de A");
     }
 
     // ---------- copia de seguridad ----------

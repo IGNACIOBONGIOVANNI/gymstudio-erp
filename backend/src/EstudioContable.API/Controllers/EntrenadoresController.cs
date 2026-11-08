@@ -153,7 +153,7 @@ namespace EstudioContable.API.Controllers
             else existente.Reemplazar(bytes, ahora);
             await _context.SaveChangesAsync(cancellationToken);
 
-            await _eventos.RegistrarAsync("entrenador", "FOTO", _usuario.Email ?? "sistema", cancellationToken);
+            await _eventos.RegistrarAsync("entrenador", "FOTO", _usuario.Email ?? "sistema", cancellationToken, id.ToString());
             return NoContent();
         }
 
@@ -165,7 +165,7 @@ namespace EstudioContable.API.Controllers
             await BuscarAsync(id, cancellationToken);
             var quitadas = await _context.FotosDeEntrenador.Where(f => f.EntrenadorId == id).ExecuteDeleteAsync(cancellationToken);
             if (quitadas > 0)
-                await _eventos.RegistrarAsync("entrenador", "FOTO_BAJA", _usuario.Email ?? "sistema", cancellationToken);
+                await _eventos.RegistrarAsync("entrenador", "FOTO_BAJA", _usuario.Email ?? "sistema", cancellationToken, id.ToString());
             return NoContent();
         }
 
