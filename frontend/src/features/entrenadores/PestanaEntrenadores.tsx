@@ -6,6 +6,7 @@ import type { Entrenador } from '../calendario/calendarioUtil';
 import { AvatarDeEntrenador } from './AvatarDeEntrenador';
 import { ModalEntrenador } from './ModalEntrenador';
 import { enlaceDeEmail, enlaceDeWhatsAppDeEntrenador } from './entrenadoresUtil';
+import { formatoDeImporte } from './horasUtil';
 
 interface Props {
   entrenadores: Entrenador[];
@@ -62,13 +63,14 @@ export function PestanaEntrenadores({ entrenadores, puedeEditar, onCambio }: Pro
         </p>
       ) : (
         <div className="relative overflow-x-auto rounded-xl border border-slate-200 bg-white">
-          <table className="w-full min-w-[44rem] border-collapse text-sm">
+          <table className="w-full min-w-[48rem] border-collapse text-sm">
             <caption className="sr-only">Entrenadores del gimnasio</caption>
             <thead>
               <tr className="bg-slate-50 text-left text-slate-700">
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Nombre</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Contacto</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Especialidad</th>
+                {puedeEditar && <th scope="col" className="border-b border-slate-200 px-3 py-2.5 text-right font-semibold">Valor de la hora</th>}
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 text-right font-semibold">Horas por semana</th>
                 <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold">Estado</th>
                 {puedeEditar && <th scope="col" className="border-b border-slate-200 px-3 py-2.5 font-semibold"><span className="sr-only">Acciones</span></th>}
@@ -125,7 +127,7 @@ function ContactoDeEmail({ nombre, email }: { nombre: string; email: string }) {
 }
 
 function FilaDeEntrenador({ entrenador: e, puedeEditar, ocupado, aviso, onEditar, onCambiarEstado }: FilaProps) {
-  const columnas = puedeEditar ? 6 : 5;
+  const columnas = puedeEditar ? 7 : 5;
   return (
     <>
       <tr className={e.activo ? '' : 'bg-slate-50 text-slate-500'}>
@@ -145,6 +147,12 @@ function FilaDeEntrenador({ entrenador: e, puedeEditar, ocupado, aviso, onEditar
           ) : '—'}
         </td>
         <td className="border-t border-slate-200 px-3 py-2.5">{e.especialidad ?? '—'}</td>
+        {puedeEditar && (
+          // El valor de la hora es dinero: solo lo ven el Administrador y el Contador (a Recepción el servidor no se lo manda).
+          <td className="whitespace-nowrap border-t border-slate-200 px-3 py-2.5 text-right tabular-nums">
+            {e.valorHora === null ? <span className="text-amber-700">Sin valor</span> : formatoDeImporte(e.valorHora)}
+          </td>
+        )}
         <td className="border-t border-slate-200 px-3 py-2.5 text-right tabular-nums">{e.horasSemanales}</td>
         <td className="border-t border-slate-200 px-3 py-2.5">
           <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${

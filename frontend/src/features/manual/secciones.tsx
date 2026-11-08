@@ -54,6 +54,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Registrar ingresos de socios y ver los socios en riesgo', SI, SI, SI],
           ['Ver e imprimir el calendario, y ver la lista de entrenadores con su foto y su contacto', SI, SI, SI],
           ['Modificar el calendario; cargar, editar y desactivar entrenadores y ponerles o sacarles la foto', SI, SI, NO],
+          ['Ver y cargar el valor de la hora de cada entrenador, cargar sus horas cumplidas y armar el presupuesto de pago (con PDF)', SI, SI, NO],
           ['Deshacer un ingreso cargado por error', SI, SI, NO],
           ['Registrar y corregir mediciones de peso y medidas', SI, SI, SI],
           ['Crear, confirmar o anular asientos manuales; crear cuentas', SI, SI, NO],
@@ -210,6 +211,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         <B>Entrenadores</B> (menú, grupo Recepción) tiene la ficha de cada entrenador o coach del gimnasio: su <strong>foto</strong>, su
         teléfono, su <strong>WhatsApp</strong>, su <strong>email</strong> y su especialidad, y cuántas horas por semana tiene en el
         calendario. Son los que se pueden poner en el <B>Calendario</B>. Quienes trabajan en la parte contable o administrativa no se cargan acá.
+        El Administrador y el Contador, además, cargan las horas que cumplió cada entrenador y arman el presupuesto de pago (pestañas <B>Horas</B> y
+        <B>Presupuesto</B>); Recepción solo ve la lista, sin valores ni horas.
       </p>
       <Sub>Cargar un entrenador</Sub>
       <Pasos>
@@ -248,9 +251,45 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           entrenador desactivado se puede volver a <B>Activar</B>.
         </li>
       </Pasos>
+      <Sub>El valor de la hora</Sub>
+      <p>
+        En la ficha, el campo <B>Valor de la hora</B> dice cuánto se le paga a ese entrenador por hora. Lo ven y lo cargan solo el Administrador y
+        el Contador: a Recepción el sistema ni se lo manda. Si lo dejás vacío, el entrenador queda «sin valor» y no se le pueden cargar horas. Cuando
+        lo cambiás, los días que ya estaban cargados <strong>no cambian</strong>: cada día guarda el valor que tenía cuando se cargó.
+      </p>
+      <Sub>Cargar las horas que cumplió cada uno</Sub>
+      <Pasos>
+        <li>Entrá a <B>Entrenadores</B>, pestaña <B>Horas</B>, y elegí el mes. Cada día muestra cuántas horas le tocaban según el calendario.</li>
+        <li>
+          Apretá <B>Precargar desde el calendario</B>: carga de una vez, hasta hoy, las horas que le tocaban a cada entrenador que tiene valor de la hora.
+          No pisa lo que ya cargaste y se puede repetir. El aviso dice cuántos días cargó y a quién le falta el valor de la hora.
+        </li>
+        <li>
+          Corregí lo que no coincida. En <B>Cumplió</B> escribí las horas de a cuarto de hora (por ejemplo 7,5); <strong>0</strong> es que faltó y vacío
+          es que todavía no lo cargaste (si ya había horas, se borran). En <B>Nota</B> podés aclarar algo, como «Cubrió a Beto».
+        </li>
+        <li>Para un día que el calendario no tenía (un sábado, un reemplazo), usá <B>Agregar un día</B>.</li>
+        <li>
+          Apretá <B>Guardar cambios</B>. Los renglones modificados se marcan; si cambiás de mes o de pestaña con cambios sin guardar, el sistema
+          pregunta antes de descartarlos. No se pueden cargar días que todavía no pasaron.
+        </li>
+      </Pasos>
+      <Sub>El presupuesto de pago</Sub>
+      <Pasos>
+        <li>Entrá a la pestaña <B>Presupuesto</B> y elegí <B>Desde</B> y <B>Hasta</B> (hasta 62 días; por defecto, del 1 del mes hasta hoy).</li>
+        <li>
+          La tabla muestra, por entrenador, los días con horas, las horas, el valor de la hora y el monto, y abajo el total. Si el valor de la hora
+          cambió dentro del período, en esa fila dice «varios»: el monto suma cada día con el valor que tenía.
+        </li>
+        <li><B>Descargar PDF</B> abre el presupuesto en una hoja A4 en blanco y negro, con el logo y los datos del negocio, para imprimir o guardar.</li>
+      </Pasos>
       <Nota>
-        Un entrenador es una ficha: no tiene usuario ni contraseña y no entra al sistema. Cada cambio de la ficha y cada foto que se sube
-        o se quita quedan en la <B>Auditoría</B>, y las fotos entran en las copias de seguridad.
+        El monto de cada día se redondea al centavo (por ejemplo, 0,25 h × $ 100,10 = $ 25,03) y el total es la suma de los días. Un día que faltó
+        (0 horas) no cuenta como día trabajado ni suma.
+      </Nota>
+      <Nota>
+        Un entrenador es una ficha: no tiene usuario ni contraseña y no entra al sistema. Cada cambio de la ficha, cada foto que se sube o se quita y
+        cada día de horas que se carga o se corrige quedan en la <B>Auditoría</B>; las fotos y las horas entran en las copias de seguridad.
       </Nota>
     </>
   ),

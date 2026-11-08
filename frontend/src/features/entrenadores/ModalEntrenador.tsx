@@ -5,6 +5,7 @@ import { guardarEntrenador, quitarFoto as quitarFotoDelServidor, subirFoto } fro
 import { LARGO_MAXIMO_DEL_NOMBRE, limpiarNombre, type Entrenador } from '../calendario/calendarioUtil';
 import { AvatarDeEntrenador, CirculoDeIniciales } from './AvatarDeEntrenador';
 import { LARGO_MAXIMO_DEL_EMAIL, LARGO_MAXIMO_DEL_WHATSAPP, errorDeEmail, errorDeWhatsApp, limpiarWhatsApp } from './entrenadoresUtil';
+import { mensajeDeValorHora } from './horasUtil';
 import { procesarFoto } from './procesarFoto';
 
 const LARGO_MAXIMO_DEL_TELEFONO = 30;
@@ -17,9 +18,9 @@ interface Props {
   onGuardado: () => void;
 }
 
-type Campo = 'nombre' | 'telefono' | 'whatsApp' | 'email' | 'especialidad' | 'foto';
+type Campo = 'nombre' | 'telefono' | 'whatsApp' | 'email' | 'especialidad' | 'valorHora' | 'foto';
 type Errores = Partial<Record<Campo, string>>;
-const CAMPOS_CON_TEXTO = ['nombre', 'telefono', 'whatsApp', 'email', 'especialidad'] as const;
+const CAMPOS_CON_TEXTO = ['nombre', 'telefono', 'whatsApp', 'email', 'especialidad', 'valorHora'] as const;
 
 const campo = 'w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2';
 const claseDelCampo = (error?: string) =>
@@ -30,13 +31,20 @@ const botonChico = 'inline-flex items-center rounded-lg border border-slate-300 
 function campoDelMensaje(mensaje: string): Campo | null {
   if (/tel[eé]fono/i.test(mensaje)) return 'telefono';
   if (/whatsapp/i.test(mensaje)) return 'whatsApp';
+  if (/valor de la hora/i.test(mensaje)) return 'valorHora';
   if (/e-?mail/i.test(mensaje)) return 'email';
   if (/especialidad/i.test(mensaje)) return 'especialidad';
   if (/nombre/i.test(mensaje)) return 'nombre';
   return null;
 }
 
-/** Alta y edición de un entrenador: foto, nombre, teléfono, WhatsApp, email y especialidad (no tiene acceso al sistema). */
+/** El valor de la hora como se muestra en el campo: sin ceros de más y con coma decimal (1500 o 1500,50). */
+const textoDelValor = (valor: number | null) => (valor === null ? '' : Number.isInteger(valor) ? String(valor) : valor.toFixed(2).replace('.', ','));
+
+/**
+ * Alta y edición de un entrenador: foto, nombre, teléfono, WhatsApp, email, especialidad y valor de la hora (no tiene acceso al sistema).
+ * Solo la abren el Administrador y el Contador, que son los únicos que ven y cargan el valor de la hora.
+ */
 export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
   // Si los datos se guardaron pero la foto falló, el diálogo sigue abierto y pasa a editar esa ficha: reintentar no la duplica.
   const [idGuardado, setIdGuardado] = useState<number | null>(null);
@@ -48,6 +56,7 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
   const [whatsApp, setWhatsApp] = useState(entrenador?.whatsApp ?? '');
   const [email, setEmail] = useState(entrenador?.email ?? '');
   const [especialidad, setEspecialidad] = useState(entrenador?.especialidad ?? '');
+  const [valorHora, setValorHora] = useState(textoDelValor(entrenador?.valorHora ?? null));
   // La foto elegida (ya recortada y achicada) con su enlace de vista previa, o la orden de quitar la que tenía.
   const [fotoNueva, setFotoNueva] = useState<{ blob: Blob; url: string } | null>(null);
   const [quitar, setQuitar] = useState(false);
@@ -130,6 +139,8 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
     const errorMail = errorDeEmail(email);
     if (errorMail) nuevos.email = errorMail;
     if (especialidad.trim().length > LARGO_MAXIMO_DE_LA_ESPECIALIDAD) nuevos.especialidad = `La especialidad no puede tener más de ${LARGO_MAXIMO_DE_LA_ESPECIALIDAD} caracteres.`;
+    const errorValor = mensajeDeValorHora(valorHora);
+    if (errorValor) nuevos.valorHora = errorValor;
     setErrores((previos) => ({ ...nuevos, foto: previos.foto }));
     if (Object.keys(nuevos).length > 0) { enfocarPrimero(nuevos); return; }
 
@@ -139,8 +150,7 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
       id = await guardarEntrenador({
         id: idActual, nombre: limpiarNombre(nombre), telefono: telefono.trim(), especialidad: especialidad.trim(),
         email: email.trim(), whatsApp: limpiarWhatsApp(whatsApp),
-        // El valor de la hora todavía no se edita en este diálogo: se manda el que ya tenía la ficha para no borrarlo.
-        valorHora: entrenador?.valorHora == null ? '' : String(entrenador.valorHora),
+        valorHora: valorHora.trim(),   // vacío = sin valor: borra el que tenía
       });
     } catch (error) {
       // Si el servidor rechaza un dato, el mensaje va junto a ese campo; lo demás (conexión, permisos) es un aviso.
@@ -255,11 +265,19 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
             {mensajeDe('email')}
           </div>
 
-          <div>
-            <label htmlFor="entrenador-especialidad" className="mb-1 block text-xs font-semibold text-slate-600">Especialidad</label>
-            <input {...campoDeTexto('especialidad')} value={especialidad} maxLength={LARGO_MAXIMO_DE_LA_ESPECIALIDAD + 10} autoComplete="off"
-              onChange={(e) => { setEspecialidad(e.target.value); limpiarError('especialidad'); }} placeholder="Ej: Musculación, Funcional, Yoga" />
-            {mensajeDe('especialidad')}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="entrenador-especialidad" className="mb-1 block text-xs font-semibold text-slate-600">Especialidad</label>
+              <input {...campoDeTexto('especialidad')} value={especialidad} maxLength={LARGO_MAXIMO_DE_LA_ESPECIALIDAD + 10} autoComplete="off"
+                onChange={(e) => { setEspecialidad(e.target.value); limpiarError('especialidad'); }} placeholder="Ej: Musculación, Funcional, Yoga" />
+              {mensajeDe('especialidad')}
+            </div>
+            <div>
+              <label htmlFor="entrenador-valorhora" className="mb-1 block text-xs font-semibold text-slate-600">Valor de la hora ($)</label>
+              <input {...campoDeTexto('valorHora')} value={valorHora} maxLength={16} autoComplete="off" inputMode="decimal"
+                onChange={(e) => { setValorHora(e.target.value); limpiarError('valorHora'); }} placeholder="Ej: 1500,50" />
+              {mensajeDe('valorHora') ?? <p className="mt-1 text-xs text-slate-500">Lo que se le paga por hora. Vacío si todavía no lo definiste.</p>}
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">

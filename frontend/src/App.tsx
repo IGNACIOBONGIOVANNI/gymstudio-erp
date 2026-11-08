@@ -221,7 +221,7 @@ function AppContent() {
       case 'planes': return <PlanesGym />
       case 'rutinas': return <RutinasGym />
       case 'calendario': return <ModuloCalendario onIrAEntrenadores={() => irA('entrenadores')} onCambiosSinGuardar={marcarSinGuardar} />
-      case 'entrenadores': return <ModuloEntrenadores />
+      case 'entrenadores': return <ModuloEntrenadores onCambiosSinGuardar={marcarSinGuardar} />
       case 'facturar': return <Facturacion />
       case 'ventas': return <LibroVenta />
       case 'compras': return <LibroCompra />

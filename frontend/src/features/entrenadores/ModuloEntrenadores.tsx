@@ -1,61 +1,89 @@
-import { useEffect, useState } from 'react';
-import { obtenerEntrenadores } from '../../api/entrenadoresApi';
+import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import type { Entrenador } from '../calendario/calendarioUtil';
-import { PestanaEntrenadores } from './PestanaEntrenadores';
+import { ListaDeEntrenadores } from './ListaDeEntrenadores';
+import { PestanaHoras } from './PestanaHoras';
+import { PestanaPresupuesto } from './PestanaPresupuesto';
+
+type Pestana = 'lista' | 'horas' | 'presupuesto';
+const PESTANAS: readonly { id: Pestana; titulo: string }[] = [
+  { id: 'lista', titulo: 'Lista' },
+  { id: 'horas', titulo: 'Horas' },
+  { id: 'presupuesto', titulo: 'Presupuesto' },
+];
 
 const botonSecundario = 'inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50';
 
+interface Props {
+  /** Avisa al menú qué hay sin guardar (o null si nada), para que pregunte antes de cambiar de pantalla. */
+  onCambiosSinGuardar: (descripcion: string | null) => void;
+}
+
 /**
- * Entrenadores: la lista de fichas con su foto y su contacto. Se vuelve a pedir al entrar y después de cada alta, edición o cambio de
- * estado, así las horas por semana siempre salen del calendario guardado.
+ * Entrenadores. El Administrador y el Contador ven tres pestañas: la **Lista** de fichas, las **Horas** que cumplió cada uno y el
+ * **Presupuesto** de pago. Recepción ve solo la lista y sin pestañas: las horas y los valores son dinero y el servidor no se los da.
  */
-export function ModuloEntrenadores() {
+export function ModuloEntrenadores({ onCambiosSinGuardar }: Props) {
   const { user } = useAuth();
-  // La API es la que decide: acá solo se ocultan los botones que Recepción no puede usar.
-  const puedeEditar = user?.rol === 'Administrador' || user?.rol === 'Contador';
+  // La API es la que decide: acá solo se ocultan las pestañas y los botones que Recepción no puede usar.
+  const esGestion = user?.rol === 'Administrador' || user?.rol === 'Contador';
 
-  const [entrenadores, setEntrenadores] = useState<Entrenador[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [intento, setIntento] = useState(0);
+  const [pestana, setPestana] = useState<Pestana>('lista');
+  const [pestanaPendiente, setPestanaPendiente] = useState<Pestana | null>(null);
+  const cambiosSinGuardar = useRef(false);
 
-  useEffect(() => {
-    let cancelado = false;
-    obtenerEntrenadores()
-      .then((lista) => {
-        if (cancelado) return;
-        setEntrenadores(lista);
-        setError(null);
-      })
-      .catch((e: unknown) => {
-        if (!cancelado) setError(e instanceof Error ? e.message : 'No se pudo cargar la lista de entrenadores.');
-      });
-    return () => { cancelado = true; };
-  }, [intento]);
+  // Las horas escritas y sin guardar: se avisan al menú y se recuerdan para preguntar antes de cambiar de pestaña.
+  const alCambiarLoEscrito = useCallback((hay: boolean) => {
+    cambiosSinGuardar.current = hay;
+    onCambiosSinGuardar(hay ? 'horas sin guardar' : null);
+  }, [onCambiosSinGuardar]);
 
-  const recargar = () => setIntento((n) => n + 1);
+  const irAPestana = (nueva: Pestana) => {
+    if (nueva === pestana) return;
+    if (cambiosSinGuardar.current) { setPestanaPendiente(nueva); return; }
+    setPestana(nueva);
+  };
 
-  if (entrenadores === null && error === null) {
-    return <div role="status" className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">Cargando los entrenadores...</div>;
-  }
+  // Las flechas izquierda y derecha pasan de una pestaña a la otra, como en cualquier juego de pestañas.
+  const moverseEntrePestanas = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const actual = PESTANAS.findIndex((p) => p.id === pestana);
+    const siguiente = PESTANAS[(actual + (e.key === 'ArrowRight' ? 1 : PESTANAS.length - 1)) % PESTANAS.length].id;
+    irAPestana(siguiente);
+    document.getElementById(`pestana-${siguiente}`)?.focus();
+  };
 
-  if (entrenadores === null) {
-    return (
-      <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800">
-        <p>{error}</p>
-        <button type="button" onClick={() => { setError(null); recargar(); }} className={`${botonSecundario} mt-3`}>Reintentar</button>
-      </div>
-    );
-  }
+  if (!esGestion) return <ListaDeEntrenadores puedeEditar={false} />;
 
   return (
     <div className="space-y-4">
-      {error && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-800">
-          No se pudo actualizar la lista: {error} Lo que ves puede estar desactualizado.
-        </p>
+      <div role="tablist" aria-label="Secciones de Entrenadores" className="flex gap-1 border-b border-slate-200">
+        {PESTANAS.map(({ id, titulo }) => (
+          <button key={id} type="button" role="tab" id={`pestana-${id}`} aria-selected={pestana === id} aria-controls={`panel-${id}`}
+            tabIndex={pestana === id ? 0 : -1} onClick={() => irAPestana(id)} onKeyDown={moverseEntrePestanas}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+              pestana === id ? 'border-marca-600 text-marca-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+            {titulo}
+          </button>
+        ))}
+      </div>
+
+      {pestanaPendiente && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <span>Hay cambios sin guardar. ¿Los descartás?</span>
+          <span className="flex gap-2">
+            <button type="button" onClick={() => setPestanaPendiente(null)} className={botonSecundario}>Seguir editando</button>
+            <button type="button" onClick={() => { setPestana(pestanaPendiente); setPestanaPendiente(null); }}
+              className="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">Sí, descartar</button>
+          </span>
+        </div>
       )}
-      <PestanaEntrenadores entrenadores={entrenadores} puedeEditar={puedeEditar} onCambio={recargar} />
+
+      <div role="tabpanel" id={`panel-${pestana}`} aria-labelledby={`pestana-${pestana}`}>
+        {pestana === 'lista' && <ListaDeEntrenadores puedeEditar />}
+        {pestana === 'horas' && <PestanaHoras onCambios={alCambiarLoEscrito} onIrALaLista={() => irAPestana('lista')} />}
+        {pestana === 'presupuesto' && <PestanaPresupuesto />}
+      </div>
     </div>
   );
 }
