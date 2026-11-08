@@ -9,8 +9,8 @@ const ANCHO_HORA = 36;
 const ANCHO_DIA = (ANCHO_APAISADO - 2 * MARGEN - ANCHO_HORA) / DIAS.length;
 
 /**
- * Calendario semanal de encargados listo para imprimir (blanco y negro): hoja A4 apaisada con el logo y los datos del negocio,
- * las horas en filas (06:00 a 22:00) y los días de lunes a viernes en columnas. La misma persona en horas seguidas sale como un
+ * Calendario semanal de entrenadores a cargo listo para imprimir (blanco y negro): hoja A4 apaisada con el logo y los datos del negocio,
+ * las horas en filas (06:00 a 22:00) y los días de lunes a viernes en columnas. El mismo entrenador en horas seguidas sale como un
  * solo bloque y las celdas libres quedan en blanco para anotar a mano.
  */
 export function generarCalendarioPDF(grilla: Grilla) {
@@ -49,9 +49,9 @@ export function generarCalendarioPDF(grilla: Grilla) {
 
   encabezadosYPies(
     doc,
-    () => ({ titulo: 'Calendario de encargados', periodo: 'Lunes a viernes, de 06:00 a 22:00' }),
+    () => ({ titulo: 'Calendario de entrenadores', periodo: 'Lunes a viernes, de 06:00 a 22:00' }),
     'Turnos de una hora',
     { ancho: ANCHO_APAISADO, alto: ALTO_APAISADO },
   );
-  abrirPDF(doc, 'Calendario de encargados');
+  abrirPDF(doc, 'Calendario de entrenadores');
 }

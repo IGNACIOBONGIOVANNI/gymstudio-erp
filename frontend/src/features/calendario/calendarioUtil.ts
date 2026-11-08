@@ -1,4 +1,4 @@
-// Calendario semanal de encargados del gimnasio: lunes a viernes, en turnos de una hora de 06:00 a 22:00.
+// Calendario semanal de entrenadores a cargo del gimnasio: lunes a viernes, en turnos de una hora de 06:00 a 22:00.
 // La lógica de la grilla está acá, sin dependencias, para probarla con el ejecutor de Node. Las reglas deben coincidir con
 // las del servidor (backend/src/EstudioContable.Domain/ReglasDeCalendario.cs).
 
