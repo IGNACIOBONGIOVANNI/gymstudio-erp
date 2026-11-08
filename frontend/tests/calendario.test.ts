@@ -4,6 +4,7 @@ import {
   DIAS, HORAS, LARGO_MAXIMO_DEL_NOMBRE, aplicarRango, celdasDelRango, clave, encargadosDistintos, esCeldaValida, filasParaMostrar,
   grillaDesdeTurnos, grillasIguales, horasPorEncargado, limpiarNombre, nombreDelDia, ponerEncargado, problemaDelRango,
   textoDeHora, textoDelTurno, turnosDesdeGrilla, turnosQueSePisan, type Grilla,
+  buscarEntrenador, canonizarGrilla, celdasSinEntrenador, turnoDesdeServidor, turnosParaGuardar, type Entrenador,
 } from '../src/features/calendario/calendarioUtil.ts';
 
 test('la semana es de lunes a viernes y de 06 a 22: 5 días por 16 turnos de una hora', () => {
@@ -133,4 +134,54 @@ test('los nombres distintos y las horas de cada persona', () => {
   assert.deepEqual(encargadosDistintos(grilla), ['Ana', 'Beto']);
   assert.deepEqual(horasPorEncargado(grilla), [{ encargado: 'Ana', horas: 3 }, { encargado: 'Beto', horas: 1 }]);
   assert.deepEqual(horasPorEncargado({}), []);
+});
+
+// ---------- entrenadores: la grilla solo acepta nombres de fichas activas ----------
+
+const ficha = (id: number, nombre: string, activo = true): Entrenador =>
+  ({ id, nombre, telefono: null, especialidad: null, activo, horasSemanales: 0 });
+const entrenadores = [ficha(1, 'Ana López'), ficha(2, 'Beto'), ficha(3, 'Carla', false)];
+
+test('buscarEntrenador encuentra sin distinguir mayúsculas ni espacios repetidos, pero los acentos sí cuentan', () => {
+  assert.equal(buscarEntrenador(entrenadores, 'ana   LÓPEZ')?.id, 1);
+  assert.equal(buscarEntrenador(entrenadores, '  Beto ')?.id, 2);
+  assert.equal(buscarEntrenador(entrenadores, 'Ana Lopez'), undefined);
+  assert.equal(buscarEntrenador(entrenadores, ''), undefined);
+  assert.equal(buscarEntrenador(entrenadores, '   '), undefined);
+});
+
+test('buscarEntrenador ignora a los desactivados', () => {
+  assert.equal(buscarEntrenador(entrenadores, 'Carla'), undefined);
+});
+
+test('celdasSinEntrenador lista cada nombre ajeno una sola vez y en orden', () => {
+  const grilla: Grilla = { '1-6': 'Zeta', '1-7': 'Zeta', '2-6': 'ana lópez', '2-7': 'Carla', '3-6': 'Alfa' };
+  assert.deepEqual(celdasSinEntrenador(grilla, entrenadores), ['Alfa', 'Carla', 'Zeta']);
+  assert.deepEqual(celdasSinEntrenador({}, entrenadores), []);
+  assert.deepEqual(celdasSinEntrenador({ '1-6': 'Beto' }, []), ['Beto']);
+});
+
+test('canonizarGrilla deja la grafía de la ficha y respeta lo que no coincide', () => {
+  const grilla: Grilla = { '1-6': 'ana  lópez', '2-6': 'Intruso', '3-6': 'BETO' };
+  assert.deepEqual(canonizarGrilla(grilla, entrenadores), { '1-6': 'Ana López', '2-6': 'Intruso', '3-6': 'Beto' });
+});
+
+test('turnosParaGuardar devuelve día, hora e id del entrenador, en orden', () => {
+  const grilla: Grilla = { '2-7': 'Beto', '1-6': 'ana lópez', '1-7': 'Ana López' };
+  assert.deepEqual(turnosParaGuardar(grilla, entrenadores), [
+    { dia: 1, hora: 6, entrenadorId: 1 },
+    { dia: 1, hora: 7, entrenadorId: 1 },
+    { dia: 2, hora: 7, entrenadorId: 2 },
+  ]);
+  assert.deepEqual(turnosParaGuardar({}, entrenadores), []);
+});
+
+test('turnosParaGuardar lanza un Error con un nombre que no es entrenador activo', () => {
+  assert.throws(() => turnosParaGuardar({ '1-6': 'Intruso' }, entrenadores), /Intruso/);
+  assert.throws(() => turnosParaGuardar({ '1-6': 'Carla' }, entrenadores), /Carla/);
+});
+
+test('turnoDesdeServidor usa el nombre del entrenador como encargado de la celda', () => {
+  assert.deepEqual(turnoDesdeServidor({ dia: 1, hora: 6, entrenadorId: 5, entrenador: '  Ana   López ' }), { dia: 1, hora: 6, encargado: '  Ana   López ' });
+  assert.deepEqual(grillaDesdeTurnos([turnoDesdeServidor({ dia: 3, hora: 8, entrenadorId: 5, entrenador: 'Ana' })]), { '3-8': 'Ana' });
 });

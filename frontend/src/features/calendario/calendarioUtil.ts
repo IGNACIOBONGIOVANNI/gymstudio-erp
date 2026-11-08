@@ -179,3 +179,71 @@ export function horasPorEncargado(grilla: Grilla): { encargado: string; horas: n
   for (const t of turnosDesdeGrilla(grilla)) cuenta.set(t.encargado, (cuenta.get(t.encargado) ?? 0) + 1)
   return [...cuenta].map(([encargado, horas]) => ({ encargado, horas })).sort((a, b) => a.encargado.localeCompare(b.encargado, 'es'))
 }
+
+// ---------- entrenadores: la grilla solo acepta los nombres de fichas activas ----------
+
+/** La ficha de un entrenador, como la devuelve la API (/api/entrenadores). */
+export interface Entrenador {
+  id: number
+  nombre: string
+  telefono: string | null
+  especialidad: string | null
+  activo: boolean
+  /** Horas que tiene por semana en el calendario. */
+  horasSemanales: number
+}
+
+/** Un turno como lo devuelve la API del calendario. */
+export interface TurnoDelServidor {
+  dia: number
+  hora: number
+  entrenadorId: number
+  entrenador: string
+}
+
+/** Un turno como se envía a la API del calendario. */
+export interface TurnoParaGuardar {
+  dia: number
+  hora: number
+  entrenadorId: number
+}
+
+/** La celda de la grilla: lo que se escribe en ella es el nombre del entrenador. */
+export function turnoDesdeServidor(t: TurnoDelServidor): Turno {
+  return { dia: t.dia, hora: t.hora, encargado: t.entrenador }
+}
+
+// Para comparar nombres se ignoran mayúsculas y espacios repetidos (como el servidor); los acentos sí cuentan.
+const paraComparar = (texto: string | null | undefined) => limpiarNombre(texto).toLocaleLowerCase('es')
+
+/** El entrenador activo que se llama así, o `undefined`. */
+export function buscarEntrenador<T extends Pick<Entrenador, 'id' | 'nombre' | 'activo'>>(lista: readonly T[], texto: string): T | undefined {
+  const buscado = paraComparar(texto)
+  if (!buscado) return undefined
+  return lista.find((e) => e.activo && paraComparar(e.nombre) === buscado)
+}
+
+/** Los nombres distintos de la grilla que no son de un entrenador activo, en orden alfabético. */
+export function celdasSinEntrenador(grilla: Grilla, lista: readonly Entrenador[]): string[] {
+  const ajenos = new Set<string>()
+  for (const t of turnosDesdeGrilla(grilla)) {
+    if (!buscarEntrenador(lista, t.encargado)) ajenos.add(t.encargado)
+  }
+  return [...ajenos].sort((a, b) => a.localeCompare(b, 'es'))
+}
+
+/** Cada nombre que coincide con un entrenador pasa a escribirse como en su ficha; los que no coinciden quedan como están. */
+export function canonizarGrilla(grilla: Grilla, lista: readonly Entrenador[]): Grilla {
+  const nueva: Grilla = {}
+  for (const [celda, texto] of Object.entries(grilla)) nueva[celda] = buscarEntrenador(lista, texto)?.nombre ?? texto
+  return nueva
+}
+
+/** Lo que se envía a la API: día, hora e id del entrenador de cada celda ocupada. Falla si algún nombre no es de un entrenador activo. */
+export function turnosParaGuardar(grilla: Grilla, lista: readonly Entrenador[]): TurnoParaGuardar[] {
+  return turnosDesdeGrilla(grilla).map((t) => {
+    const entrenador = buscarEntrenador(lista, t.encargado)
+    if (!entrenador) throw new Error(`«${t.encargado}» no es un entrenador cargado y activo.`)
+    return { dia: t.dia, hora: t.hora, entrenadorId: entrenador.id }
+  })
+}

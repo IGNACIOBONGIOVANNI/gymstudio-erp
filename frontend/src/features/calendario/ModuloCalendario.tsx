@@ -3,11 +3,13 @@ import { CalendarPlus, Loader2, Pencil, Printer, Save, Trash2 } from 'lucide-rea
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { guardarCalendario, obtenerCalendario } from '../../api/calendarioApi';
+import { obtenerEntrenadores } from '../../api/entrenadoresApi';
 import { generarCalendarioPDF } from '../../utils/generarCalendarioPDF';
 import { DialogoAsignarTurno } from './DialogoAsignarTurno';
 import {
   DIAS, HORAS, LARGO_MAXIMO_DEL_NOMBRE, aplicarRango, clave, encargadosDistintos, filasParaMostrar, grillaDesdeTurnos, grillasIguales,
-  horasPorEncargado, limpiarNombre, nombreDelDia, ponerEncargado, textoDelTurno, turnosDesdeGrilla, type Grilla, type RangoDeTurno,
+  horasPorEncargado, limpiarNombre, nombreDelDia, ponerEncargado, textoDelTurno, turnosDesdeGrilla, turnosParaGuardar,
+  type Entrenador, type Grilla, type RangoDeTurno,
 } from './calendarioUtil';
 
 // Un color suave por persona para leer el calendario de un vistazo. En el PDF no hay colores: sale en blanco y negro.
@@ -33,6 +35,7 @@ export function ModuloCalendario() {
 
   const [guardada, setGuardada] = useState<Grilla>({});
   const [borrador, setBorrador] = useState<Grilla>({});
+  const [entrenadores, setEntrenadores] = useState<Entrenador[]>([]);
   const [editando, setEditando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [errorDeCarga, setErrorDeCarga] = useState<string | null>(null);
@@ -45,7 +48,9 @@ export function ModuloCalendario() {
     setCargando(true);
     setErrorDeCarga(null);
     try {
-      const grilla = grillaDesdeTurnos(await obtenerCalendario());
+      const [turnos, lista] = await Promise.all([obtenerCalendario(), obtenerEntrenadores()]);
+      const grilla = grillaDesdeTurnos(turnos);
+      setEntrenadores(lista);
       setGuardada(grilla);
       setBorrador(grilla);
     } catch (error) {
@@ -97,7 +102,7 @@ export function ModuloCalendario() {
     setGuardando(true);
     setErrorDeGuardado(null);
     try {
-      const grilla = grillaDesdeTurnos(await guardarCalendario(turnosDesdeGrilla(borrador)));
+      const grilla = grillaDesdeTurnos(await guardarCalendario(turnosParaGuardar(borrador, entrenadores)));
       setGuardada(grilla);
       setBorrador(grilla);
       setEditando(false);
