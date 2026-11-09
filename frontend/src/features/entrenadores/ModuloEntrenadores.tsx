@@ -34,7 +34,7 @@ export function ModuloEntrenadores({ onCambiosSinGuardar }: Props) {
   // Las horas escritas y sin guardar: se avisan al menú y se recuerdan para preguntar antes de cambiar de pestaña.
   const alCambiarLoEscrito = useCallback((hay: boolean) => {
     cambiosSinGuardar.current = hay;
-    onCambiosSinGuardar(hay ? 'horas sin guardar' : null);
+    onCambiosSinGuardar(hay ? 'cambios en las horas' : null);   // el menú lo completa: «Tenés cambios en las horas sin guardar»
   }, [onCambiosSinGuardar]);
 
   const irAPestana = (nueva: Pestana) => {
