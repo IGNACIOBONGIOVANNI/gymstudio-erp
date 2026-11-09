@@ -2,7 +2,7 @@
 // el formato argentino de horas e importes. Sin dependencias de React ni del navegador a propósito: así se prueba con el ejecutor de Node.
 
 export interface DiaDeHoras { entrenadorId: number; fecha: string; programadas: number; cumplidas: number | null; valorHora: number | null; nota: string | null }
-export interface HorasDelPeriodo { entrenadores: { id: number; nombre: string; valorHora: number | null }[]; dias: DiaDeHoras[] }
+export interface HorasDelPeriodo { entrenadores: { id: number; nombre: string; valorHora: number | null; activo: boolean }[]; dias: DiaDeHoras[] }
 export interface CambioDeHoras { entrenadorId: number; fecha: string; horas: number | null; nota: string | null }
 /** Lo que está escrito en la pantalla, por día (clave = `claveDeDia`): las horas como se tipearon ('' = sin cargar) y la nota. */
 export type Borrador = Record<string, { horas: string; nota: string }>

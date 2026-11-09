@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatoDeHoras, type Presupuesto } from '../features/entrenadores/horasUtil';
-import { ALTO_ENCABEZADO, MARGEN, abrirPDF, encabezadosYPies, estiloTabla, fecha, importe, pesos } from './pdfComun';
+import { ALTO_ENCABEZADO, MARGEN, abrirPDF, encabezadosYPies, estiloTabla, fecha, importe } from './pdfComun';
 
 const derecha = { halign: 'right' as const };
 
@@ -24,7 +24,7 @@ export function generarPresupuestoPDF(presupuesto: Presupuesto) {
       f.nombre,
       { content: String(f.dias), styles: derecha },
       { content: formatoDeHoras(f.horas), styles: derecha },
-      { content: f.valorHora === null ? 'varios' : pesos(f.valorHora), styles: derecha },
+      { content: f.valorHora === null ? 'varios' : importe(f.valorHora), styles: derecha },
       { content: importe(f.monto), styles: derecha },
     ]),
     foot: [[

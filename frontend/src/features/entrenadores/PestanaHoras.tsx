@@ -39,6 +39,8 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
   const [intento, setIntento] = useState(0);
   const [guardando, setGuardando] = useState(false);
   const [precargando, setPrecargando] = useState(false);
+  // Después de guardar o precargar la pantalla vuelve a leer lo guardado y reemplaza todo lo escrito: hasta que llega esa lectura no se puede escribir.
+  const [recargando, setRecargando] = useState(false);
   const [errorDeGuardado, setErrorDeGuardado] = useState<string | null>(null);
   const [precarga, setPrecarga] = useState<{ creados: number; sinValor: string[] } | null>(null);
   const [mesPendiente, setMesPendiente] = useState<string | null>(null);
@@ -56,9 +58,12 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
         setDias(r.dias);
         setBorrador(borradorDesde(r.dias));
         setErrorDeCarga(null);
+        setRecargando(false);
       })
       .catch((e: unknown) => {
-        if (!cancelado) setErrorDeCarga(e instanceof Error ? e.message : 'No se pudieron cargar las horas.');
+        if (cancelado) return;
+        setErrorDeCarga(e instanceof Error ? e.message : 'No se pudieron cargar las horas.');
+        setRecargando(false);
       });
     return () => { cancelado = true; };
   }, [mes, intento]);
@@ -108,6 +113,7 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
     try {
       await guardarHoras(cambios);
       toast.success('Horas guardadas.');
+      setRecargando(true);
       setIntento((n) => n + 1);   // vuelve a leer lo guardado: así se ven también los valores de la hora de los días nuevos
     } catch (error) {
       setErrorDeGuardado(error instanceof Error ? error.message : 'No se pudieron guardar las horas.');
@@ -123,6 +129,7 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
     try {
       const { desde, hasta } = rangoDelMes(mes);
       setPrecarga(await precargarHoras(desde, hasta));
+      setRecargando(true);
       setIntento((n) => n + 1);
     } catch (error) {
       setErrorDeGuardado(error instanceof Error ? error.message : 'No se pudieron precargar las horas.');
@@ -148,6 +155,7 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
   };
 
   const cargando = datos === null || datos.mes !== mes;
+  const ocupado = guardando || precargando || recargando;
 
   if (cargando && errorDeCarga) {
     return (
@@ -159,26 +167,30 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
   }
 
   const entrenadores = datos?.mes === mes ? datos.entrenadores : [];
-  const conValor = entrenadores.filter((e) => e.valorHora !== null);
+  // Solo se le pueden crear días nuevos a un entrenador activo y con valor de la hora (el servidor lo exige; acá no se ofrecen los demás).
+  const conValor = entrenadores.filter((e) => e.valorHora !== null && e.activo);
   const { desde: primerDia, hasta: ultimoDia } = rangoDelMes(mes);
   // El error del servidor que nombra a un entrenador va junto a su sección; el resto, arriba.
-  const entrenadorDelError = errorDeGuardado ? entrenadores.find((e) => errorDeGuardado.includes(e.nombre)) : undefined;
+  // Si un nombre contiene a otro (Ana y Ana María), gana el más largo.
+  const entrenadorDelError = errorDeGuardado
+    ? entrenadores.filter((e) => errorDeGuardado.includes(e.nombre)).sort((a, b) => b.nombre.length - a.nombre.length)[0]
+    : undefined;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <label htmlFor="horas-mes" className="mb-1 block text-xs font-semibold text-slate-600">Mes</label>
-          <input id="horas-mes" type="month" value={mes} max={hoy.slice(0, 7)} onChange={(e) => cambiarMes(e.target.value)} disabled={guardando || precargando}
+          <input id="horas-mes" type="month" value={mes} max={hoy.slice(0, 7)} onChange={(e) => cambiarMes(e.target.value)} disabled={ocupado}
             className={claseDelCampo(false)} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => void precargar()} disabled={cargando || guardando || precargando || haySinGuardar} className={botonSecundario}
+          <button type="button" onClick={() => void precargar()} disabled={cargando || ocupado || haySinGuardar} className={botonSecundario}
             title={haySinGuardar ? 'Guardá o descartá los cambios antes de precargar.' : 'Carga las horas que le tocaban a cada entrenador según el calendario, hasta hoy, sin pisar lo ya cargado'}>
             {precargando ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <CalendarCheck className="h-4 w-4" aria-hidden="true" />}
             {precargando ? 'Precargando...' : 'Precargar desde el calendario'}
           </button>
-          <button type="button" onClick={() => void guardar()} disabled={cargando || guardando || precargando || cambios.length === 0 || hayErrores} className={botonPrimario}
+          <button type="button" onClick={() => void guardar()} disabled={cargando || ocupado || cambios.length === 0 || hayErrores} className={botonPrimario}
             title={hayErrores ? 'Corregí las horas marcadas en rojo.' : undefined}>
             {guardando ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
             {guardando ? 'Guardando...' : 'Guardar cambios'}
@@ -218,6 +230,13 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
         </div>
       )}
 
+      {errorDeCarga && !cargando && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <span>No se pudo actualizar la pantalla: {errorDeCarga} Lo que ves puede estar desactualizado.</span>
+          <button type="button" onClick={() => { setErrorDeCarga(null); setRecargando(true); setIntento((n) => n + 1); }} className={botonSecundario}>Reintentar</button>
+        </div>
+      )}
+
       {errorDeGuardado && !entrenadorDelError && (
         <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{errorDeGuardado}</p>
       )}
@@ -225,7 +244,7 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
         <div>
           <label htmlFor="horas-nuevo-entrenador" className="mb-1 block text-xs font-semibold text-slate-600">Agregar un día de</label>
-          <select id="horas-nuevo-entrenador" value={nuevoEntrenador} onChange={(e) => setNuevoEntrenador(e.target.value)} disabled={cargando || conValor.length === 0}
+          <select id="horas-nuevo-entrenador" value={nuevoEntrenador} onChange={(e) => setNuevoEntrenador(e.target.value)} disabled={cargando || ocupado || conValor.length === 0}
             className={claseDelCampo(false)}>
             <option value="">{conValor.length === 0 ? 'Ningún entrenador con valor de la hora' : 'Elegí un entrenador'}</option>
             {conValor.map((e) => <option key={e.id} value={e.id}>{e.nombre}</option>)}
@@ -234,9 +253,9 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
         <div>
           <label htmlFor="horas-nueva-fecha" className="mb-1 block text-xs font-semibold text-slate-600">Fecha</label>
           <input id="horas-nueva-fecha" type="date" value={nuevaFecha} min={primerDia} max={hoy < ultimoDia ? hoy : ultimoDia} onChange={(e) => setNuevaFecha(e.target.value)}
-            disabled={cargando} className={claseDelCampo(errorDelDiaNuevo !== null)} />
+            disabled={cargando || ocupado} className={claseDelCampo(errorDelDiaNuevo !== null)} />
         </div>
-        <button type="button" onClick={agregarDia} disabled={cargando} className={botonSecundario}>
+        <button type="button" onClick={agregarDia} disabled={cargando || ocupado} className={botonSecundario}>
           <Plus className="h-4 w-4" aria-hidden="true" /> Agregar
         </button>
         <p className="basis-full text-xs text-slate-500">Para un día que el calendario no tenía, por ejemplo un sábado o un reemplazo.</p>
@@ -292,7 +311,7 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
                       const futuro = d.fecha > hoy;
                       // Un día sin cargar de un entrenador sin valor de la hora no se puede cargar (el servidor lo rechaza): se avisa en el encabezado.
                       const sinValor = d.cumplidas === null && e.valorHora === null;
-                      const bloqueado = futuro || sinValor;
+                      const bloqueado = futuro || sinValor || ocupado;
                       return (
                         <tr key={clave} className={fondoDelRenglon(cambiadas.has(clave), futuro)}>
                           <th scope="row" className="whitespace-nowrap border-t border-slate-200 px-3 py-2 text-left font-medium tabular-nums">

@@ -337,7 +337,7 @@ Dos ítems del menú, en el grupo Recepción: **Entrenadores** (las fichas) y **
   pestañas más de **Entrenadores**, al lado de la **Lista**.
 - En la ficha, el **valor de la hora** de cada entrenador (vacío = sin valor: todavía no se le pueden cargar horas).
 - **Horas**: por mes, cada día muestra las horas que le tocaban según el calendario («Le tocaba») y las que cumplió («Cumplió», de a cuarto
-  de hora; 0 = faltó; vacío = sin cargar). **Precargar desde el calendario** carga de una vez, hasta hoy, lo que le tocaba a cada entrenador con
+  de hora; 0 = faltó; vacío = sin cargar). **Precargar desde el calendario** carga de una vez, hasta hoy, lo que le tocaba a cada entrenador activo con
   valor de la hora, sin pisar lo ya cargado y repetible; después se corrige lo que haga falta y se pueden **agregar días** que el calendario no
   tenía. Cada día guarda el valor de la hora que tenía al cargarse: si el valor sube después, los días ya cargados no cambian.
 - **Presupuesto**: por período (hasta 62 días), las horas, el valor de la hora y el monto de cada entrenador y el total, con **Descargar PDF**

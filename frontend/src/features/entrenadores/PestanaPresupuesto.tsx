@@ -27,7 +27,7 @@ export function PestanaPresupuesto() {
     if (mensajeDePeriodo(desde, hasta) !== null) return;
     let cancelado = false;
     obtenerPresupuesto(desde, hasta)
-      .then((p) => { if (!cancelado) setPresupuesto(p); })
+      .then((p) => { if (!cancelado) { setPresupuesto(p); setFallo(null); } })
       .catch((e: unknown) => {
         if (!cancelado) setFallo({ periodo: `${desde}|${hasta}`, mensaje: e instanceof Error ? e.message : 'No se pudo armar el presupuesto.' });
       });

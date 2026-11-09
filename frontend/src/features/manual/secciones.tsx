@@ -261,12 +261,14 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Pasos>
         <li>Entrá a <B>Entrenadores</B>, pestaña <B>Horas</B>, y elegí el mes. Cada día muestra cuántas horas le tocaban según el calendario.</li>
         <li>
-          Apretá <B>Precargar desde el calendario</B>: carga de una vez, hasta hoy, las horas que le tocaban a cada entrenador que tiene valor de la hora.
-          No pisa lo que ya cargaste y se puede repetir. El aviso dice cuántos días cargó y a quién le falta el valor de la hora.
+          Apretá <B>Precargar desde el calendario</B>: carga de una vez, hasta hoy, las horas que le tocaban a cada entrenador activo que tiene valor de la
+          hora. No pisa lo que ya cargaste y se puede repetir. El aviso dice cuántos días cargó y a quién le falta el valor de la hora. Usa el
+          calendario de hoy: si cambió a mitad de mes, también cambia lo que se precarga para los días anteriores.
         </li>
         <li>
           Corregí lo que no coincida. En <B>Cumplió</B> escribí las horas de a cuarto de hora (por ejemplo 7,5); <strong>0</strong> es que faltó y vacío
-          es que todavía no lo cargaste (si ya había horas, se borran). En <B>Nota</B> podés aclarar algo, como «Cubrió a Beto».
+          es que todavía no lo cargaste (si ya había horas, se borran junto con su nota, y una nueva precarga las vuelve a cargar). Para un día que
+          faltó, poné 0: no lo dejes vacío. En <B>Nota</B> podés aclarar algo, como «Cubrió a Beto».
         </li>
         <li>Para un día que el calendario no tenía (un sábado, un reemplazo), usá <B>Agregar un día</B>.</li>
         <li>

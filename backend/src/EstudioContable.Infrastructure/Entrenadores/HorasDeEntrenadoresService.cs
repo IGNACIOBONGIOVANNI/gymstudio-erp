@@ -20,6 +20,8 @@ namespace EstudioContable.Infrastructure.Entrenadores
     /// </remarks>
     public sealed class HorasDeEntrenadoresService(AppDbContext context, TimeProvider reloj) : IHorasDeEntrenadoresService
     {
+        private static readonly StringComparer Alfabetico = StringComparer.Create(new CultureInfo("es-AR"), ignoreCase: true);
+
         private DateOnly Hoy() => ReglasDeHoras.HoyEnArgentina(reloj.GetUtcNow());
 
         private static IEnumerable<DateOnly> Dias(DateOnly desde, DateOnly hasta)
@@ -42,9 +44,10 @@ namespace EstudioContable.Infrastructure.Entrenadores
             // Los activos, y los desactivados que tienen horas en el período (sus horas se siguen viendo y corrigiendo).
             var entrenadores = await context.Entrenadores.AsNoTracking()
                 .Where(e => e.Activo || conRegistros.Contains(e.Id))
-                .OrderBy(e => e.NombreCompleto)
-                .Select(e => new EntrenadorDeHoras(e.Id, e.NombreCompleto, e.ValorHora))
+                .Select(e => new EntrenadorDeHoras(e.Id, e.NombreCompleto, e.ValorHora, e.Activo))
                 .ToListAsync(cancellationToken);
+            // Alfabético, con el mismo criterio que el presupuesto (no el de la base de datos): así el orden es igual en las dos pantallas.
+            entrenadores = entrenadores.OrderBy(e => e.Nombre, Alfabetico).ToList();
 
             var turnos = await TurnosAsync(cancellationToken);
             var porDia = registros.ToDictionary(h => (h.EntrenadorId, h.Fecha));
@@ -163,10 +166,9 @@ namespace EstudioContable.Infrastructure.Entrenadores
                 select new { h.EntrenadorId, e.NombreCompleto, h.Horas, h.ValorHora })
                 .ToListAsync(cancellationToken);
 
-            var alfabetico = StringComparer.Create(new CultureInfo("es-AR"), ignoreCase: true);
             var filas = dias
                 .GroupBy(d => (d.EntrenadorId, d.NombreCompleto))
-                .OrderBy(g => g.Key.NombreCompleto, alfabetico)
+                .OrderBy(g => g.Key.NombreCompleto, Alfabetico)
                 .Select(g =>
                 {
                     var conHoras = g.Where(d => d.Horas > 0).ToList();

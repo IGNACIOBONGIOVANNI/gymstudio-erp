@@ -123,6 +123,27 @@ public class ReglasDeHorasTests
     }
 
     [Fact]
+    public void Una_fecha_omitida_o_absurda_se_rechaza_aunque_no_sea_futura()
+    {
+        var hoy = new DateOnly(2026, 11, 12);
+        ReglasDeHoras.ValidarFecha(new DateOnly(2000, 1, 1), hoy);                          // el primer día que vale
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarFecha(default, hoy));  // 0001-01-01: la que toma un campo que falta
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarFecha(new DateOnly(1999, 12, 31), hoy));
+    }
+
+    [Fact]
+    public void Un_periodo_con_fechas_omitidas_o_fuera_de_rango_se_rechaza()
+    {
+        ReglasDeHoras.ValidarPeriodo(new DateOnly(2000, 1, 1), new DateOnly(2000, 1, 31));
+        ReglasDeHoras.ValidarPeriodo(new DateOnly(2100, 12, 1), new DateOnly(2100, 12, 31));
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarPeriodo(default, default));   // desde y hasta que faltan
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarPeriodo(default, new DateOnly(2026, 11, 12)));
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarPeriodo(new DateOnly(1999, 12, 1), new DateOnly(1999, 12, 31)));
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarPeriodo(new DateOnly(2101, 1, 1), new DateOnly(2101, 1, 5)));
+        Assert.Throws<ArgumentException>(() => ReglasDeHoras.ValidarPeriodo(new DateOnly(9999, 12, 1), DateOnly.MaxValue));   // recorrerlo se saldría del calendario
+    }
+
+    [Fact]
     public void El_periodo_va_de_un_dia_a_62_dias_contando_los_dos_extremos()
     {
         ReglasDeHoras.ValidarPeriodo(new DateOnly(2026, 11, 5), new DateOnly(2026, 11, 5));          // un solo día

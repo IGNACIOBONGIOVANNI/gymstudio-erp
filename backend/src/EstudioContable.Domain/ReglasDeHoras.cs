@@ -15,6 +15,11 @@ namespace EstudioContable.Domain
         public const int LargoMaximoDeLaNota = 200;
         public const int RenglonesMaximos = 500;
 
+        /// <summary>Las fechas de horas van de acá en adelante: un campo que falta llega como 0001-01-01 y no es un día de trabajo.</summary>
+        public static readonly DateOnly FechaMinima = new(2000, 1, 1);
+        /// <summary>Y hasta acá: más allá no hay período que recorrer (y el calendario de .NET termina en 9999).</summary>
+        public static readonly DateOnly FechaMaxima = new(2100, 12, 31);
+
         private static readonly TimeSpan DesfaseDeArgentina = TimeSpan.FromHours(-3);
 
         /// <summary>El día de hoy en Argentina: a las 22:30 de allá ya es la madrugada siguiente en UTC, pero «hoy» sigue siendo el mismo día.</summary>
@@ -50,15 +55,17 @@ namespace EstudioContable.Domain
             return importe;
         }
 
-        /// <summary>Un día se carga hasta hoy: no se cargan horas que todavía no pasaron.</summary>
+        /// <summary>Un día se carga hasta hoy: no se cargan horas que todavía no pasaron, ni de una fecha que falta o es absurda.</summary>
         public static void ValidarFecha(DateOnly fecha, DateOnly hoy)
         {
+            if (fecha < FechaMinima) throw new ArgumentException("La fecha del día no es válida.");
             if (fecha > hoy) throw new ArgumentException("No se pueden cargar horas de un día que todavía no pasó.");
         }
 
         /// <summary>Un período va de <paramref name="desde"/> a <paramref name="hasta"/> (los dos incluidos) y no pasa de 62 días.</summary>
         public static void ValidarPeriodo(DateOnly desde, DateOnly hasta)
         {
+            if (desde < FechaMinima || hasta > FechaMaxima) throw new ArgumentException("Las fechas del período no son válidas.");
             if (desde > hasta) throw new ArgumentException("La fecha desde no puede ser posterior a la fecha hasta.");
             if (hasta.DayNumber - desde.DayNumber + 1 > DiasMaximosDelPeriodo)
                 throw new ArgumentException($"El período no puede pasar de {DiasMaximosDelPeriodo} días.");

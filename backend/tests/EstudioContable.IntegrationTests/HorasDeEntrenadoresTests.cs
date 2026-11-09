@@ -135,7 +135,7 @@ public class HorasDeEntrenadoresTests(ApiFixture api)
             Assert.Equal(new decimal?[] { null, null, 4m, null, null }, dias.Select(d => (decimal?)d["cumplidas"]).ToArray());
             Assert.Equal(new decimal?[] { null, null, 1000m, null, null }, dias.Select(d => (decimal?)d["valorHora"]).ToArray());
             var ficha = respuesta["entrenadores"]!.AsArray().Single(e => (long)e!["id"]! == ana)!;
-            Assert.Equal((nombre, 1000m), ((string)ficha["nombre"]!, (decimal)ficha["valorHora"]!));
+            Assert.Equal((nombre, 1000m, true), ((string)ficha["nombre"]!, (decimal)ficha["valorHora"]!, (bool)ficha["activo"]!));
         }
         finally { await Limpiar(ana); }
     }
@@ -155,6 +155,7 @@ public class HorasDeEntrenadoresTests(ApiFixture api)
             var septiembre = await Json(await Obtener(jefe, "2026-09-01", "2026-09-30"));
             Assert.Contains(septiembre["entrenadores"]!.AsArray(), e => (long)e!["id"]! == ana);
             Assert.Equal(8m, (decimal)(await DiasDe(jefe, ana, "2026-09-01", "2026-09-30")).Single()["cumplidas"]!);
+            Assert.False((bool)septiembre["entrenadores"]!.AsArray().Single(e => (long)e!["id"]! == ana)!["activo"]!);   // el selector de «agregar un día» lo necesita
             var agosto = await Json(await Obtener(jefe, "2026-08-01", "2026-08-31"));
             Assert.DoesNotContain(agosto["entrenadores"]!.AsArray(), e => (long)e!["id"]! == ana);
 
@@ -447,6 +448,40 @@ public class HorasDeEntrenadoresTests(ApiFixture api)
             Assert.True((await pedir("2026-10-01", "2026-12-01")).IsSuccessStatusCode, $"{nombre}: 62 días justos");
             Assert.True((await pedir("2026-11-09", "2026-11-09")).IsSuccessStatusCode, $"{nombre}: un solo día");
         }
+    }
+
+    [Fact]
+    public async Task Las_fechas_omitidas_se_rechazan_con_400_y_no_crean_nada()
+    {
+        var jefe = await api.Jefe();
+        var (ana, _) = await CrearEntrenador("Ana Sin Fecha", 1000m);
+        api.Reloj.Fijar(JuevesAlMediodia);
+        try
+        {
+            await PonerCalendario((ana, 1, 6));   // un lunes con horas: el 0001-01-01 también fue lunes
+
+            var obtener = await jefe.GetAsync("/api/entrenadores/horas");   // sin desde ni hasta
+            var presupuesto = await jefe.GetAsync("/api/entrenadores/presupuesto");
+            var precargar = await jefe.PostAsync("/api/entrenadores/horas/precargar", new StringContent("{}", Encoding.UTF8, "application/json"));
+            var guardar = await jefe.PutAsync("/api/entrenadores/horas",
+                new StringContent($"{{ \"items\": [ {{ \"entrenadorId\": {ana}, \"horas\": 8 }} ] }}", Encoding.UTF8, "application/json"));   // sin fecha
+
+            foreach (var (nombre, r) in new[] { ("GET horas", obtener), ("GET presupuesto", presupuesto), ("POST precargar", precargar), ("PUT horas", guardar) })
+                Assert.True(r.StatusCode == HttpStatusCode.BadRequest, $"{nombre}: se esperaba 400 y fue {(int)r.StatusCode}. {await r.Detalle()}");
+            Assert.Equal(0, await ContarDias(ana));
+        }
+        finally { await Limpiar(ana); }
+    }
+
+    [Fact]
+    public async Task Un_periodo_que_llega_al_final_del_calendario_da_400_y_no_un_error_interno()
+    {
+        var jefe = await api.Jefe();
+
+        var r = await Obtener(jefe, "9999-12-01", "9999-12-31");
+
+        Assert.Equal(HttpStatusCode.BadRequest, r.StatusCode);
+        Assert.Contains("período", await r.Detalle());   // un mensaje del sistema, no el texto técnico de .NET
     }
 
     // ---------- auditoría ----------

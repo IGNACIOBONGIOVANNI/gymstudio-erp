@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 
 namespace EstudioContable.Application.Entrenadores
 {
-    /// <summary>Un entrenador del período, con el valor de la hora que tiene hoy en su ficha (null si todavía no tiene).</summary>
-    public record EntrenadorDeHoras(long Id, string Nombre, decimal? ValorHora);
+    /// <summary>
+    /// Un entrenador del período, con el valor de la hora que tiene hoy en su ficha (null si todavía no tiene) y si está activo: a un
+    /// desactivado se le ven y corrigen las horas, pero no se le crean días nuevos.
+    /// </summary>
+    public record EntrenadorDeHoras(long Id, string Nombre, decimal? ValorHora, bool Activo);
 
     /// <summary>
     /// Un día de un entrenador. <paramref name="Programadas"/> son las horas que le tocaban según el calendario; <paramref name="Cumplidas"/> es
