@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 import toast from 'react-hot-toast';
 import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
+import { CampoDeTelefono } from '../../../components/CampoDeTelefono';
+import { errorDeNombreDePersona, limpiarNombreDePersona, soloLetrasDelNombre } from '../../../utils/nombrePersona';
+import { errorDeTelefono, normalizarTelefono } from '../../../utils/telefono';
 
 export interface SocioEditable {
   id: string | number;
@@ -22,7 +25,7 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
   const [nombre, setNombre] = useState(socioAEditar?.nombre ?? "");
   const [apellido, setApellido] = useState(socioAEditar?.apellido ?? "");
   const [dni, setDni] = useState(socioAEditar?.dni ?? "");
-  const [telefono, setTelefono] = useState(socioAEditar?.telefono ?? "");
+  const [telefono, setTelefono] = useState(normalizarTelefono(socioAEditar?.telefono));
   const [isPending, setIsPending] = useState(false);
 
   const handleLimpiar = () => {
@@ -34,6 +37,11 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
 
   const handleGuardarSocio = async (e: React.FormEvent) => {
     e.preventDefault();
+    const problema = errorDeNombreDePersona(nombre, 'El nombre') ?? errorDeNombreDePersona(apellido, 'El apellido') ?? errorDeTelefono(telefono, 'El teléfono');
+    if (problema) {
+      toast.error(problema);
+      return;
+    }
     setIsPending(true);
 
     try {
@@ -43,8 +51,8 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          nombre,
-          apellido,
+          nombre: limpiarNombreDePersona(nombre),
+          apellido: limpiarNombreDePersona(apellido),
           dni,
           telefono
         }),
@@ -79,25 +87,31 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
 
         <form onSubmit={handleGuardarSocio} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700">Nombre</label>
+            <label htmlFor="socio-nombre" className="block text-sm font-medium text-slate-700">Nombre</label>
             <input
+              id="socio-nombre"
               type="text"
               required
+              maxLength={100}
+              autoComplete="off"
               placeholder="Ej: Juan"
               value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              onChange={(e) => setNombre(soloLetrasDelNombre(e.target.value))}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">Apellido</label>
+            <label htmlFor="socio-apellido" className="block text-sm font-medium text-slate-700">Apellido</label>
             <input
+              id="socio-apellido"
               type="text"
               required
+              maxLength={100}
+              autoComplete="off"
               placeholder="Ej: Pérez"
               value={apellido}
-              onChange={(e) => setApellido(e.target.value)}
+              onChange={(e) => setApellido(soloLetrasDelNombre(e.target.value))}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </div>
@@ -115,14 +129,10 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700">Teléfono</label>
-            <input
-              type="text"
-              placeholder="Ej: 1122334455"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
-            />
+            <label htmlFor="socio-telefono" className="block text-sm font-medium text-slate-700">Teléfono</label>
+            <div className="mt-1">
+              <CampoDeTelefono id="socio-telefono" dato="teléfono" value={telefono} onChange={setTelefono} placeholder="Ej: 1122334455" />
+            </div>
           </div>
 
           <div className="mt-6 flex justify-end space-x-3 pt-4 border-t border-slate-100">

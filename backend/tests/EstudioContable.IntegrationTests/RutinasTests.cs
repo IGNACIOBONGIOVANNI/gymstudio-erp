@@ -9,7 +9,7 @@ namespace EstudioContable.IntegrationTests;
 public class RutinasTests(ApiFixture api)
 {
     private static int _contador;
-    private static string Unico(string prefijo) => $"{prefijo} {Interlocked.Increment(ref _contador)}-{Guid.NewGuid().ToString("N")[..6]}";
+    private static string Unico(string prefijo) => $"{prefijo} {Nombres.Aleatorio(10)}";
 
     private async Task<long> Ejercicio(HttpClient cliente, string? nombre = null)
     {

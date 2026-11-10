@@ -49,7 +49,6 @@ const FORMA_DE_EMAIL = /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)+$/
 
 /** Lo máximo que acepta el servidor en cada dato de contacto. */
 export const LARGO_MAXIMO_DEL_EMAIL = 254
-export const LARGO_MAXIMO_DEL_WHATSAPP = 30
 
 /** Por qué el email no sirve, o null si sirve. Vacío vale: es opcional. La misma regla que aplica el servidor. */
 export function errorDeEmail(email: string): string | null {
@@ -57,20 +56,6 @@ export function errorDeEmail(email: string): string | null {
   if (!limpio) return null
   if (limpio.length > LARGO_MAXIMO_DEL_EMAIL) return `El email no puede tener más de ${LARGO_MAXIMO_DEL_EMAIL} caracteres.`
   if (!FORMA_DE_EMAIL.test(limpio)) return 'Escribí el email completo, por ejemplo nombre@dominio.com.'
-  return null
-}
-
-/** El WhatsApp como se guarda: cualquier racha de espacios (también el duro que trae pegar desde el teléfono) pasa a un solo espacio común. */
-export function limpiarWhatsApp(whatsApp: string): string {
-  return whatsApp.replace(/[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+/g, ' ').trim()
-}
-
-/** Por qué el WhatsApp no sirve, o null si sirve. Vacío vale: es opcional. La misma regla que aplica el servidor. */
-export function errorDeWhatsApp(whatsApp: string): string | null {
-  const limpio = limpiarWhatsApp(whatsApp)
-  if (!limpio) return null
-  if (limpio.length > LARGO_MAXIMO_DEL_WHATSAPP) return `El WhatsApp no puede tener más de ${LARGO_MAXIMO_DEL_WHATSAPP} caracteres.`
-  if (!/^[0-9 +\-()]+$/.test(limpio) || !/\d/.test(limpio)) return 'El WhatsApp solo puede tener números, espacios y los signos + - ( ).'
   return null
 }
 

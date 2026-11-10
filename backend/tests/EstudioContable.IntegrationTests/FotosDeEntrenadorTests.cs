@@ -17,7 +17,7 @@ namespace EstudioContable.IntegrationTests;
 public class FotosDeEntrenadorTests(ApiFixture api)
 {
     /// <summary>Un nombre que no se repite entre pruebas (la base es la misma para todas).</summary>
-    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Guid.NewGuid():N}"[..Math.Min(70, baseDelNombre.Length + 9)];
+    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Nombres.Aleatorio(8)}";
 
     private static async Task<long> CrearEntrenador(HttpClient cliente, string baseDelNombre = "Con Foto")
     {

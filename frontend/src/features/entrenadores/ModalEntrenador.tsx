@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { guardarEntrenador, quitarFoto as quitarFotoDelServidor, subirFoto } from '../../api/entrenadoresApi';
+import { CampoDeTelefono } from '../../components/CampoDeTelefono';
+import { errorDeNombreDePersona, soloLetrasDelNombre } from '../../utils/nombrePersona';
+import { errorDeTelefono, normalizarTelefono } from '../../utils/telefono';
 import { LARGO_MAXIMO_DEL_NOMBRE, limpiarNombre, type Entrenador } from '../calendario/calendarioUtil';
 import { AvatarDeEntrenador, CirculoDeIniciales } from './AvatarDeEntrenador';
-import { LARGO_MAXIMO_DEL_EMAIL, LARGO_MAXIMO_DEL_WHATSAPP, errorDeEmail, errorDeWhatsApp, limpiarWhatsApp } from './entrenadoresUtil';
+import { LARGO_MAXIMO_DEL_EMAIL, errorDeEmail } from './entrenadoresUtil';
 import { mensajeDeValorHora } from './horasUtil';
 import { procesarFoto } from './procesarFoto';
 
-const LARGO_MAXIMO_DEL_TELEFONO = 30;
 const LARGO_MAXIMO_DE_LA_ESPECIALIDAD = 60;
 
 interface Props {
@@ -52,8 +54,8 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
   const esEdicion = idActual !== undefined;
 
   const [nombre, setNombre] = useState(entrenador?.nombre ?? '');
-  const [telefono, setTelefono] = useState(entrenador?.telefono ?? '');
-  const [whatsApp, setWhatsApp] = useState(entrenador?.whatsApp ?? '');
+  const [telefono, setTelefono] = useState(normalizarTelefono(entrenador?.telefono));
+  const [whatsApp, setWhatsApp] = useState(normalizarTelefono(entrenador?.whatsApp));
   const [email, setEmail] = useState(entrenador?.email ?? '');
   const [especialidad, setEspecialidad] = useState(entrenador?.especialidad ?? '');
   const [valorHora, setValorHora] = useState(textoDelValor(entrenador?.valorHora ?? null));
@@ -132,9 +134,12 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     const nuevos: Errores = {};
+    const errorNombre = errorDeNombreDePersona(nombre, 'El nombre');
     if (!limpiarNombre(nombre)) nuevos.nombre = 'Ingresá el nombre completo.';
-    if (telefono.trim().length > LARGO_MAXIMO_DEL_TELEFONO) nuevos.telefono = `El teléfono no puede tener más de ${LARGO_MAXIMO_DEL_TELEFONO} caracteres.`;
-    const errorWhats = errorDeWhatsApp(whatsApp);
+    else if (errorNombre) nuevos.nombre = errorNombre;
+    const errorTel = errorDeTelefono(telefono, 'El teléfono');
+    if (errorTel) nuevos.telefono = errorTel;
+    const errorWhats = errorDeTelefono(whatsApp, 'El WhatsApp');
     if (errorWhats) nuevos.whatsApp = errorWhats;
     const errorMail = errorDeEmail(email);
     if (errorMail) nuevos.email = errorMail;
@@ -149,7 +154,7 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
     try {
       id = await guardarEntrenador({
         id: idActual, nombre: limpiarNombre(nombre), telefono: telefono.trim(), especialidad: especialidad.trim(),
-        email: email.trim(), whatsApp: limpiarWhatsApp(whatsApp),
+        email: email.trim(), whatsApp: whatsApp.trim(),
         valorHora: valorHora.trim(),   // vacío = sin valor: borra el que tenía
       });
     } catch (error) {
@@ -239,21 +244,23 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
           <div>
             <label htmlFor="entrenador-nombre" className="mb-1 block text-xs font-semibold text-slate-600">Nombre completo *</label>
             <input {...campoDeTexto('nombre')} ref={nombreRef} value={nombre} maxLength={LARGO_MAXIMO_DEL_NOMBRE} autoComplete="off"
-              onChange={(e) => { setNombre(e.target.value); limpiarError('nombre'); }} placeholder="Ej: Ana López" />
-            {mensajeDe('nombre')}
+              onChange={(e) => { setNombre(soloLetrasDelNombre(e.target.value)); limpiarError('nombre'); }} placeholder="Ej: Ana López" />
+            {mensajeDe('nombre') ?? <p className="mt-1 text-xs text-slate-500">Solo letras (también espacios, puntos, apóstrofos y guiones).</p>}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
+            <div className="min-w-0">
               <label htmlFor="entrenador-telefono" className="mb-1 block text-xs font-semibold text-slate-600">Teléfono</label>
-              <input {...campoDeTexto('telefono')} value={telefono} maxLength={LARGO_MAXIMO_DEL_TELEFONO + 10} autoComplete="off" inputMode="tel"
-                onChange={(e) => { setTelefono(e.target.value); limpiarError('telefono'); }} placeholder="+54 11 1234-5678" />
+              <CampoDeTelefono id="entrenador-telefono" dato="teléfono" value={telefono} invalido={Boolean(errores.telefono)}
+                describedBy={errores.telefono ? 'error-entrenador-telefono' : undefined}
+                onChange={(valor) => { setTelefono(valor); limpiarError('telefono'); }} />
               {mensajeDe('telefono')}
             </div>
-            <div>
+            <div className="min-w-0">
               <label htmlFor="entrenador-whatsapp" className="mb-1 block text-xs font-semibold text-slate-600">WhatsApp</label>
-              <input {...campoDeTexto('whatsApp')} value={whatsApp} maxLength={LARGO_MAXIMO_DEL_WHATSAPP + 10} autoComplete="off" inputMode="tel"
-                onChange={(e) => { setWhatsApp(e.target.value); limpiarError('whatsApp'); }} placeholder="+54 9 11 5555-1234" />
+              <CampoDeTelefono id="entrenador-whatsapp" dato="WhatsApp" value={whatsApp} invalido={Boolean(errores.whatsApp)}
+                describedBy={errores.whatsApp ? 'error-entrenador-whatsapp' : undefined}
+                onChange={(valor) => { setWhatsApp(valor); limpiarError('whatsApp'); }} />
               {mensajeDe('whatsApp')}
             </div>
           </div>

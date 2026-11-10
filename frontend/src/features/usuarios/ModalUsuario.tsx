@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, User, Mail, Shield, Lock, Phone, CheckCircle2, XCircle } from 'lucide-react';
+import { X, User, Mail, Shield, Lock, CheckCircle2, XCircle } from 'lucide-react';
 import type { Usuario, RolUsuario, EstadoUsuario } from './types';
 import { guardarUsuario } from './usuariosApi';
 import toast from 'react-hot-toast';
 import { REQUISITOS, claveValida } from './reglasDeClave';
+import { CampoDeTelefono } from '../../components/CampoDeTelefono';
+import { errorDeNombreDePersona, limpiarNombreDePersona, soloLetrasDelNombre } from '../../utils/nombrePersona';
+import { errorDeTelefono, normalizarTelefono } from '../../utils/telefono';
 
 interface ModalUsuarioProps {
   usuarioAEditar?: Usuario | null;
@@ -22,9 +25,9 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
   const [telefono, setTelefono] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Cada error se muestra junto a su campo, no como aviso flotante.
-  const [errores, setErrores] = useState<{ nombre?: string; email?: string; password?: string }>({});
+  const [errores, setErrores] = useState<{ nombre?: string; email?: string; telefono?: string; password?: string }>({});
 
-  const limpiarError = (campo: 'nombre' | 'email' | 'password') =>
+  const limpiarError = (campo: 'nombre' | 'email' | 'telefono' | 'password') =>
     setErrores((previos) => (previos[campo] ? { ...previos, [campo]: undefined } : previos));
 
   const claseDelCampo = (error?: string) =>
@@ -40,7 +43,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
       setEmail(usuarioAEditar.email);
       setRol(usuarioAEditar.rol);
       setEstado(usuarioAEditar.estado);
-      setTelefono(usuarioAEditar.telefono || '');
+      setTelefono(normalizarTelefono(usuarioAEditar.telefono));
       setPassword('');
     } else {
       setNombre('');
@@ -55,15 +58,17 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const nuevos: { nombre?: string; email?: string; password?: string } = {};
+    const nuevos: { nombre?: string; email?: string; telefono?: string; password?: string } = {};
     if (!nombre.trim()) nuevos.nombre = 'Ingresá el nombre completo.';
+    else nuevos.nombre = errorDeNombreDePersona(nombre, 'El nombre') ?? undefined;
+    nuevos.telefono = errorDeTelefono(telefono, 'El teléfono') ?? undefined;
     if (!email.trim() || !email.includes('@')) nuevos.email = 'Ingresá un email válido, por ejemplo nombre@gymstudio.com.';
     // Política de contraseñas (la exige también el servidor): 8+ caracteres, mayúscula, número, especial y sin números consecutivos.
     const clave = password.trim();
     if (!esEdicion && !clave) nuevos.password = 'Ingresá una contraseña inicial.';
     else if (clave && !claveValida(clave)) nuevos.password = 'La contraseña no cumple los requisitos de la lista.';
     setErrores(nuevos);
-    const primero = (['nombre', 'email', 'password'] as const).find((c) => nuevos[c]);
+    const primero = (['nombre', 'email', 'telefono', 'password'] as const).find((c) => nuevos[c]);
     if (primero) {
       document.getElementById(`usuario-${primero}`)?.focus();
       return;
@@ -73,7 +78,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
       setIsSubmitting(true);
       await guardarUsuario({
         id: usuarioAEditar?.id,
-        nombre,
+        nombre: limpiarNombreDePersona(nombre),
         email,
         rol,
         estado,
@@ -93,6 +98,8 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
       const mensaje: string = error?.message || 'Error al guardar el usuario';
       if (/contraseña/i.test(mensaje)) setErrores({ password: mensaje });
       else if (/email|correo/i.test(mensaje)) setErrores({ email: mensaje });
+      else if (/tel[eé]fono/i.test(mensaje)) setErrores({ telefono: mensaje });
+      else if (/nombre/i.test(mensaje)) setErrores({ nombre: mensaje });
       else toast.error(mensaje);
     } finally {
       setIsSubmitting(false);
@@ -133,7 +140,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
 
           {/* Nombre */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <label htmlFor="usuario-nombre" className="block text-xs font-semibold text-slate-600 mb-1">
               Nombre Completo *
             </label>
             <div className="relative">
@@ -142,14 +149,18 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
                 id="usuario-nombre"
                 type="text"
                 value={nombre}
-                onChange={(e) => { setNombre(e.target.value); limpiarError('nombre'); }}
+                maxLength={150}
+                autoComplete="off"
+                onChange={(e) => { setNombre(soloLetrasDelNombre(e.target.value)); limpiarError('nombre'); }}
                 placeholder="Ej: Lic. Marcos Benítez"
                 aria-invalid={Boolean(errores.nombre)}
                 aria-describedby={errores.nombre ? 'error-nombre' : undefined}
                 className={claseDelCampo(errores.nombre)}
               />
             </div>
-            {errores.nombre && <p id="error-nombre" role="alert" className="mt-1 text-xs text-red-600">{errores.nombre}</p>}
+            {errores.nombre
+              ? <p id="error-nombre" role="alert" className="mt-1 text-xs text-red-600">{errores.nombre}</p>
+              : <p className="mt-1 text-xs text-slate-500">Solo letras (también espacios, puntos, apóstrofos y guiones).</p>}
           </div>
 
           {/* Email / Usuario */}
@@ -193,20 +204,14 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+            <div className="min-w-0">
+              <label htmlFor="usuario-telefono" className="block text-xs font-semibold text-slate-600 mb-1">
                 Teléfono de Contacto
               </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="+54 11 1234-5678"
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                />
-              </div>
+              <CampoDeTelefono id="usuario-telefono" dato="teléfono" value={telefono} invalido={Boolean(errores.telefono)}
+                describedBy={errores.telefono ? 'error-telefono' : undefined}
+                onChange={(valor) => { setTelefono(valor); limpiarError('telefono'); }} />
+              {errores.telefono && <p id="error-telefono" role="alert" className="mt-1 text-xs text-red-600">{errores.telefono}</p>}
             </div>
           </div>
 

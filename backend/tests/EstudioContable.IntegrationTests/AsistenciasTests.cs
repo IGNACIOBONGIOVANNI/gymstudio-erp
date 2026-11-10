@@ -10,7 +10,7 @@ namespace EstudioContable.IntegrationTests;
 public class AsistenciasTests(ApiFixture api)
 {
     private static int _contador;
-    private static string Unico(string prefijo) => $"{prefijo} {Interlocked.Increment(ref _contador)}-{Guid.NewGuid().ToString("N")[..6]}";
+    private static string Unico(string prefijo) => $"{prefijo} {Nombres.Aleatorio(10)}";
     private static DateOnly Hoy => DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-3));
 
     private async Task<(long Id, string Dni)> Socio(HttpClient cliente)

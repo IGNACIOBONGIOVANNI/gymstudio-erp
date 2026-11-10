@@ -15,7 +15,7 @@ public class HorasDeEntrenadorBaseTests(ApiFixture api)
 {
     private static readonly DateOnly Dia = new(2026, 11, 10);
 
-    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Guid.NewGuid():N}"[..Math.Min(70, baseDelNombre.Length + 9)];
+    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Nombres.Aleatorio(8)}";
 
     private async Task<long> CrearEntrenador(string baseDelNombre = "Base De Horas")
     {

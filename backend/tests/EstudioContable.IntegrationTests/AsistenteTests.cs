@@ -269,7 +269,7 @@ public class AsistenteTests(ApiFixture api)
     private async Task<(long Id, string Dni, string Apellido)> NuevoSocio(HttpClient c, string prefijo = "Fichero")
     {
         var dni = Random.Shared.Next(20_000_000, 49_999_999).ToString();
-        var apellido = prefijo + Guid.NewGuid().ToString("N")[..8];          // una sola palabra y única
+        var apellido = prefijo + Nombres.Aleatorio(8);          // una sola palabra y única
         var r = await c.PostAsJsonAsync("/api/socios", new { nombre = "Socio", apellido, dni, telefono = "" });
         Assert.True(r.IsSuccessStatusCode, await r.Detalle());
         return ((long)(await r.Content.ReadFromJsonAsync<JsonObject>())!["id"]!, dni, apellido);
@@ -383,7 +383,7 @@ public class AsistenteTests(ApiFixture api)
     public async Task Dos_socios_con_el_mismo_apellido_se_desambiguan_por_el_nombre_o_piden_el_dni()
     {
         var jefe = await api.Jefe();
-        var apellido = "Repetido" + Guid.NewGuid().ToString("N")[..8];
+        var apellido = "Repetido" + Nombres.Aleatorio(8);
         var dnis = new List<string>();
         foreach (var nombre in new[] { "Alicia", "Bruno" })
         {

@@ -135,6 +135,24 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         En <B>Socios</B> cargás a cada persona con <B>Nuevo Socio</B>: nombre, apellido, DNI y teléfono. En cada fila hay botones para
         <B>Editar</B>, <B>Eliminar</B>, ver la <B>Rutina del socio</B> y llevar el <B>Seguimiento de peso y medidas</B>.
       </p>
+      <Sub>Nombres y teléfonos</Sub>
+      <Lista>
+        <li>
+          El <B>nombre</B> y el <B>apellido</B> llevan solo letras (con tildes y ñ), espacios, puntos (Lic.), apóstrofos (D'Angelo) y guiones
+          (Pérez-Gómez). Lo que no corresponde, como un número o un signo, simplemente no se escribe. Lo mismo vale para los entrenadores y los usuarios;
+          los nombres de empresa (clientes y proveedores) siguen siendo libres.
+        </li>
+        <li>
+          El <B>teléfono</B> tiene dos partes: a la izquierda el país, con su bandera y su código (por defecto Argentina, +54), y a la derecha
+          el número, solo con dígitos. Para cambiar de país apretá la bandera, buscá el país por nombre o por código y elegilo (también
+          se maneja con el teclado: flechas, Enter y Escape). Si pegás un número con el código completo, como +598 91 234 567, el país se
+          elige solo.
+        </li>
+        <li>
+          Se guarda como «+54 1155551234»: el código del país, un espacio y el número sin guiones. Los avisos por WhatsApp usan ese país. Los
+          teléfonos que se cargaron antes sin país se toman como argentinos.
+        </li>
+      </Lista>
       <Nota tipo="ojo">
         Un socio que ya tiene ingresos registrados no se puede eliminar, para conservar su historial.
       </Nota>
@@ -218,16 +236,17 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Pasos>
         <li>Entrá a <B>Entrenadores</B> y apretá <B>Nuevo entrenador</B>.</li>
         <li>
-          Completá el <B>nombre completo</B>: es obligatorio y no se puede repetir («Ana López» y «ana  LÓPEZ» son la misma persona). Todo lo
-          demás es opcional.
+          Completá el <B>nombre completo</B>: es obligatorio, lleva solo letras y no se puede repetir («Ana López» y «ana  LÓPEZ» son la misma
+          persona). Todo lo demás es opcional.
         </li>
         <li>
           Para la foto, apretá <B>Elegir foto</B> y elegí una imagen de la computadora o del celular (JPG, PNG o WebP). El sistema la recorta
           al centro y la achica sola, y ves cómo queda antes de guardar. <B>Quitar foto</B> la saca.
         </li>
         <li>
-          Escribí el <B>WhatsApp</B> y el <B>email</B> si querés poder escribirle desde la lista. El WhatsApp admite números, espacios y los
-          signos + - ( ); si lo copiás desde el teléfono, los espacios raros se arreglan solos.
+          Cargá el <B>teléfono</B> y el <B>WhatsApp</B> eligiendo el país (a la izquierda, con su bandera) y escribiendo el número, solo con
+          dígitos; si pegás un número con el código completo, el país se elige solo. Escribí también el <B>email</B> si querés poder
+          escribirle desde la lista.
         </li>
         <li>
           Apretá <B>Cargar entrenador</B>. Si los datos se guardan pero la foto no se puede subir, el cuadro sigue abierto con el motivo y
@@ -237,8 +256,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Sub>Escribirle a un entrenador</Sub>
       <Lista>
         <li>
-          El número de <B>WhatsApp</B> es un botón que abre el chat en otra pestaña, sin mensaje armado. Funciona con números argentinos; si el
-          número no se puede interpretar, se ve el texto solo.
+          El número de <B>WhatsApp</B> es un botón que abre el chat en otra pestaña, sin mensaje armado. Usa el país con el que se cargó el
+          número; si no se puede interpretar, se ve el texto solo.
         </li>
         <li>El <B>email</B> es un enlace que abre tu programa de correo.</li>
         <li>Mientras un entrenador no tiene foto (o la foto no se puede cargar), se ven sus iniciales.</li>
@@ -490,7 +509,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Quien quien="admin" />
       <Sub>Usuarios</Sub>
       <p>
-        Con <B>Nuevo Usuario</B> das de alta a quien va a usar el sistema: nombre, email, teléfono y rol (<B>Jefe / Administrador</B>,
+        Con <B>Nuevo Usuario</B> das de alta a quien va a usar el sistema: nombre (solo letras), email, teléfono (con su país) y rol (<B>Jefe / Administrador</B>,
         <B>Contador</B> u <B>Operador / Recepción</B>). Desde la lista podés editarlo, marcarlo como activo o inactivo y
         ver su último acceso. Una baja o un cambio de rol rigen al instante, aunque la persona tenga la sesión abierta.
       </p>

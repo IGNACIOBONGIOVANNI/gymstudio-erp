@@ -28,11 +28,11 @@ namespace EstudioContable.API.Auth
             var usuarios = new[]
             {
                 new Usuario("Administrador Principal", "jefe@gym.com", "-", RolUsuario.Administrador,
-                    telefono: "+54 11 5555-0101", esPrincipal: true),
+                    telefono: "+54 1155550101", esPrincipal: true),
                 new Usuario("Lic. Roberto Gómez", "contador@gymstudio.com", "-", RolUsuario.Contador,
-                    telefono: "+54 11 5555-0202"),
+                    telefono: "+54 1155550202"),
                 new Usuario("Camila Fernández", "recepcion@gymstudio.com", "-", RolUsuario.Recepcion,
-                    telefono: "+54 11 5555-0303"),
+                    telefono: "+54 1155550303"),
             };
 
             foreach (var usuario in usuarios)

@@ -17,7 +17,7 @@ public class HorasDeEntrenadoresTests(ApiFixture api)
     /// <summary>Jueves 12/11/2026, 12:00 en Argentina.</summary>
     private static readonly DateTimeOffset JuevesAlMediodia = new(2026, 11, 12, 15, 0, 0, TimeSpan.Zero);
 
-    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Guid.NewGuid():N}"[..Math.Min(70, baseDelNombre.Length + 9)];
+    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Nombres.Aleatorio(8)}";
 
     private async Task<(long Id, string Nombre)> CrearEntrenador(string baseDelNombre, decimal? valorHora)
     {

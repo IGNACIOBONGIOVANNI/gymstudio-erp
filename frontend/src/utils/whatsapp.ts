@@ -23,12 +23,25 @@ export function estadoDeCuota(vencimiento: string | null | undefined, hoy: strin
   return dias <= diasPorVencer ? 'PorVencer' : 'AlDia';
 }
 
+// Un teléfono guardado con país: «+código número» (el número, solo dígitos). Es el formato que arman los formularios.
+const CON_CODIGO_DE_PAIS = /^\+([0-9]{1,3}) ([0-9]{4,14})$/;
+
 /**
- * Teléfono argentino en el formato que pide WhatsApp: 549 + código de área + número, solo dígitos.
- * Acepta como se suele escribir: "11 5555-1234", "011 15 5555-1234", "+54 9 11 5555 1234",
- * "(0351) 15-555-1234". Devuelve null si no se puede interpretar (para no mandar el aviso a un número inventado).
+ * Teléfono en el formato que pide WhatsApp: código del país + número, solo dígitos.
+ * Con país guardado ("+54 1155551234", "+598 91234567") se usa ese país: para Argentina se arma 549 + área + número
+ * (el 9 de los celulares) y para los demás código + número, sin el 0 con el que se marca dentro del país.
+ * Sin país se lo toma como argentino y acepta como se suele escribir: "11 5555-1234", "011 15 5555-1234",
+ * "+54 9 11 5555 1234", "(0351) 15-555-1234". Devuelve null si no se puede interpretar (para no mandar el aviso a un número inventado).
  */
 export function telefonoParaWhatsApp(telefono: string | null | undefined): string | null {
+  const conPais = CON_CODIGO_DE_PAIS.exec((telefono ?? '').trim());
+  if (conPais) {
+    const [, codigo, numero] = conPais;
+    if (codigo === '54') return telefonoParaWhatsApp(`54${numero}`);   // Argentina: la misma cuenta de siempre, con el código ya puesto
+    const completo = `${codigo}${numero.replace(/^0+/, '')}`;
+    return completo.length >= 8 && completo.length <= 15 ? completo : null;
+  }
+
   let d = (telefono ?? '').replace(/\D/g, '');
   if (d.startsWith('00')) d = d.slice(2);
 

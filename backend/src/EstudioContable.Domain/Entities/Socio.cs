@@ -45,16 +45,17 @@ namespace EstudioContable.Domain.Entities
             if (nombre.Trim().Length > 100 || apellido.Trim().Length > 100)
                 throw new ArgumentException("El nombre y el apellido no pueden superar los 100 caracteres.");
 
+            var nombreLimpio = ReglasDePersonas.NombreDePersona(nombre, "El nombre", 100);
+            var apellidoLimpio = ReglasDePersonas.NombreDePersona(apellido, "El apellido", 100);
+
             var dniNormalizado = NormalizarDni(dni);
             if (dniNormalizado.Length is < 7 or > 8 || !dniNormalizado.All(char.IsDigit))
                 throw new ArgumentException("El DNI debe tener 7 u 8 números (los puntos son opcionales).");
 
-            var tel = (telefono ?? string.Empty).Trim();
-            if (tel.Length > 30)
-                throw new ArgumentException("El teléfono no puede superar los 30 caracteres.");
+            var tel = ReglasDePersonas.Telefono(telefono, "El teléfono") ?? string.Empty;
 
-            Nombre = nombre.Trim();
-            Apellido = apellido.Trim();
+            Nombre = nombreLimpio;
+            Apellido = apellidoLimpio;
             Dni = dniNormalizado;
             Telefono = tel;
         }

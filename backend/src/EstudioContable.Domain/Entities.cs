@@ -153,9 +153,12 @@ namespace EstudioContable.Domain.Entities
             if (emailNormalizado.Length < 3 || !emailNormalizado.Contains('@'))
                 throw new ArgumentException("El email no es válido.", nameof(email));
 
-            NombreCompleto = nombreCompleto.Trim();
+            var nombreLimpio = ReglasDePersonas.NombreDePersona(nombreCompleto, "El nombre", 150);
+            var telefonoLimpio = ReglasDePersonas.Telefono(telefono, "El teléfono");
+
+            NombreCompleto = nombreLimpio;
             Email = emailNormalizado;
-            Telefono = string.IsNullOrWhiteSpace(telefono) ? null : telefono.Trim();
+            Telefono = telefonoLimpio;
         }
     }
 

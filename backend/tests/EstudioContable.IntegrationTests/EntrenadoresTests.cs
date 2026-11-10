@@ -14,7 +14,7 @@ namespace EstudioContable.IntegrationTests;
 public class EntrenadoresTests(ApiFixture api)
 {
     /// <summary>Un nombre que no se repite entre pruebas (la base es la misma para todas).</summary>
-    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Guid.NewGuid():N}"[..Math.Min(70, baseDelNombre.Length + 9)];
+    private static string Nuevo(string baseDelNombre) => $"{baseDelNombre} {Nombres.Aleatorio(8)}";
 
     private static object Datos(string? nombre, string? telefono = null, string? especialidad = null, string? email = null, string? whatsApp = null,
         decimal? valorHora = null)
@@ -51,13 +51,13 @@ public class EntrenadoresTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var nombre = Nuevo("Lectura");
-        var id = await Crear(jefe, nombre, "11 1234-5678", "Yoga");
+        var id = await Crear(jefe, nombre, "+54 1112345678", "Yoga");
 
         foreach (var cliente in new[] { jefe, await api.Contador(), await api.Recepcion() })
         {
             var ficha = await Ficha(cliente, id);
             Assert.Equal(nombre, (string)ficha["nombre"]!);
-            Assert.Equal("11 1234-5678", (string)ficha["telefono"]!);
+            Assert.Equal("+54 1112345678", (string)ficha["telefono"]!);
             Assert.Equal("Yoga", (string)ficha["especialidad"]!);
             Assert.True((bool)ficha["activo"]!);
         }
@@ -81,7 +81,7 @@ public class EntrenadoresTests(ApiFixture api)
         Assert.Equal(nombre, (string)ficha["nombre"]!);
         Assert.True((bool)ficha["activo"]!);
 
-        Assert.Equal(HttpStatusCode.NoContent, (await contador.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, "111", "Pilates"))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await contador.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, "+54 1155551111", "Pilates"))).StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, (await Estado(await api.Jefe(), id, false)).StatusCode);
         Assert.False((bool)(await Ficha(contador, id))["activo"]!);
     }
@@ -139,6 +139,11 @@ public class EntrenadoresTests(ApiFixture api)
         yield return new object?[] { "nombre con salto de línea", "Ana\nBeto", null, null };
         yield return new object?[] { "nombre con carácter nulo", "Ana\u0000", null, null };
         yield return new object?[] { "teléfono de 31 caracteres", NombreValido, new string('1', 31), null };
+        yield return new object?[] { "teléfono sin código de país", NombreValido, "11 1234-5678", null };
+        yield return new object?[] { "teléfono con letras", NombreValido, "+54 11abc5678", null };
+        yield return new object?[] { "nombre con números", "Ana 2", null, null };
+        yield return new object?[] { "nombre con símbolos", "Ana <b>López</b>", null, null };
+        yield return new object?[] { "nombre que arranca con guion", "-Ana", null, null };
         yield return new object?[] { "especialidad de 61 caracteres", NombreValido, null, new string('e', 61) };
     }
 
@@ -168,22 +173,22 @@ public class EntrenadoresTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var nombre = Nuevo("Con Contacto");
-        var id = await Crear(jefe, nombre, email: "  ana@gym.com ", whatsApp: "+54\u00A011\u00A05555-1234");   // el espacio duro lo trae pegar desde el teléfono
+        var id = await Crear(jefe, nombre, email: "  ana@gym.com ", whatsApp: "+54\u00A091155551234");   // el espacio duro lo trae pegar desde el teléfono
 
         foreach (var cliente in new[] { jefe, await api.Contador(), await api.Recepcion() })
         {
             var ficha = await Ficha(cliente, id);
             Assert.Equal("ana@gym.com", (string)ficha["email"]!);
-            Assert.Equal("+54 11 5555-1234", (string)ficha["whatsApp"]!);
+            Assert.Equal("+54 91155551234", (string)ficha["whatsApp"]!);
             Assert.False((bool)ficha["tieneFoto"]!);
             Assert.Null((string?)ficha["fotoActualizada"]);
         }
 
         Assert.Equal(HttpStatusCode.NoContent,
-            (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, email: "ana.lopez@gym.com", whatsApp: "(011) 15 5555-1234"))).StatusCode);
+            (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, email: "ana.lopez@gym.com", whatsApp: "+54 91155559999"))).StatusCode);
         var editada = await Ficha(jefe, id);
         Assert.Equal("ana.lopez@gym.com", (string)editada["email"]!);
-        Assert.Equal("(011) 15 5555-1234", (string)editada["whatsApp"]!);
+        Assert.Equal("+54 91155559999", (string)editada["whatsApp"]!);
 
         // Un dato en blanco se guarda como vacío: así se borra un contacto.
         Assert.Equal(HttpStatusCode.NoContent, (await jefe.PutAsJsonAsync($"/api/entrenadores/{id}", Datos(nombre, email: "  ", whatsApp: ""))).StatusCode);
@@ -200,6 +205,9 @@ public class EntrenadoresTests(ApiFixture api)
         yield return new object?[] { "email de 255 caracteres", new string('a', 247) + "@gym.com", null };
         yield return new object?[] { "whatsApp con letras", null, "abc" };
         yield return new object?[] { "whatsApp con punto", null, "11.5555.1234" };
+        yield return new object?[] { "whatsApp sin código de país", null, "1155551234" };
+        yield return new object?[] { "whatsApp con guion dentro del número", null, "+54 11 5555-1234" };
+        yield return new object?[] { "whatsApp sin espacio tras el código", null, "+5491155551234" };
         yield return new object?[] { "whatsApp de 31 caracteres", null, new string('1', 31) };
     }
 
@@ -209,7 +217,7 @@ public class EntrenadoresTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var nombre = Nuevo("Contacto Valido");
-        var id = await Crear(jefe, nombre, email: "valido@gym.com", whatsApp: "11 5555-1234");
+        var id = await Crear(jefe, nombre, email: "valido@gym.com", whatsApp: "+54 1155551234");
         var cantidad = (await Lista(jefe)).Count;
 
         var alta = await jefe.PostAsJsonAsync("/api/entrenadores", Datos(Nuevo("Contacto Nuevo"), email: email, whatsApp: whatsApp));
@@ -221,7 +229,7 @@ public class EntrenadoresTests(ApiFixture api)
         var ficha = await Ficha(jefe, id);
         Assert.Equal(nombre, (string)ficha["nombre"]!);
         Assert.Equal("valido@gym.com", (string)ficha["email"]!);
-        Assert.Equal("11 5555-1234", (string)ficha["whatsApp"]!);
+        Assert.Equal("+54 1155551234", (string)ficha["whatsApp"]!);
     }
 
     // ---------- valor de la hora (solo para la gestión) ----------
@@ -299,13 +307,19 @@ public class EntrenadoresTests(ApiFixture api)
     public async Task El_texto_hostil_se_guarda_como_texto()
     {
         var jefe = await api.Jefe();
-        var nombre = "'; DROP TABLE contabilidad.\"Entrenadores\"; -- <script>alert(1)</script> " + Guid.NewGuid().ToString("N")[..6];
-        var id = await Crear(jefe, nombre, "=HYPERLINK(\"http://x\")", "Ñandú \"con comillas\" & más");
+        var nombre = Nuevo("Hostil");
+        var id = await Crear(jefe, nombre, "+54 1155551234", "'; DROP TABLE x; -- <b>hola</b> =1+1 Ñandú \"x\" & más");
 
         var ficha = await Ficha(jefe, id);
         Assert.Equal(nombre, (string)ficha["nombre"]!);
-        Assert.Equal("=HYPERLINK(\"http://x\")", (string)ficha["telefono"]!);
-        Assert.Equal("Ñandú \"con comillas\" & más", (string)ficha["especialidad"]!);
+        Assert.Equal("+54 1155551234", (string)ficha["telefono"]!);
+        Assert.Equal("'; DROP TABLE x; -- <b>hola</b> =1+1 Ñandú \"x\" & más", (string)ficha["especialidad"]!);
+
+        // En el nombre y en el teléfono ese mismo texto se rechaza: ahí solo entran letras y números.
+        var hostilEnElNombre = await jefe.PostAsJsonAsync("/api/entrenadores", Datos("'; DROP TABLE contabilidad.\"Entrenadores\"; --"));
+        var hostilEnElTelefono = await jefe.PostAsJsonAsync("/api/entrenadores", Datos(Nuevo("Hostil tel"), "=HYPERLINK(\"http://x\")"));
+        Assert.Equal(HttpStatusCode.BadRequest, hostilEnElNombre.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, hostilEnElTelefono.StatusCode);
     }
 
     [Fact]

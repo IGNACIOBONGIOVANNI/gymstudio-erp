@@ -11,7 +11,7 @@ public class MedicionesSocioTests(ApiFixture api)
     private async Task<long> Socio(HttpClient cliente)
     {
         var dni = Random.Shared.Next(20_000_000, 49_999_999).ToString();
-        var r = await cliente.PostAsJsonAsync("/api/socios", new { nombre = "Socio", apellido = $"Medido {Guid.NewGuid().ToString("N")[..6]}", dni, telefono = "" });
+        var r = await cliente.PostAsJsonAsync("/api/socios", new { nombre = "Socio", apellido = $"Medido {Nombres.Aleatorio(6)}", dni, telefono = "" });
         Assert.True(r.IsSuccessStatusCode, await r.Detalle());
         return (long)(await r.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
     }

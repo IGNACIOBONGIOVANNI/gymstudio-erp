@@ -19,17 +19,9 @@ namespace EstudioContable.Domain.Entities
         public const int LargoMaximoDelEmail = 254;
         public const int LargoMaximoDelWhatsApp = 30;
 
-        // El espacio común y los de otros tipos (el duro que trae pegar desde WhatsApp o Word, el angosto, el largo, el ideográfico...):
-        // cualquier racha pasa a un solo espacio común, así «Ana López» y «Ana López» con espacio duro son la misma ficha. El tabulador
-        // y el salto de línea no están acá: son caracteres de control y el texto que los trae se rechaza.
-        private static readonly Regex EspaciosRepetidos = new(
-            @"[ \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-
         // algo@dominio.ext: sin espacios, una sola arroba y un dominio con al menos un punto y sin partes vacías («a@b», «a@b..com» no valen).
         private static readonly Regex FormaDeEmail = new(
             @"^[^@\s]+@[^@\s.]+(\.[^@\s.]+)+\z", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
-
-        private static readonly Regex CaracteresDeWhatsApp = new(@"^[0-9 +\-()]+\z", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         public long Id { get; private set; }
         public string NombreCompleto { get; private set; } = string.Empty;
@@ -62,7 +54,7 @@ namespace EstudioContable.Domain.Entities
         /// control. Las mayúsculas y los acentos se conservan; para comparar nombres se ignoran las mayúsculas.
         /// </summary>
         public static string LimpiarNombre(string? nombre)
-            => ReglasDeDatos.TextoRequerido(ColapsarEspacios(nombre), "El nombre del entrenador", LargoMaximoDelNombre);
+            => ReglasDePersonas.NombreDePersona(nombre, "El nombre del entrenador", LargoMaximoDelNombre);
 
         /// <summary>
         /// El email como se guarda: sin espacios en los extremos, opcional (vacío es null), de hasta 254 caracteres y con forma de
@@ -77,24 +69,19 @@ namespace EstudioContable.Domain.Entities
         }
 
         /// <summary>
-        /// El WhatsApp como se guarda: opcional (vacío es null), de hasta 30 caracteres, con espacios comunes (el espacio duro de pegar
-        /// desde el teléfono pasa a un espacio común) y solo con números, espacios y los signos + - ( ).
+        /// El WhatsApp como se guarda: opcional (vacío es null) y, si se carga, con el código del país y solo números
+        /// (<c>+54 91155551234</c>), la misma forma que el teléfono. El espacio duro de pegar desde el teléfono pasa a un espacio común.
         /// </summary>
-        public static string? LimpiarWhatsApp(string? whatsApp)
-        {
-            var texto = ReglasDeDatos.TextoOpcional(ColapsarEspacios(whatsApp), "El WhatsApp", LargoMaximoDelWhatsApp);
-            if (texto is not null && (!CaracteresDeWhatsApp.IsMatch(texto) || !texto.Any(char.IsDigit)))
-                throw new ArgumentException("El WhatsApp solo puede tener números, espacios y los signos + - ( ).");
-            return texto;
-        }
+        public static string? LimpiarWhatsApp(string? whatsApp) => ReglasDePersonas.Telefono(whatsApp, "El WhatsApp");
 
-        private static string ColapsarEspacios(string? texto) => EspaciosRepetidos.Replace(texto ?? string.Empty, " ");
+        /// <summary>El teléfono como se guarda: opcional (vacío es null) y, si se carga, con el código del país y solo números (<c>+54 1155551234</c>).</summary>
+        public static string? LimpiarTelefono(string? telefono) => ReglasDePersonas.Telefono(telefono, "El teléfono");
 
         // Se valida todo antes de asignar nada: un pedido inválido no deja la ficha a medias.
         private void AsignarDatos(string? nombreCompleto, string? telefono, string? especialidad, string? email, string? whatsApp, decimal? valorHora)
         {
             var nombre = LimpiarNombre(nombreCompleto);
-            var tel = ReglasDeDatos.TextoOpcional(telefono, "El teléfono", LargoMaximoDelTelefono);
+            var tel = LimpiarTelefono(telefono);
             var esp = ReglasDeDatos.TextoOpcional(especialidad, "La especialidad", LargoMaximoDeLaEspecialidad);
             var correo = LimpiarEmail(email);
             var whats = LimpiarWhatsApp(whatsApp);
