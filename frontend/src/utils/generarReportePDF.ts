@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable, { type RowInput } from 'jspdf-autotable';
 import { ALTO_ENCABEZADO, MARGEN, abrirPDF, encabezadosYPies, estiloTabla, fecha, formatearCuit, importe } from './pdfComun';
+import { agruparPorDia } from './totalesPorDia';
 
 const TITULOS: Record<string, string> = {
   diario: 'Libro Diario',
@@ -56,27 +57,41 @@ function libroDiario(doc: jsPDF, asientos: any[], base: any) {
   if (asientos.length === 0) return sinMovimientos(doc);
   const body: RowInput[] = [];
   let debe = 0, haber = 0;
-  asientos.forEach(a => {
-    // Primero las cuentas al Debe y después las del Haber (sangradas), como en el libro.
-    const lineas = [...(a.lineas ?? [])].sort((x: any, y: any) => (y.debe > 0 ? 1 : 0) - (x.debe > 0 ? 1 : 0));
-    lineas.forEach((l: any, i: number) => {
+  // Cada día cierra con su total (Debe y Haber) antes del siguiente; con un solo día no hace falta: sería el mismo número que el total general.
+  const dias = agruparPorDia(asientos);
+  const conTotalPorDia = dias.length > 1;
+  const totalDelDia = { fontStyle: 'bold' as const, fillColor: 240, lineWidth: { top: 0.3, bottom: 0.3, left: 0.15, right: 0.15 } };
+  dias.forEach(d => {
+    d.asientos.forEach(a => {
+      // Primero las cuentas al Debe y después las del Haber (sangradas), como en el libro.
+      const lineas = [...(a.lineas ?? [])].sort((x: any, y: any) => (y.debe > 0 ? 1 : 0) - (x.debe > 0 ? 1 : 0));
+      lineas.forEach((l: any, i: number) => {
+        body.push([
+          { content: i === 0 ? fecha(a.fecha) : '', styles: { lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+          { content: l.haber > 0 ? `        ${l.nombreCuenta}` : l.nombreCuenta, styles: { lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+          { content: l.debe > 0 ? importe(l.debe) : '', styles: { ...derecha, lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+          { content: l.haber > 0 ? importe(l.haber) : '', styles: { ...derecha, lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        ]);
+      });
+      // Leyenda del asiento debajo de sus cuentas.
       body.push([
-        { content: i === 0 ? fecha(a.fecha) : '', styles: { lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
-        { content: l.haber > 0 ? `        ${l.nombreCuenta}` : l.nombreCuenta, styles: { lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
-        { content: l.debe > 0 ? importe(l.debe) : '', styles: { ...derecha, lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
-        { content: l.haber > 0 ? importe(l.haber) : '', styles: { ...derecha, lineWidth: { top: i === 0 ? 0.3 : 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: `As. N° ${String(a.numeroAsiento ?? '').padStart(4, '0')} - ${a.descripcion ?? ''}`,
+          styles: { fontStyle: 'italic', fontSize: 7.5, lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
+        { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
       ]);
+      debe += a.totalDebe ?? 0;
+      haber += a.totalHaber ?? 0;
     });
-    // Leyenda del asiento debajo de sus cuentas.
-    body.push([
-      { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
-      { content: `As. N° ${String(a.numeroAsiento ?? '').padStart(4, '0')} - ${a.descripcion ?? ''}`,
-        styles: { fontStyle: 'italic', fontSize: 7.5, lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
-      { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
-      { content: '', styles: { lineWidth: { top: 0, bottom: 0, left: 0.15, right: 0.15 } } },
-    ]);
-    debe += a.totalDebe ?? 0;
-    haber += a.totalHaber ?? 0;
+    if (conTotalPorDia) {
+      body.push([
+        { content: '', styles: totalDelDia },
+        { content: `Total del ${fecha(d.dia)}`, styles: totalDelDia },
+        { content: importe(d.debe), styles: { ...totalDelDia, ...derecha } },
+        { content: importe(d.haber), styles: { ...totalDelDia, ...derecha } },
+      ]);
+    }
   });
   autoTable(doc, {
     ...base,

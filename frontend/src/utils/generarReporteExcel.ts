@@ -1,5 +1,6 @@
 import { descargarXlsx, type Celda, type Hoja } from './xlsx';
 import { datosDelNegocio, fecha, formatearCuit } from './pdfComun';
+import { agruparPorDia } from './totalesPorDia';
 
 const TITULOS: Record<string, string> = {
   diario: 'Libro Diario',
@@ -41,10 +42,15 @@ function cuerpo(tipo: string, datos: any): { encabezados: string[]; filas: Celda
       const asientos: any[] = datos ?? [];
       const filas: Celda[][] = [];
       let debe = 0, haber = 0;
-      asientos.forEach(a => {
-        const lineas = [...(a.lineas ?? [])].sort((x: any, y: any) => (y.debe > 0 ? 1 : 0) - (x.debe > 0 ? 1 : 0));
-        lineas.forEach((l: any) => filas.push([dia(a.fecha), entero(a.numeroAsiento), l.nombreCuenta, l.debe > 0 ? importe(l.debe) : null, l.haber > 0 ? importe(l.haber) : null, a.descripcion ?? '']));
-        debe += n(a.totalDebe); haber += n(a.totalHaber);
+      // Cada día cierra con su total, como en el PDF; con un solo día no hace falta (sería el mismo número que el total general).
+      const dias = agruparPorDia(asientos);
+      dias.forEach(d => {
+        d.asientos.forEach(a => {
+          const lineas = [...(a.lineas ?? [])].sort((x: any, y: any) => (y.debe > 0 ? 1 : 0) - (x.debe > 0 ? 1 : 0));
+          lineas.forEach((l: any) => filas.push([dia(a.fecha), entero(a.numeroAsiento), l.nombreCuenta, l.debe > 0 ? importe(l.debe) : null, l.haber > 0 ? importe(l.haber) : null, a.descripcion ?? '']));
+          debe += n(a.totalDebe); haber += n(a.totalHaber);
+        });
+        if (dias.length > 1) filas.push([null, null, negrita(`Total del ${fecha(d.dia)}`), negrita(d.debe, 'importe'), negrita(d.haber, 'importe')]);
       });
       filas.push([], [null, null, negrita(`TOTALES (${asientos.length} asientos)`), negrita(debe, 'importe'), negrita(haber, 'importe')],
         [null, null, negrita('Diferencia (Debe - Haber)'), negrita(debe - haber, 'importe')]);

@@ -474,7 +474,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         Todas las operaciones del sistema generan sus asientos solas. Estas pantallas te dejan verlos desde distintos ángulos.
       </p>
       <Lista>
-        <li><strong>Libro Diario:</strong> todos los asientos en orden de fecha. Con <B>Formato planilla</B> se ven como una hoja corrida; con <B>Por asiento</B>, uno por uno con su detalle.</li>
+        <li><strong>Libro Diario:</strong> todos los asientos en orden de fecha. Con <B>Formato planilla</B> se ven como una hoja corrida; con <B>Por asiento</B>, uno por uno con su detalle. Cuando hay asientos de varios días, cada día cierra con su total del Debe y del Haber, y al final van los totales generales (igual en la pantalla, el PDF y el Excel).</li>
         <li><strong>Libro Mayor:</strong> el movimiento de cada cuenta en forma de «T» (Crédito Fiscal, Débito Fiscal, Compras, Ventas, Caja y Banco), con su Debe, su Haber y el saldo.</li>
         <li><strong>Balance General:</strong> el Estado de Situación Patrimonial, con la distribución del Activo y la estructura financiera.</li>
         <li><strong>Nuevo asiento:</strong> para registrar un asiento a mano. Completá la <B>Fecha</B> y la <B>Descripción</B>, agregá las líneas con <B>Agregar línea</B> (cuenta, Debe y Haber) y apretá <B>Confirmar asiento</B>. El Debe tiene que ser igual al Haber: si no, el sistema no lo acepta.</li>
