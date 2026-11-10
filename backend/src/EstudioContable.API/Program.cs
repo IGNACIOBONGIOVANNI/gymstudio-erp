@@ -100,9 +100,10 @@ builder.Services.AddCors(options =>
 });
 
 // Autenticación JWT
+// La clave que firma las sesiones no está en el repositorio: se configura (Jwt__Key) o cada instalación genera la suya la primera
+// vez y la guarda en la carpeta .secretos, que no se sube al control de versiones.
+ClaveDeSesion.Resolver(builder.Configuration, builder.Configuration["Jwt:CarpetaDeLaClave"] ?? Path.Combine(builder.Environment.ContentRootPath, ".secretos"));
 var jwt = builder.Configuration.GetSection(JwtOptions.Seccion).Get<JwtOptions>() ?? new JwtOptions();
-if (jwt.Key.Length < 32)
-    throw new InvalidOperationException("Falta configurar Jwt:Key (mínimo 32 caracteres) en appsettings o en la variable de entorno Jwt__Key.");
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Seccion));
 builder.Services.AddSingleton<TokenService>();

@@ -49,6 +49,12 @@ namespace EstudioContable.Application.Interfaces
         
         Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade Database { get; }
 
+        /// <summary>
+        /// Toma la fila del socio hasta que termine la transacción en curso: otra transacción que pida lo mismo espera su turno.
+        /// Sirve para que los cobros de un mismo socio pasen de a uno.
+        /// </summary>
+        Task BloquearSocioAsync(long socioId, CancellationToken cancellationToken);
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

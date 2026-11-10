@@ -197,7 +197,7 @@ que después se convierten en los enlaces `mailto:` y `wa.me`. Cómo se limitó 
 4. **Sin auditoría de filas, pero con eventos.** La tabla de fotos no tiene disparador de auditoría (copiaría la foto entera en cada
    cambio); subir y quitar quedan en la auditoría como eventos (`FOTO` y `FOTO_BAJA`) con el usuario y el equipo.
 5. **El contacto es texto, no código.** El email tiene forma de email (hasta 254 caracteres, sin espacios) y el WhatsApp admite solo
-   números, espacios y los signos + - ( ) (hasta 30); el espacio duro que trae pegar desde el teléfono se arregla solo. Al armar los
+   el código del país y números (desde la séptima revisión; antes admitía también espacios y signos); el espacio duro que trae pegar desde el teléfono se arregla solo. Al armar los
    enlaces, el email se codifica para que no pueda agregar destinatarios ni asunto a un `mailto:` (por ejemplo con `?bcc=`), el enlace de
    WhatsApp sale solo si el número se puede interpretar y se abre con `rel="noopener noreferrer"`.
 6. **Entra en la copia de seguridad.** La tabla `FotosDeEntrenador` viaja en la copia y vuelve igual al restaurarla (probado).
@@ -230,9 +230,64 @@ riesgo (cada punto tiene su prueba en `HorasDeEntrenadoresTests`, `HorasDeEntren
 Lo que **no** es: el presupuesto es una cuenta de horas por valor de la hora, para estimar un pago. No es una liquidación de sueldos ni genera
 asientos contables.
 
+## Séptima revisión (nombres y teléfonos de las personas)
+
+Los nombres de personas y los teléfonos eran texto libre: un nombre podía llevar `<script>`, una fórmula de planilla (`=HYPERLINK(...)`) o un
+número que en realidad era otra cosa, y un teléfono sin país no servía para armar el enlace de WhatsApp. Ahora, en entrenadores, socios y
+usuarios (pruebas en `ReglasDePersonasTests`, `NombreYTelefonoDePersonasTests`, `EntrenadoresTests` y `telefono.test.ts`):
+
+1. **El servidor es el que manda.** La pantalla filtra lo que se escribe, pero la regla vive en el dominio (`ReglasDePersonas`) y vale por
+   cualquier camino: un pedido directo a la API con `Ana2`, `<b>Ana</b>` o `=HYPERLINK(...)` en un nombre, o con un teléfono sin país, recibe
+   400 con el motivo y no cambia nada.
+2. **Lista permitida, no lista prohibida.** El nombre empieza con una letra (de cualquier alfabeto) y sigue con letras, tilde suelta,
+   espacios, puntos, apóstrofos y guiones; el teléfono es `+código número` con solo los dígitos 0-9 (los dígitos de otros alfabetos no valen).
+   Con eso no entran signos de HTML, comillas, `;` ni `=` al inicio, que son los que se usan para inyectar o para fórmulas de planilla.
+3. **Espacios raros.** El espacio duro, el ideográfico y el separador de línea que trae pegar desde Word o WhatsApp pasan a un espacio
+   común antes de validar; el tabulador y el salto de línea se rechazan.
+4. **Largos y topes.** Hasta 100 letras en nombre y apellido de socios, 150 en usuarios y 80 en entrenadores; el teléfono, 4 a 14 dígitos y
+   hasta 15 con el código. Un largo de más es un 400, no un error de la base.
+5. **Datos viejos.** No se migra ni se borra nada: lo ya guardado se sigue mostrando y el formulario lo lleva al formato nuevo al editar. Un
+   texto viejo que no es un solo número (por ejemplo dos teléfonos) se muestra vacío en el formulario en vez de juntar sus dígitos en
+   un número inventado.
+6. **Las banderas no vienen de internet.** Son archivos SVG del paquete `country-flag-icons` (MIT) dentro de la aplicación: no hay pedidos a
+   sitios externos al abrir el selector.
+
+Lo que **no** cambia: los nombres de empresa (razón social de clientes y proveedores) siguen siendo texto libre, porque llevan números y
+puntos; ahí rigen los topes de largo y la ausencia de caracteres de control de siempre.
+
+## Octava revisión (prueba de intrusión del 9/11/2026)
+
+Se atacó una copia del sistema (base aparte, usuarios de ejemplo) con pedidos armados a mano contra los 115 endpoints: sin sesión, con cada
+rol, con tokens manipulados, texto hostil, archivos tramposos y pedidos simultáneos.
+
+**Resistió:** sin sesión todo da 401; un token con `alg=none`, con el rol cambiado, firmado con otra clave o vencido se rechaza; la baja de
+un usuario corta su sesión al instante; no hubo inyección SQL ni errores 500, y los errores no muestran detalles internos; el HTML cargado
+en clientes y productos se muestra como texto; la foto, las copias (rutas que salen de la carpeta, zip hostil, archivo que no es zip) y CORS
+rechazaron todo; `npm audit` y `dotnet list package --vulnerable` no informan vulnerabilidades.
+
+**Se encontró y se corrigió** (pruebas en `CarrerasYClaveDeSesionTests`):
+
+1. **La clave de las sesiones estaba en el repositorio** (`appsettings.Development.json`). Con ella se pudo fabricar un token de
+   Administrador sin conocer ninguna contraseña. Ahora no viaja con el código: se configura por variable de entorno o cada instalación
+   genera la suya al azar la primera vez (`.secretos/jwt.key`, fuera de git). El token fabricado con la clave vieja da 401.
+2. **Cobros simultáneos de una cuota.** Ocho pedidos a la vez generaban ocho facturas y ocho ingresos de caja, y la cuota avanzaba un solo
+   mes. Ahora los cobros de un mismo socio pasan de a uno (se toma la fila del socio dentro de la transacción) y un segundo cobro dentro
+   de los 10 segundos se rechaza con el motivo: ocho pedidos a la vez dejan una sola factura.
+3. **DNI repetido.** La unicidad del DNI se controlaba solo en la aplicación: ocho altas a la vez creaban ocho socios iguales. Ahora la
+   garantiza un índice único en la base (`ux_socios_dni`); la migración avisa qué DNI están repetidos si ya había alguno, sin borrar nada.
+
+**Se encontró y queda como está, a decidir:**
+
+- `POST /api/Facturas` no exige rol de gestión: Recepción puede facturar a cualquier precio y cargar compras (queda en la auditoría).
+- Cinco claves malas bloquean una cuenta 15 minutos: protege contra la fuerza bruta, pero permite dejar afuera a un usuario a propósito.
+- Entrando directo al puerto de la API (no por el frontend) se acepta `X-Forwarded-For`: se esquiva el límite de intentos por IP y la IP de
+  la auditoría se puede falsear. Hoy ese puerto solo escucha en la propia PC.
+- Recepción puede leer Balance, Diario, Mayor, Caja y Banco aunque el Resumen le oculte los importes, y puede eliminar socios sin historial.
+
 ## Pendiente antes de usarlo con datos reales
 
-- Cambiar la contraseña del administrador inicial (`jefe@gym.com`, clave de desarrollo) y la clave `Jwt:Key` de `appsettings.Development.json`.
+- Cambiar la contraseña del administrador inicial (`jefe@gym.com`, clave de desarrollo). La clave de las sesiones ya no está en el
+  repositorio (ver la octava revisión).
 - Ejecutar en modo Production: así Swagger no queda publicado. Hoy el Docker corre en modo Development para la demostración.
 - Usar HTTPS (con un proxy como Nginx o Caddy) y cambiar la clave de PostgreSQL (`password` en `docker-compose.yml`). El puerto 5433 ya solo escucha en esta PC.
 - El token se guarda en `localStorage`, como en la mayoría de las aplicaciones de una sola página. No hay `innerHTML` ni `eval` en el código, pero un XSS permitiría robarlo. La alternativa más segura es una cookie `HttpOnly`.

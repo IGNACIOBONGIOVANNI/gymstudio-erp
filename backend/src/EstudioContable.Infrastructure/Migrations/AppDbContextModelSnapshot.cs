@@ -1577,6 +1577,10 @@ namespace EstudioContable.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Dni")
+                        .IsUnique()
+                        .HasDatabaseName("ux_socios_dni");
+
                     b.HasIndex("PlanActualId");
 
                     b.ToTable("Socios", "contabilidad");

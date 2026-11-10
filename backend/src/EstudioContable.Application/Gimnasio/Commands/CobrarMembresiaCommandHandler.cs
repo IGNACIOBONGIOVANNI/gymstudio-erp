@@ -1,5 +1,6 @@
 using EstudioContable.Application.Common.Exceptions;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Interfaces;
@@ -29,6 +30,13 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
             try
             {
+                // El turno se toma por socio antes de leer la membresía: así dos pedidos a la vez no la ven impaga los dos.
+                var socioId = await _context.Membresias.AsNoTracking()
+                    .Where(m => m.Id == request.MembresiaId).Select(m => (long?)m.SocioId).FirstOrDefaultAsync(cancellationToken);
+                if (socioId == null)
+                    throw new NotFoundException("Membresía", request.MembresiaId);
+                await CobroDeCuotas.TomarTurnoAsync(_context, socioId.Value, cancellationToken);
+
                 var membresia = await _context.Membresias
                     .Include(m => m.Plan)
                     .Include(m => m.Socio)

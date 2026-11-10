@@ -26,6 +26,9 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
         public DbSet<MovimientoBanco> MovimientosBanco => Set<MovimientoBanco>();
         public DbSet<Socio> Socios => Set<Socio>();
+
+        public System.Threading.Tasks.Task BloquearSocioAsync(long socioId, System.Threading.CancellationToken cancellationToken)
+            => Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM contabilidad.\"Socios\" WHERE \"Id\" = {socioId} FOR UPDATE", cancellationToken);
         public DbSet<Plan> Planes => Set<Plan>();
         public DbSet<Membresia> Membresias => Set<Membresia>();
         public DbSet<Factura> Facturas => Set<Factura>();
@@ -79,6 +82,10 @@ namespace EstudioContable.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(s => s.PlanActualId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // El DNI no se repite. Lo controla también la aplicación (con un mensaje que nombra al otro socio), pero solo la base
+            // lo garantiza cuando dos altas llegan a la vez.
+            modelBuilder.Entity<Socio>().HasIndex(s => s.Dni).IsUnique().HasDatabaseName("ux_socios_dni");
 
             modelBuilder.Entity<Producto>().ToTable("Productos", "inventario", t =>
                 t.HasCheckConstraint("CK_Productos_StockNoNegativo", "\"StockActual\" >= 0"));

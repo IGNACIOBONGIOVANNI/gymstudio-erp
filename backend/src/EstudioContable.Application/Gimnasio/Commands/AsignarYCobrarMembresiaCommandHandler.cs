@@ -29,6 +29,9 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
             try
             {
+                // De a un cobro por socio: sin esto, varios pedidos a la vez facturaban varias veces y la cuota avanzaba un solo período.
+                await CobroDeCuotas.TomarTurnoAsync(_context, request.SocioId, cancellationToken);
+
                 var socio = await _context.Socios.FirstOrDefaultAsync(s => s.Id == request.SocioId, cancellationToken);
                 if (socio == null) throw new NotFoundException("Socio", request.SocioId);
 

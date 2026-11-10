@@ -329,7 +329,22 @@ Dos ítems del menú, en el grupo Recepción: **Entrenadores** (las fichas) y **
   el servidor vuelve a comprobar que sea un JPEG de verdad (100 a 150 000 bytes, de 16 a 512 píxeles de lado). Sin foto, o si no se puede
   cargar, se ven las iniciales. Vive en su propia tabla, `FotosDeEntrenador`, sin auditoría de filas (cada subida y baja queda como un
   evento) y entra en las copias de seguridad.
-- El WhatsApp admite números, espacios y los signos + - ( ); el espacio duro que trae pegar desde el teléfono se arregla solo.
+- El teléfono y el WhatsApp se cargan con el país y el número (ver «Nombres y teléfonos de las personas»); el nombre lleva solo letras.
+
+### Nombres y teléfonos de las personas
+
+- **El nombre** de un entrenador, un socio (nombre y apellido) o un usuario lleva solo letras (con tildes, ñ y ü), espacios, puntos
+  (Lic.), apóstrofos (D'Angelo) y guiones (Pérez-Gómez), y empieza con una letra. En pantalla lo que no corresponde no se escribe; el
+  servidor lo vuelve a exigir (400 con el motivo). Los nombres de empresa (clientes, proveedores, razón social) siguen siendo libres.
+- **El teléfono y el WhatsApp** se eligen por país (bandera, nombre y código, con buscador; Argentina viene elegida) y se escribe el
+  número solo con dígitos. Se guarda como `+54 1155551234`: `+`, código del país (1 a 3 dígitos), un espacio y el número (4 a 14
+  dígitos; entre código y número hasta 15, el máximo internacional). Pegar `+54 9 11 5555-1234` elige el país solo. El servidor exige
+  esa forma exacta en las tres pantallas.
+- Las banderas son imágenes SVG del paquete `country-flag-icons` (licencia MIT) que viajan con la aplicación: se ven igual en
+  Windows (donde los emoji de bandera aparecen como letras) y no necesitan internet.
+- **Datos cargados antes** (teléfonos sin país, nombres con números): no se tocan en la base. El formulario lee un teléfono viejo como
+  argentino y lo deja en el formato nuevo al guardar; si trae texto o varios números, queda vacío en vez de inventar uno. Un nombre
+  viejo con números hay que corregirlo para poder guardar la ficha.
 
 ### Horas cumplidas y presupuesto de pago
 
@@ -387,8 +402,9 @@ Pantalla **Recepción**, arriba de todo:
   perímetros (cintura, cadera, pecho, brazo, muslo). Una medición por socio y día; hay un gráfico de
   evolución, la variación desde la primera medición y PDF para imprimir.
 - **Avisos por WhatsApp** (pantalla **Recepción**): filtros "Por vencer en 7 días" y "Vencidos" y un botón
-  que abre WhatsApp con el mensaje de la cuota ya escrito. Entiende los teléfonos como se escriben en
-  Argentina (0, 15, +54 9); no usa ningún servicio externo, lo envía la persona desde su WhatsApp.
+  que abre WhatsApp con el mensaje de la cuota ya escrito. Usa el país del teléfono guardado; los cargados antes sin país
+  se toman como argentinos y se entienden como se escriben allá (0, 15, +54 9). No usa ningún servicio externo, lo envía la
+  persona desde su WhatsApp.
 - **Exportar a Excel**: cada libro (Diario, Mayor, Balance, IVA Ventas y Compras, Caja, Banco, Stock) tiene,
   junto a "Imprimir PDF", un botón que descarga la planilla `.xlsx` con el mismo período y los mismos totales.
 
@@ -423,9 +439,11 @@ frontend en cada push.
 
 ## Configuración fuera de desarrollo
 
-`appsettings.json` deja vacía la clave JWT a propósito: fuera del entorno
-`Development` hay que definirla por variable de entorno (mínimo 32 caracteres),
-y no configurar `UsuariosIniciales:Password`.
+La clave que firma las sesiones (JWT) no está en el repositorio. Si no se configura, cada instalación genera la
+suya al azar la primera vez que arranca y la guarda en `backend/src/EstudioContable.API/.secretos/jwt.key`
+(carpeta que git ignora): así una copia del código no alcanza para fabricar una sesión. Borrar ese archivo
+genera otra clave y obliga a todos a iniciar sesión de nuevo. Fuera del entorno `Development` conviene definirla
+por variable de entorno (mínimo 32 caracteres) y no configurar `UsuariosIniciales:Password`.
 
 ```bash
 Jwt__Key=<clave-secreta-larga>

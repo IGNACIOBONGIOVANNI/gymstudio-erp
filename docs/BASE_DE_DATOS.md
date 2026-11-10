@@ -111,9 +111,11 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
   entrenadores (una fila por celda cargada, sin fechas: se repite todas las semanas) y tiene disparador de auditoría. Su
   `EntrenadorId` es una FK a `Entrenadores` `RESTRICT`: no se puede borrar un entrenador que tiene turnos (por eso un entrenador
   no se borra: se desactiva, y la API lo permite solo si no tiene horas en el calendario).
+- `Socios`: el DNI no se repite (índice único `ux_socios_dni`); la aplicación lo controla antes para avisar de quién es, y el índice
+  lo garantiza cuando dos altas llegan a la vez.
 - `Entrenadores`: nombre único sin distinguir mayúsculas (índice `ux_entrenadores_nombre` sobre `lower("NombreCompleto")`).
   Son fichas sin acceso al sistema (no son filas de `Usuario`). Además del teléfono y la especialidad, guardan un `Email`
-  (`varchar(254)`) y un `WhatsApp` (`varchar(30)`), nulos si no se cargaron, y el `ValorHora` (`numeric(18,2)`, nulo = todavía sin valor), que solo ven y
+  (`varchar(254)`) y un `WhatsApp` (`varchar(30)`), nulos si no se cargaron (el teléfono y el WhatsApp se guardan como `+54 1155551234`: la forma la exige el dominio, no la base), y el `ValorHora` (`numeric(18,2)`, nulo = todavía sin valor), que solo ven y
   cargan el Administrador y el Contador: la API se lo oculta a Recepción. Tiene disparador de auditoría (también del cambio del valor de la hora).
 - `FotosDeEntrenador (EntrenadorId)`: la foto de la ficha, una por entrenador (`EntrenadorId` es la clave primaria y una FK a
   `Entrenadores` `ON DELETE CASCADE`), en una columna `Foto` `bytea` con la fecha de la última subida (`Actualizada`). Está **aparte** de

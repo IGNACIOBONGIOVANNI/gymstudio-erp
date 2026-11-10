@@ -127,6 +127,8 @@ namespace EstudioContable.API.Middlewares
                 => "Ya existe una rutina con ese nombre.",
             "23505" when pg.ConstraintName == "ux_entrenadores_nombre"
                 => "Ya hay un entrenador con ese nombre.",
+            "23505" when pg.ConstraintName == "ux_socios_dni"
+                => "Ya existe un socio con el DNI ingresado.",
             "23505" when pg.ConstraintName == "ux_horas_entrenador_fecha"
                 => "Ese entrenador ya tiene cargado ese día.",
             "23505" => "Ya existe un registro con esos datos.",
