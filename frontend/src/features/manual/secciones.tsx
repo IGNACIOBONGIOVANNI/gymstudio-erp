@@ -117,7 +117,9 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       </Pasos>
       <p>
         El sistema renueva la membresía (el nuevo vencimiento depende de la duración del plan) y emite la factura B de la cuota,
-        con su asiento contable y el ingreso en Caja o en Banco. La factura la ves en el Libro de Ventas.
+        con su asiento contable y el ingreso en Caja o en Banco. La factura la ves en el Libro de Ventas. Si el cobro se manda dos
+        veces (un doble clic, o dos personas a la vez), queda uno solo: el segundo avisa que ya se registró un cobro para ese socio
+        hace instantes.
       </p>
       <Sub>Avisos de cuotas por WhatsApp</Sub>
       <p>
@@ -133,7 +135,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Sub>Socios</Sub>
       <p>
         En <B>Socios</B> cargás a cada persona con <B>Nuevo Socio</B>: nombre, apellido, DNI y teléfono. En cada fila hay botones para
-        <B>Editar</B>, <B>Eliminar</B>, ver la <B>Rutina del socio</B> y llevar el <B>Seguimiento de peso y medidas</B>.
+        <B>Editar</B>, <B>Eliminar</B>, ver la <B>Rutina del socio</B> y llevar el <B>Seguimiento de peso y medidas</B>. El DNI no se
+        puede repetir: si ya está cargado, el sistema avisa a qué socio pertenece.
       </p>
       <Sub>Nombres y teléfonos</Sub>
       <Lista>
@@ -609,7 +612,10 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       />
       <p>
         La copia se verifica antes de usarla: va firmada por el sistema, y se rechaza si está dañada, si fue modificada, si no tiene
-        firma o si es de una versión más nueva que el sistema (la vista previa muestra el estado de la <B>Firma de la copia</B>). Restaurar es todo o nada: si algo falla, los datos quedan como estaban. Descargar y restaurar quedan en la
+        firma o si es de una versión más nueva que el sistema (la vista previa muestra el estado de la <B>Firma de la copia</B>).
+        Cada instalación firma sus copias con su propia clave, así que una copia hecha desde esta pantalla se restaura en el mismo
+        sistema que la hizo. Para llevar los datos a otra computadora, usá la copia completa de la base con los comandos de más abajo
+        (<B>backup.ps1</B> en una y <B>restaurar.ps1</B> en la otra). Restaurar es todo o nada: si algo falla, los datos quedan como estaban. Descargar y restaurar quedan en la
         <B>Auditoría</B>.
       </p>
       <Nota tipo="ojo">
@@ -630,7 +636,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       </Pasos>
       <Lista>
         <li>
-          Las copias se guardan, firmadas, en la carpeta <B>backupsutomaticas</B> del proyecto y aparecen en la lista del bloque, con su
+          Las copias se guardan, firmadas, en la carpeta <B>backups\automaticas</B> del proyecto y aparecen en la lista del bloque, con su
           botón <B>Descargar</B>. Son iguales a la copia completa: se comparan y se restauran con <B>Seleccionar copia (.zip)</B>.
         </li>
         <li><B>Hacer una copia ahora</B> guarda una en el momento, sin esperar a la programada.</li>
@@ -763,6 +769,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Se me bloqueó la cuenta', 'Fueron cinco claves incorrectas seguidas. Esperá 15 minutos o pedile al Administrador que te ayude.'],
           ['Me dice «Demasiados intentos de inicio de sesión»', 'El ingreso permite 10 intentos por minuto desde la misma PC. Esperá un minuto y probá de nuevo.'],
           ['Me sacó del sistema', 'La sesión se cierra tras un rato sin actividad (60 minutos por defecto, y se avisa con un cartel) o a las 8 horas. Volvé a ingresar.'],
+          ['Al cobrar una cuota me dice que ya se registró un cobro hace instantes', 'El cobro ya quedó hecho (por ejemplo, se apretó dos veces). Revisalo en el Libro de Ventas; si querés cobrarle otro período, esperá unos segundos y volvé a intentarlo.'],
+          ['Una copia de seguridad dice que la firma no coincide', 'La hizo otra instalación (otra computadora) o el archivo se modificó. Para pasar los datos de una PC a otra usá backup.ps1 y restaurar.ps1 (sección Copias de seguridad).'],
           ['La Caja me quedó en negativo', 'Es un aviso, no un error: revisá que los cobros estén cargados antes de las compras de contado.'],
           ['Un total no coincide con otro', 'Entrá a Control de integridad y apretá Verificar de nuevo: señala qué control no cierra y por cuánto.'],
           ['Una pantalla muestra un error al cargar', 'Revisá que Docker esté abierto y el sistema encendido. Al volver a levantarlo, los datos siguen ahí.'],

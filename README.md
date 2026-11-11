@@ -442,7 +442,10 @@ frontend en cada push.
 La clave que firma las sesiones (JWT) no está en el repositorio. Si no se configura, cada instalación genera la
 suya al azar la primera vez que arranca y la guarda en `backend/src/EstudioContable.API/.secretos/jwt.key`
 (carpeta que git ignora): así una copia del código no alcanza para fabricar una sesión. Borrar ese archivo
-genera otra clave y obliga a todos a iniciar sesión de nuevo. Fuera del entorno `Development` conviene definirla
+genera otra clave y obliga a todos a iniciar sesión de nuevo. Si no se configura `Copias:ClaveDeFirma`, la misma clave
+firma las copias de seguridad que se hacen desde la pantalla: cada instalación verifica solo las suyas (para pasar datos
+de una PC a otra se usan `backup.ps1` y `restaurar.ps1`, o se configura la misma `Copias:ClaveDeFirma` en las dos).
+Fuera del entorno `Development` conviene definirla
 por variable de entorno (mínimo 32 caracteres) y no configurar `UsuariosIniciales:Password`.
 
 ```bash
