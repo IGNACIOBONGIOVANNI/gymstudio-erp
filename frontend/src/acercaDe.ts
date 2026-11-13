@@ -10,7 +10,7 @@ export const AUTORES: string[] = ['Ignacio Facundo Bongiovanni']
 /** Institución o cátedra del proyecto. Si está vacío, no se muestra. */
 export const INSTITUCION = ''
 
-export const MATERIAS = ['Desarrollo Web', 'Práctica Profesionalizante 2', 'Base de Datos 2']
+export const MATERIAS = ['Práctica Profesionalizante II', 'Seguridad de los Sistemas', 'Desarrollo de sistemas Web', 'Base de datos']
 
 /** Dirección del manual (se abre en una ventana aparte). */
 export const RUTA_MANUAL = '/manual'
