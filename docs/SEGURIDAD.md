@@ -294,8 +294,9 @@ rechazaron todo; `npm audit` y `dotnet list package --vulnerable` no informan vu
   olvidada), pero tiene que escribirla dos veces: el servidor rechaza el alta o la edición si `confirmacionPassword` no coincide.
 - **Campos numéricos**: los importes, precios, cantidades, series, descansos, días, DNI, CUIT y puntos de venta solo dejan escribir lo
   que admiten (`frontend/src/utils/entradaNumerica.ts`, con pruebas). Las **repeticiones** de las rutinas son un número o un rango de
-  menor a mayor (`12`, `8-10`); lo exige también el dominio (`RutinaEjercicio.NormalizarRepeticiones`). Las rutinas ya guardadas con
-  texto («30 seg») se siguen mostrando, marcadas en rojo hasta que se corrijan.
+  menor a mayor (`12`, `8-10`); lo exige también el dominio (`RutinaEjercicio.NormalizarRepeticiones`). La migración
+  `RepeticionesNumericas` pasó al formato nuevo las que estaban guardadas con texto: el número queda en las repeticiones y el texto
+  original en las indicaciones («30 seg» queda 30, con la indicación «30 segundos»). Pruebas en `MigracionDeRepeticionesTests`.
 - **Auditoría por páginas** (`GET /api/auditoria?pagina=&tamano=`, total en `X-Total-Count`, hasta 100 por página): la pantalla ya no
   trae 200 registros de una vez. Pruebas en `AuditoriaPaginadaTests`.
 
