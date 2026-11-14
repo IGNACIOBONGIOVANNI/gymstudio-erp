@@ -67,6 +67,7 @@ export async function guardarUsuario(datos: {
   estado: EstadoUsuario;
   telefono?: string;
   password?: string;
+  confirmacionPassword?: string;
 }): Promise<void> {
   const body = JSON.stringify({
     nombre: datos.nombre,
@@ -75,6 +76,7 @@ export async function guardarUsuario(datos: {
     telefono: datos.telefono,
     activo: datos.estado === 'Activo',
     password: datos.password || null,
+    confirmacionPassword: datos.confirmacionPassword || null,
   });
 
   await verificar(await fetch(datos.id ? `/api/usuarios/${datos.id}` : '/api/usuarios', {

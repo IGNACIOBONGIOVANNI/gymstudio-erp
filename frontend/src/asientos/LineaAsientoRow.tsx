@@ -2,6 +2,7 @@
 import { Trash2 } from "lucide-react";
 import type { Control, FieldErrors, UseFormRegister } from "react-hook-form";
 import type { AsientoFormValues, CuentaContable } from "./types";
+import { numeroDecimal } from '../utils/entradaNumerica';
 
 interface LineaAsientoRowProps {
   index: number;
@@ -17,6 +18,17 @@ const inputClass =
   "w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 " +
   "focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500 " +
   "disabled:bg-slate-50 disabled:text-slate-400";
+
+/** El campo solo acepta un importe: se limpia lo escrito antes de que lo lea React Hook Form. */
+function conSoloImportes<T extends { onChange: (evento: { target: unknown; type?: unknown }) => unknown }>(registrado: T): T {
+  return {
+    ...registrado,
+    onChange: (evento: React.ChangeEvent<HTMLInputElement>) => {
+      evento.target.value = numeroDecimal(evento.target.value);
+      return registrado.onChange(evento);
+    },
+  };
+}
 
 export function LineaAsientoRow({
   index,
@@ -63,7 +75,7 @@ export function LineaAsientoRow({
           type="text"
           inputMode="decimal"
           placeholder="0.00"
-          {...register(`lineas.${index}.debe` as const)}
+          {...conSoloImportes(register(`lineas.${index}.debe` as const))}
           disabled={disabled}
           className={`${inputClass} w-28 text-right font-mono tabular-nums`}
         />
@@ -77,7 +89,7 @@ export function LineaAsientoRow({
           type="text"
           inputMode="decimal"
           placeholder="0.00"
-          {...register(`lineas.${index}.haber` as const)}
+          {...conSoloImportes(register(`lineas.${index}.haber` as const))}
           disabled={disabled}
           className={`${inputClass} w-28 text-right font-mono tabular-nums`}
         />

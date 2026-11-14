@@ -1,5 +1,5 @@
 import { useEffect, useState, Fragment } from 'react';
-import { History, Loader2, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
+import { History, Loader2, RefreshCw, ChevronDown, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Registro generado por el trigger contabilidad.fn_auditar() en PostgreSQL.
@@ -29,6 +29,8 @@ const OPERACIONES: Record<string, { texto: string; clase: string }> = {
   BLOQUEADO: { texto: 'Cuenta bloqueada', clase: 'bg-red-100 text-red-800 border-red-300' },
   DESCARGA: { texto: 'Copia descargada', clase: 'bg-sky-50 text-sky-700 border-sky-200' },
   RESTAURADA: { texto: 'Copia restaurada', clase: 'bg-red-100 text-red-800 border-red-300' },
+  CAMBIO_CLAVE: { texto: 'Cambió su contraseña', clase: 'bg-sky-50 text-sky-700 border-sky-200' },
+  CLAVE_RECHAZADA: { texto: 'Contraseña actual incorrecta', clase: 'bg-red-50 text-red-700 border-red-200' },
 };
 
 // Una operación que esta pantalla no conoce se muestra tal cual, sin romperla.
@@ -41,6 +43,8 @@ const DESCRIPCION_ACCESO: Record<string, string> = {
   INGRESO: 'Inició sesión correctamente.',
   FALLIDO: 'Intento de ingreso con una clave incorrecta, una cuenta inexistente o una cuenta inactiva.',
   BLOQUEADO: 'Intento de ingreso sobre una cuenta bloqueada por demasiados intentos fallidos.',
+  CAMBIO_CLAVE: 'Cambió su propia contraseña, dando la actual.',
+  CLAVE_RECHAZADA: 'Intentó cambiar su contraseña con una contraseña actual incorrecta.',
 };
 
 // "contabilidad.Facturas" -> "Facturas"; los inicios de sesión se guardan con la tabla "acceso".
@@ -53,6 +57,8 @@ function mostrarValor(valor: unknown): string {
   if (typeof valor === 'object') return JSON.stringify(valor);
   return String(valor);
 }
+
+const TAMANOS = [25, 50, 100] as const;
 
 async function leerJson<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -69,14 +75,25 @@ export default function ModuloAuditoria() {
   const [usuario, setUsuario] = useState('');
   const [cargando, setCargando] = useState(false);
   const [expandido, setExpandido] = useState<number | null>(null);
+  // De a una página: el servidor manda el total en X-Total-Count.
+  const [pagina, setPagina] = useState(1);
+  const [tamano, setTamano] = useState<number>(25);
+  const [total, setTotal] = useState(0);
+  const paginas = Math.max(1, Math.ceil(total / tamano));
 
-  const cargar = async () => {
+  const cargar = async (numero = pagina) => {
     setCargando(true);
     try {
-      const params = new URLSearchParams({ cantidad: '200' });
+      const params = new URLSearchParams({ pagina: String(numero), tamano: String(tamano) });
       if (tabla) params.set('tabla', tabla);
       if (usuario.trim()) params.set('usuario', usuario.trim());
-      setRegistros(await leerJson<RegistroAuditoria[]>(await fetch(`/api/auditoria?${params}`)));
+      const res = await fetch(`/api/auditoria?${params}`);
+      const datos = await leerJson<RegistroAuditoria[]>(res);
+      const cantidad = Number(res.headers.get('X-Total-Count') ?? datos.length);
+      setTotal(Number.isFinite(cantidad) ? cantidad : datos.length);
+      setRegistros(datos);
+      setPagina(numero);
+      setExpandido(null);
     } catch (error: any) {
       toast.error(error?.message);
     } finally {
@@ -84,14 +101,20 @@ export default function ModuloAuditoria() {
     }
   };
 
+  const irAPagina = (numero: number) => {
+    const destino = Math.min(Math.max(numero, 1), paginas);
+    if (destino !== pagina) cargar(destino);
+  };
+
   useEffect(() => {
     fetch('/api/auditoria/tablas').then((r) => leerJson<string[]>(r)).then(setTablas).catch(() => setTablas([]));
   }, []);
 
+  // Al cambiar el filtro de tabla o el tamaño de página se vuelve a la primera.
   useEffect(() => {
-    cargar();
+    cargar(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tabla]);
+  }, [tabla, tamano]);
 
   const detalleCambios = (r: RegistroAuditoria) => {
     if (r.tabla === 'acceso' || r.tabla === 'copia') {
@@ -155,12 +178,12 @@ export default function ModuloAuditoria() {
           <input
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && cargar()}
+            onKeyDown={(e) => e.key === 'Enter' && cargar(1)}
             placeholder="Filtrar por usuario"
             className="rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
           <button
-            onClick={cargar}
+            onClick={() => cargar(1)}
             className="inline-flex items-center gap-1.5 rounded-md bg-marca-600 px-3 py-2 text-sm font-medium text-white hover:bg-marca-700"
           >
             {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -170,9 +193,12 @@ export default function ModuloAuditoria() {
       </div>
 
       <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <Paginador pagina={pagina} paginas={paginas} total={total} tamano={tamano} cantidad={registros.length}
+          cargando={cargando} onIr={irAPagina} onTamano={setTamano} />
+        {/* Alto limitado y encabezado fijo: la barra horizontal queda siempre a la vista, sin bajar hasta el final. */}
+        <div className="max-h-[65vh] overflow-auto border-t border-slate-200">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50/50">
+            <thead className="sticky top-0 z-10 bg-slate-50">
               <tr className="border-b border-slate-200 text-left text-slate-500">
                 <th className="h-11 px-4 font-medium w-8"></th>
                 <th className="h-11 px-4 font-medium">Fecha</th>
@@ -230,7 +256,62 @@ export default function ModuloAuditoria() {
             </tbody>
           </table>
         </div>
+        {paginas > 1 && (
+          <div className="border-t border-slate-200">
+            <Paginador pagina={pagina} paginas={paginas} total={total} tamano={tamano} cantidad={registros.length}
+              cargando={cargando} onIr={irAPagina} onTamano={setTamano} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+interface PaginadorProps {
+  pagina: number;
+  paginas: number;
+  total: number;
+  tamano: number;
+  cantidad: number;
+  cargando: boolean;
+  onIr: (pagina: number) => void;
+  onTamano: (tamano: number) => void;
+}
+
+/** «Registros 1 a 25 de 163», el tamaño de página y los botones para moverse. */
+function Paginador({ pagina, paginas, total, tamano, cantidad, cargando, onIr, onTamano }: PaginadorProps) {
+  const desde = total === 0 ? 0 : (pagina - 1) * tamano + 1;
+  const hasta = total === 0 ? 0 : desde + cantidad - 1;
+  const boton = 'inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40';
+  return (
+    <nav aria-label="Páginas de la auditoría" className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-sm text-slate-600">
+      <p aria-live="polite">
+        {total === 0 ? 'Sin registros' : <>Registros <b className="tabular-nums">{desde}</b> a <b className="tabular-nums">{hasta}</b> de <b className="tabular-nums">{total}</b></>}
+      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2">
+          Por página
+          <select value={tamano} onChange={(e) => onTamano(Number(e.target.value))} disabled={cargando}
+            className="rounded-md border border-slate-300 px-2 py-1 text-sm">
+            {TAMANOS.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+        <div className="flex items-center gap-1">
+          <button type="button" className={boton} onClick={() => onIr(1)} disabled={cargando || pagina <= 1} aria-label="Primera página" title="Primera página">
+            <ChevronsLeft className="h-4 w-4" />
+          </button>
+          <button type="button" className={boton} onClick={() => onIr(pagina - 1)} disabled={cargando || pagina <= 1} aria-label="Página anterior" title="Página anterior">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="px-2 tabular-nums">Página {pagina} de {paginas}</span>
+          <button type="button" className={boton} onClick={() => onIr(pagina + 1)} disabled={cargando || pagina >= paginas} aria-label="Página siguiente" title="Página siguiente">
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button type="button" className={boton} onClick={() => onIr(paginas)} disabled={cargando || pagina >= paginas} aria-label="Última página" title="Última página">
+            <ChevronsRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </nav>
   );
 }

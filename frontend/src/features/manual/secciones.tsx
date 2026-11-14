@@ -20,6 +20,13 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         <li>Escribí tu email y tu contraseña y apretá <B>Ingresar</B>.</li>
         <li>Para salir, usá el ícono de salida que está al pie del menú, al lado de tu nombre.</li>
       </Pasos>
+      <Sub>Cambiar tu contraseña</Sub>
+      <Pasos>
+        <li>Al pie del menú, al lado de tu nombre, apretá el ícono de la <B>llave</B> (Cambiar mi contraseña).</li>
+        <li>Escribí tu <B>contraseña actual</B>: así el sistema confirma que sos vos.</li>
+        <li>Escribí la <B>nueva</B> dos veces, igual en los dos campos. La lista marca en verde los requisitos que ya cumple.</li>
+        <li>Apretá <B>Cambiar contraseña</B>. La próxima vez ingresá con la nueva.</li>
+      </Pasos>
       <Nota tipo="ojo">
         Si te equivocás cinco veces seguidas con la contraseña, la cuenta se bloquea 15 minutos. Además, la sesión se cierra sola
         después de un rato sin usar el sistema (60 minutos por defecto; se cambia en <B>Configuración</B>, pestaña Seguridad y Sistema).
@@ -93,7 +100,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <p>La pantalla de Recepción es la del mostrador: registrás quién entra, cobrás cuotas y avisás a quien se está yendo.</p>
       <Sub>Registrar un ingreso</Sub>
       <Pasos>
-        <li>Escribí el DNI en <B>DNI del socio</B> (con o sin puntos).</li>
+        <li>Escribí el DNI en <B>DNI del socio</B> (solo números; si escribís puntos, se quitan solos).</li>
         <li>Apretá <B>Registrar ingreso</B>.</li>
         <li>Aparece, en grande, el nombre del socio, cómo está su cuota (al día, por vencer, vencida o sin plan) y <strong>qué día de su rutina le toca hoy</strong>, con los ejercicios.</li>
       </Pasos>
@@ -167,7 +174,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <Sub>Rutinas</Sub>
       <Lista>
         <li><strong>Ejercicios:</strong> el catálogo, con su grupo muscular. Si un ejercicio ya está en alguna rutina no se borra: queda desactivado (se ve con <B>Ver desactivados</B>).</li>
-        <li><strong>Rutinas modelo:</strong> de 1 a 7 días, cada uno con sus ejercicios, series, repeticiones, descanso e indicaciones. La primera vez se cargan dos de ejemplo.</li>
+        <li><strong>Rutinas modelo:</strong> de 1 a 7 días, cada uno con sus ejercicios, series, repeticiones, descanso e indicaciones. La primera vez se cargan dos de ejemplo. Las repeticiones son un número (12) o un rango (8-10); si un ejercicio es por tiempo o por lado, poné el número y aclaralo en las indicaciones (por ejemplo «Mantener 30 segundos» o «por pierna»).</li>
         <li><strong>Rutina de un socio:</strong> se asigna con fecha de inicio y, si querés, de vencimiento. Un socio tiene una sola rutina activa: al asignarle otra, la anterior se cierra el día que empieza la nueva y queda en el historial.</li>
         <li><strong>Imprimir PDF:</strong> la rutina del socio sale en blanco y negro, con una columna para anotar el peso.</li>
       </Lista>
@@ -518,8 +525,10 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       </p>
       <Nota>
         Las contraseñas nuevas necesitan al menos 8 caracteres, una mayúscula, un número, un carácter especial (como ! ? # $ % &amp; * - _ .) y
-        que no haya números consecutivos (como 12, 45 o 98). Mientras escribís, el formulario marca en verde lo que ya cumple. Cada
-        persona debería cambiar la que le dieron al principio.
+        que no haya números consecutivos (como 12, 45 o 98). Mientras escribís, el formulario marca en verde lo que ya cumple, y la
+        contraseña se escribe <strong>dos veces</strong> para confirmarla. Al editar a otro usuario, el Administrador puede ponerle una
+        contraseña nueva sin saber la anterior (por ejemplo, si se la olvidó). Cada persona debería cambiar la que le dieron al principio
+        con <B>Cambiar mi contraseña</B> (ícono de la llave, al pie del menú).
       </Nota>
       <Sub>Configuración</Sub>
       <Lista>
@@ -541,8 +550,14 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         <B>Equipo</B>). Es de solo lectura: nadie, ni el administrador, puede editarla desde el sistema. <B>Actualizar</B> trae lo último.
       </p>
       <p>
+        Los registros se ven <strong>de a una página</strong> (25, 50 o 100 por página, a elección): arriba y abajo de la tabla dice qué
+        registros estás viendo y del total, y las flechas pasan a la página anterior, a la siguiente, a la primera o a la última. Si la
+        tabla es más ancha que la pantalla, la barra para moverse de costado queda siempre visible al pie del cuadro.
+      </p>
+      <p>
         También quedan registrados los <strong>inicios de sesión</strong> (elegí <B>Accesos</B> en el filtro de tablas): los correctos,
-        los intentos fallidos (con el email que se probó) y los intentos sobre una cuenta bloqueada. La contraseña nunca se guarda.
+        los intentos fallidos (con el email que se probó), los intentos sobre una cuenta bloqueada y los cambios de contraseña que hace
+        cada usuario (también cuando puso mal la actual). La contraseña nunca se guarda.
         Lo mismo pasa con las <strong>copias de seguridad</strong> que se descargan o se restauran (filtro <B>Copias de seguridad</B>).
       </p>
       <Nota>
@@ -707,7 +722,7 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       />
       <Sub>Lo que te toca a vos</Sub>
       <Lista>
-        <li>Usá solo tu cuenta y no compartas tu contraseña; cambiá la que te dieron al principio.</li>
+        <li>Usá solo tu cuenta y no compartas tu contraseña; cambiá la que te dieron al principio con <B>Cambiar mi contraseña</B>.</li>
         <li>Cerrá la sesión cuando te vayas de la PC, sobre todo si la usa más gente.</li>
         <li>Avisale al Administrador si ves un acceso que no hiciste o un dato que cambió solo.</li>
         <li>Los datos de los socios (nombre, DNI, teléfono, email) son personales: usalos solo para gestionar el gimnasio.</li>
@@ -775,6 +790,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Un total no coincide con otro', 'Entrá a Control de integridad y apretá Verificar de nuevo: señala qué control no cierra y por cuánto.'],
           ['Una pantalla muestra un error al cargar', 'Revisá que Docker esté abierto y el sistema encendido. Al volver a levantarlo, los datos siguen ahí.'],
           ['Veo intentos fallidos de ingreso en Auditoría que no hice yo', 'Elegí Accesos en el filtro de Auditoría: ahí figura cada intento con el email que se probó y el equipo. Si alguien probó con tu cuenta, cambiá la contraseña y avisale al administrador.'],
+          ['No me deja escribir una letra o un signo en un importe', 'Es a propósito: los campos de precios, importes, cantidades, DNI y CUIT solo aceptan números. Los decimales van con coma (1500,50) y el punto sirve para los miles (25.000).'],
+          ['Me olvidé la contraseña', 'Pedile al Administrador que te ponga una nueva desde Usuarios; después cambiala vos con Cambiar mi contraseña.'],
           ['Cargué algo por error', 'Una factura se edita o se anula desde su libro; un movimiento de Caja o Banco se edita o se elimina; un ingreso de un socio lo deshace el Administrador o el Contador.'],
         ]}
       />

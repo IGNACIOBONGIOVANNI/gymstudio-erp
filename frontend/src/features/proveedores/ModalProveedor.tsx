@@ -2,6 +2,7 @@
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { mensajeDeError, ERROR_DE_CONEXION } from '../../api/errores';
+import { soloCuit } from '../../utils/entradaNumerica';
 
 interface ModalProveedorProps {
   proveedorEditando: any | null;
@@ -84,7 +85,7 @@ export function ModalProveedor({ proveedorEditando, onClose, onSuccess }: ModalP
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700">CUIT / DNI</label>
-              <input required type="text" className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" value={formData.cuit} onChange={e => setFormData({...formData, cuit: e.target.value})} />
+              <input required type="text" className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" value={formData.cuit} inputMode="numeric" placeholder="30-71234567-8" onChange={e => setFormData({...formData, cuit: soloCuit(e.target.value)})} />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700">Dirección</label>

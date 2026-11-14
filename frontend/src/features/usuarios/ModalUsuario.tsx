@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, User, Mail, Shield, Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { X, User, Mail, Shield, Lock, CheckCircle2 } from 'lucide-react';
 import type { Usuario, RolUsuario, EstadoUsuario } from './types';
 import { guardarUsuario } from './usuariosApi';
 import toast from 'react-hot-toast';
-import { REQUISITOS, claveValida } from './reglasDeClave';
+import { claveValida } from './reglasDeClave';
+import { AvisoDeRepeticion, RequisitosDeClave } from './RequisitosDeClave';
 import { CampoDeTelefono } from '../../components/CampoDeTelefono';
 import { errorDeNombreDePersona, limpiarNombreDePersona, soloLetrasDelNombre } from '../../utils/nombrePersona';
 import { errorDeTelefono, normalizarTelefono } from '../../utils/telefono';
@@ -22,12 +23,14 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
   const [rol, setRol] = useState<RolUsuario>('Operador / Recepción');
   const [estado, setEstado] = useState<EstadoUsuario>('Activo');
   const [password, setPassword] = useState('');
+  // La contraseña nueva se escribe dos veces. El Administrador no necesita la actual del usuario (la saltea).
+  const [repetida, setRepetida] = useState('');
   const [telefono, setTelefono] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Cada error se muestra junto a su campo, no como aviso flotante.
-  const [errores, setErrores] = useState<{ nombre?: string; email?: string; telefono?: string; password?: string }>({});
+  const [errores, setErrores] = useState<{ nombre?: string; email?: string; telefono?: string; password?: string; repetida?: string }>({});
 
-  const limpiarError = (campo: 'nombre' | 'email' | 'telefono' | 'password') =>
+  const limpiarError = (campo: 'nombre' | 'email' | 'telefono' | 'password' | 'repetida') =>
     setErrores((previos) => (previos[campo] ? { ...previos, [campo]: undefined } : previos));
 
   const claseDelCampo = (error?: string) =>
@@ -45,12 +48,14 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
       setEstado(usuarioAEditar.estado);
       setTelefono(normalizarTelefono(usuarioAEditar.telefono));
       setPassword('');
+      setRepetida('');
     } else {
       setNombre('');
       setEmail('');
       setRol('Operador / Recepción');
       setEstado('Activo');
       setPassword('');
+      setRepetida('');
       setTelefono('');
     }
   }, [usuarioAEditar]);
@@ -58,7 +63,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const nuevos: { nombre?: string; email?: string; telefono?: string; password?: string } = {};
+    const nuevos: { nombre?: string; email?: string; telefono?: string; password?: string; repetida?: string } = {};
     if (!nombre.trim()) nuevos.nombre = 'Ingresá el nombre completo.';
     else nuevos.nombre = errorDeNombreDePersona(nombre, 'El nombre') ?? undefined;
     nuevos.telefono = errorDeTelefono(telefono, 'El teléfono') ?? undefined;
@@ -67,8 +72,9 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
     const clave = password.trim();
     if (!esEdicion && !clave) nuevos.password = 'Ingresá una contraseña inicial.';
     else if (clave && !claveValida(clave)) nuevos.password = 'La contraseña no cumple los requisitos de la lista.';
+    else if (clave && repetida.trim() !== clave) nuevos.repetida = repetida.trim() ? 'Las dos contraseñas no coinciden. Escribí la misma en los dos campos.' : 'Repetí la contraseña para confirmarla.';
     setErrores(nuevos);
-    const primero = (['nombre', 'email', 'telefono', 'password'] as const).find((c) => nuevos[c]);
+    const primero = (['nombre', 'email', 'telefono', 'password', 'repetida'] as const).find((c) => nuevos[c]);
     if (primero) {
       document.getElementById(`usuario-${primero}`)?.focus();
       return;
@@ -84,6 +90,7 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
         estado,
         telefono,
         password: password.trim() ? password.trim() : undefined,
+        confirmacionPassword: password.trim() ? repetida.trim() : undefined,
       });
 
       toast.success(
@@ -96,7 +103,8 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
     } catch (error: any) {
       // Si el servidor rechaza un dato, el mensaje va junto a ese campo; lo demás (conexión, permisos) sí es un aviso.
       const mensaje: string = error?.message || 'Error al guardar el usuario';
-      if (/contraseña/i.test(mensaje)) setErrores({ password: mensaje });
+      if (/no coinciden/i.test(mensaje)) setErrores({ repetida: mensaje });
+      else if (/contraseña/i.test(mensaje)) setErrores({ password: mensaje });
       else if (/email|correo/i.test(mensaje)) setErrores({ email: mensaje });
       else if (/tel[eé]fono/i.test(mensaje)) setErrores({ telefono: mensaje });
       else if (/nombre/i.test(mensaje)) setErrores({ nombre: mensaje });
@@ -236,21 +244,35 @@ export function ModalUsuario({ usuarioAEditar, onClose, onGuardado }: ModalUsuar
             </div>
             {errores.password && <p id="error-password" role="alert" className="mt-1 text-xs font-medium text-red-600">{errores.password}</p>}
             {(!esEdicion || password.length > 0) && (
-              <ul id="requisitos-clave" className="mt-2 grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-2" aria-label="Requisitos de la contraseña">
-                {REQUISITOS.map((r) => {
-                  const ok = password.trim().length > 0 && r.cumple(password.trim());
-                  return (
-                    <li key={r.id} className={`flex items-center gap-1.5 ${ok ? 'text-emerald-700' : errores.password ? 'font-medium text-red-600' : 'text-slate-500'}`}>
-                      {!ok && errores.password
-                        ? <XCircle className="h-3.5 w-3.5 shrink-0 text-red-500" aria-hidden="true" />
-                        : <CheckCircle2 className={`h-3.5 w-3.5 shrink-0 ${ok ? 'text-emerald-600' : 'text-slate-300'}`} aria-hidden="true" />}
-                      <span>{r.texto}<span className="sr-only">{ok ? ': cumple' : ': falta'}</span></span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <RequisitosDeClave id="requisitos-clave" clave={password} conError={Boolean(errores.password)} />
             )}
           </div>
+
+          {/* Repetir la contraseña: aparece cuando se escribe una */}
+          {(!esEdicion || password.length > 0) && (
+            <div>
+              <label htmlFor="usuario-repetida" className="block text-xs font-semibold text-slate-600 mb-1">
+                Repetir contraseña *
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  id="usuario-repetida"
+                  type="password"
+                  value={repetida}
+                  onChange={(e) => { setRepetida(e.target.value); limpiarError('repetida'); }}
+                  placeholder="Escribila otra vez"
+                  className={claseDelCampo(errores.repetida)}
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(errores.repetida)}
+                  aria-describedby={errores.repetida ? 'error-repetida' : undefined}
+                />
+              </div>
+              {errores.repetida
+                ? <p id="error-repetida" role="alert" className="mt-1 text-xs font-medium text-red-600">{errores.repetida}</p>
+                : <AvisoDeRepeticion clave={password} repetida={repetida} />}
+            </div>
+          )}
 
           {/* Estado */}
           <div>

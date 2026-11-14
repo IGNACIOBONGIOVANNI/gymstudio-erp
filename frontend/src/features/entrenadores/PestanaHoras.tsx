@@ -6,6 +6,7 @@ import {
   borradorDesde, cambiosDelBorrador, claveDeDia, conDiaNuevo, formatoDeHoras, formatoDeImporte, hoyEnArgentina, mensajeDeHoras, nombreDelDia,
   rangoDelMes, resumenPorEntrenador, type Borrador, type DiaDeHoras, type HorasDelPeriodo,
 } from './horasUtil';
+import { numeroDecimal } from '../../utils/entradaNumerica';
 
 const boton = 'inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50';
 const botonPrimario = `${boton} bg-marca-600 text-white hover:bg-marca-700`;
@@ -320,7 +321,7 @@ export function PestanaHoras({ onCambios, onIrALaLista }: Props) {
                           <td className="border-t border-slate-200 px-3 py-2 text-right tabular-nums">{d.programadas > 0 ? formatoDeHoras(d.programadas) : '—'}</td>
                           <td className="border-t border-slate-200 px-3 py-2 align-top">
                             <input id={`horas-${d.entrenadorId}-${d.fecha}`} type="text" inputMode="decimal" autoComplete="off" value={escrito.horas} disabled={bloqueado}
-                              onChange={(ev) => escribir(d, 'horas', ev.target.value)}
+                              onChange={(ev) => escribir(d, 'horas', numeroDecimal(ev.target.value, 2, 5, ','))}
                               aria-label={`Horas que cumplió ${e.nombre} el ${aDDMM(d.fecha)}`} aria-invalid={error !== null}
                               aria-describedby={error ? `error-${d.entrenadorId}-${d.fecha}` : undefined}
                               title={futuro ? 'Este día todavía no pasó.' : sinValor ? 'Cargá primero el valor de la hora.' : undefined}

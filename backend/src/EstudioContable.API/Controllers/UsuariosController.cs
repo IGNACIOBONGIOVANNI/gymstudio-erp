@@ -35,7 +35,7 @@ namespace EstudioContable.API.Controllers
             bool Activo, bool EsPrincipal, DateTimeOffset? UltimoLogin, DateTimeOffset FechaCreacion);
 
         public record GuardarUsuarioRequest(
-            string Nombre, string Email, string Rol, string? Telefono, bool Activo, string? Password);
+            string Nombre, string Email, string Rol, string? Telefono, bool Activo, string? Password, string? ConfirmacionPassword = null);
 
         public record CambiarEstadoRequest(bool Activo);
 
@@ -55,7 +55,7 @@ namespace EstudioContable.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] GuardarUsuarioRequest request, CancellationToken cancellationToken)
         {
-            ValidarPassword(request.Password, obligatoria: true);
+            ValidarPassword(request.Password, request.ConfirmacionPassword, obligatoria: true);
             await ValidarEmailDisponibleAsync(request.Email, idExcluido: null, cancellationToken);
 
             var usuario = new Usuario(request.Nombre, request.Email, "-", ParsearRol(request.Rol), telefono: request.Telefono);
@@ -73,7 +73,7 @@ namespace EstudioContable.API.Controllers
         public async Task<IActionResult> Actualizar(long id, [FromBody] GuardarUsuarioRequest request, CancellationToken cancellationToken)
         {
             var usuario = await BuscarAsync(id, cancellationToken);
-            ValidarPassword(request.Password, obligatoria: false);
+            ValidarPassword(request.Password, request.ConfirmacionPassword, obligatoria: false);
             await ValidarEmailDisponibleAsync(request.Email, idExcluido: id, cancellationToken);
 
             usuario.ActualizarDatos(request.Nombre, request.Email, ParsearRol(request.Rol), request.Telefono);
@@ -138,7 +138,11 @@ namespace EstudioContable.API.Controllers
                 throw new InvalidOperationException($"Ya existe un usuario con el email {normalizado}.");
         }
 
-        private static void ValidarPassword(string? password, bool obligatoria)
+        /// <summary>
+        /// La contraseña nueva se escribe dos veces. El Administrador no necesita la actual del usuario que edita (la saltea a
+        /// propósito, para poder restablecer una olvidada), pero sí repetir la nueva, que además tiene que cumplir la política.
+        /// </summary>
+        private static void ValidarPassword(string? password, string? confirmacion, bool obligatoria)
         {
             if (string.IsNullOrWhiteSpace(password))
             {
@@ -148,6 +152,8 @@ namespace EstudioContable.API.Controllers
             }
 
             ReglasDeClave.Validar(password);
+            if (!string.Equals(password, confirmacion, StringComparison.Ordinal))
+                throw new ArgumentException("Las dos contraseñas no coinciden. Escribí la misma contraseña en los dos campos.");
         }
 
         private static RolUsuario ParsearRol(string rol)

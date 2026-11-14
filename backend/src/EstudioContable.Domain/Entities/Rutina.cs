@@ -90,9 +90,7 @@ namespace EstudioContable.Domain.Entities
             if (dia is < 1 or > 7) throw new ArgumentException("El día de la rutina debe estar entre 1 y 7.");
             if (series is < 1 or > 20) throw new ArgumentException("Las series deben estar entre 1 y 20.");
 
-            var rep = (repeticiones ?? string.Empty).Trim();
-            if (rep.Length == 0) throw new ArgumentException("Indicá las repeticiones (por ejemplo 10-12 o 30 seg).");
-            if (rep.Length > 20) throw new ArgumentException("Las repeticiones no pueden superar los 20 caracteres.");
+            var rep = NormalizarRepeticiones(repeticiones);
 
             if (descansoSegundos is < 0 or > 600) throw new ArgumentException("El descanso debe estar entre 0 y 600 segundos.");
 
@@ -108,5 +106,24 @@ namespace EstudioContable.Domain.Entities
         }
 
         internal void AsignarOrden(int orden) => Orden = orden;
+
+        private static readonly System.Text.RegularExpressions.Regex FormaDeRepeticiones =
+            new(@"^(\d{1,3})(?:-(\d{1,3}))?$", System.Text.RegularExpressions.RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+
+        /// <summary>
+        /// Las repeticiones son un número (12) o un rango de menor a mayor (8-10), de 1 a 999. Un tiempo («30 seg») o una aclaración
+        /// («por pierna») va en las indicaciones. Los espacios alrededor del guion se quitan («10 - 12» queda «10-12»).
+        /// </summary>
+        public static string NormalizarRepeticiones(string? repeticiones)
+        {
+            var rep = System.Text.RegularExpressions.Regex.Replace((repeticiones ?? string.Empty).Trim(), @"\s*-\s*", "-");
+            if (rep.Length == 0)
+                throw new ArgumentException("Indicá las repeticiones: un número (por ejemplo 12) o un rango (por ejemplo 8-10).");
+            var forma = FormaDeRepeticiones.Match(rep);
+            var desde = forma.Success ? int.Parse(forma.Groups[1].Value) : 0;
+            if (!forma.Success || desde == 0 || (forma.Groups[2].Success && int.Parse(forma.Groups[2].Value) <= desde))
+                throw new ArgumentException("Las repeticiones tienen que ser un número (por ejemplo 12) o un rango de menor a mayor (por ejemplo 8-10). Si es un tiempo, poné el número y aclaralo en las indicaciones.");
+            return rep;
+        }
     }
 }

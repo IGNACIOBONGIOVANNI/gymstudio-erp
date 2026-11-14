@@ -10,6 +10,7 @@ import { AvatarDeEntrenador, CirculoDeIniciales } from './AvatarDeEntrenador';
 import { LARGO_MAXIMO_DEL_EMAIL, errorDeEmail } from './entrenadoresUtil';
 import { mensajeDeValorHora } from './horasUtil';
 import { procesarFoto } from './procesarFoto';
+import { numeroDecimal } from '../../utils/entradaNumerica';
 
 const LARGO_MAXIMO_DE_LA_ESPECIALIDAD = 60;
 
@@ -282,7 +283,7 @@ export function ModalEntrenador({ entrenador, onCerrar, onGuardado }: Props) {
             <div>
               <label htmlFor="entrenador-valorhora" className="mb-1 block text-xs font-semibold text-slate-600">Valor de la hora ($)</label>
               <input {...campoDeTexto('valorHora')} value={valorHora} maxLength={16} autoComplete="off" inputMode="decimal"
-                onChange={(e) => { setValorHora(e.target.value); limpiarError('valorHora'); }} placeholder="Ej: 1500,50" />
+                onChange={(e) => { setValorHora(numeroDecimal(e.target.value, 2, 16, ',')); limpiarError('valorHora'); }} placeholder="Ej: 1500,50" />
               {mensajeDe('valorHora') ?? <p className="mt-1 text-xs text-slate-500">Lo que se le paga por hora. Vacío si todavía no lo definiste.</p>}
             </div>
           </div>

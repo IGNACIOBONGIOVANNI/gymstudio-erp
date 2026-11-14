@@ -6,6 +6,7 @@ import {
   DIAS_DE_LA_SEMANA, FRECUENCIAS, horaComoTexto, parsearHora, programacionesIguales, resumenDeProgramacion, tamanoLegible, textoDeFecha,
   validarProgramacion, type CopiaGuardada, type EstadoDeCopias, type ErroresDeProgramacion, type Frecuencia, type Programacion,
 } from './copiasAutomaticasUtil';
+import { bloquearNoNumericas } from '../../utils/entradaNumerica';
 
 type Campo = keyof ErroresDeProgramacion;
 
@@ -216,7 +217,7 @@ export function CopiasAutomaticas() {
           {mensual && (
             <div>
               <label htmlFor="copia-dia-mes" className="mb-1 block text-xs font-semibold text-slate-600">Día del mes (1 a 28)</label>
-              <input id="copia-dia-mes" type="number" min={1} max={28} inputMode="numeric" value={formulario.diaDelMes ?? ''} disabled={guardando}
+              <input id="copia-dia-mes" type="number" min={1} max={28} inputMode="numeric" value={formulario.diaDelMes ?? ''} disabled={guardando} onKeyDown={bloquearNoNumericas(false)}
                 onChange={(e) => cambiar({ diaDelMes: e.target.value === '' ? null : Number(e.target.value) }, ['diaDelMes'])}
                 aria-invalid={Boolean(errores.diaDelMes)} aria-describedby={errores.diaDelMes ? 'error-copia-dia-mes' : undefined}
                 className={claseDelCampo(errores.diaDelMes)} />
@@ -226,7 +227,7 @@ export function CopiasAutomaticas() {
 
           <div>
             <label htmlFor="copia-conservar" className="mb-1 block text-xs font-semibold text-slate-600">Copias a conservar (1 a 60)</label>
-            <input id="copia-conservar" type="number" min={1} max={60} inputMode="numeric" value={Number.isNaN(formulario.conservar) ? '' : formulario.conservar} disabled={guardando}
+            <input id="copia-conservar" type="number" min={1} max={60} inputMode="numeric" value={Number.isNaN(formulario.conservar) ? '' : formulario.conservar} disabled={guardando} onKeyDown={bloquearNoNumericas(false)}
               onChange={(e) => cambiar({ conservar: e.target.value === '' ? Number.NaN : Number(e.target.value) }, ['conservar'])}
               aria-invalid={Boolean(errores.conservar)} aria-describedby={errores.conservar ? 'error-copia-conservar' : undefined}
               className={claseDelCampo(errores.conservar)} />

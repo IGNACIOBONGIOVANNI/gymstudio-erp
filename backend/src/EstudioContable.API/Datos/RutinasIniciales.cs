@@ -41,21 +41,21 @@ namespace EstudioContable.API.Datos
 
             context.Rutinas.Add(new Rutina("Full body principiante", "Adaptación general: aprender la técnica de los ejercicios básicos", "Principiante", new List<RutinaEjercicio>
             {
-                R("Cinta: trote suave", 1, 1, "10 min", 0, "Entrada en calor"),
+                R("Cinta: trote suave", 1, 1, "10", 0, "Entrada en calor: 10 minutos"),
                 R("Sentadilla con barra", 1, 3, "10-12", 90, "Barra sola o con poco peso, espalda recta"),
                 R("Press de banca con barra", 1, 3, "10-12", 90),
                 R("Remo en polea baja", 1, 3, "10-12", 90),
-                R("Plancha frontal", 1, 3, "30 seg", 60),
+                R("Plancha frontal", 1, 3, "30", 60, "Mantener 30 segundos"),
                 R("Prensa de piernas", 2, 3, "12", 90),
                 R("Press militar con mancuernas", 2, 3, "10-12", 90),
                 R("Jalón al pecho", 2, 3, "10-12", 90),
                 R("Puente de glúteos", 2, 3, "15", 60),
                 R("Abdominales en banco", 2, 3, "15", 45),
-                R("Estocadas con mancuernas", 3, 3, "10 por pierna", 90),
+                R("Estocadas con mancuernas", 3, 3, "10", 90, "10 por pierna"),
                 R("Flexiones de brazos", 3, 3, "8-10", 90, "Con las rodillas apoyadas si cuesta"),
                 R("Remo con barra", 3, 3, "10", 90),
                 R("Curl de bíceps con barra", 3, 2, "12", 60),
-                R("Bicicleta fija", 3, 1, "15 min", 0, "Vuelta a la calma")
+                R("Bicicleta fija", 3, 1, "15", 0, "Vuelta a la calma: 15 minutos")
             }));
 
             context.Rutinas.Add(new Rutina("Tren superior e inferior", "Ganar fuerza y masa muscular, dividiendo el cuerpo en dos días", "Intermedio", new List<RutinaEjercicio>

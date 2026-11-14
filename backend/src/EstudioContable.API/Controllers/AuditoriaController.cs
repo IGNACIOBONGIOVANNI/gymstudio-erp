@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace EstudioContable.API.Controllers
     public class AuditoriaController : ControllerBase
     {
         private const int MaximoRegistros = 500;
+        private const int MaximoPorPagina = 100;
         private readonly IAppDbContext _context;
 
         public AuditoriaController(IAppDbContext context)
@@ -33,6 +35,8 @@ namespace EstudioContable.API.Controllers
             [FromQuery] string? tabla,
             [FromQuery] string? usuario,
             [FromQuery] int cantidad = 200,
+            [FromQuery] int? pagina = null,
+            [FromQuery] int tamano = 25,
             CancellationToken cancellationToken = default)
         {
             var query = _context.Auditoria.AsNoTracking();
@@ -42,10 +46,20 @@ namespace EstudioContable.API.Controllers
             if (!string.IsNullOrWhiteSpace(usuario))
                 query = query.Where(a => a.Usuario.Contains(usuario));
 
-            var registros = await query
-                .OrderByDescending(a => a.Id)
-                .Take(Math.Clamp(cantidad, 1, MaximoRegistros))
-                .ToListAsync(cancellationToken);
+            var ordenados = query.OrderByDescending(a => a.Id);
+            List<EstudioContable.Domain.Entities.RegistroAuditoria> registros;
+            if (pagina.HasValue)
+            {
+                // De a una página: la pantalla muestra «x a y de total» con el encabezado X-Total-Count.
+                var porPagina = Math.Clamp(tamano, 1, MaximoPorPagina);
+                var numero = Math.Max(pagina.Value, 1);
+                Response.Headers["X-Total-Count"] = (await query.CountAsync(cancellationToken)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                registros = await ordenados.Skip((numero - 1) * porPagina).Take(porPagina).ToListAsync(cancellationToken);
+            }
+            else
+            {
+                registros = await ordenados.Take(Math.Clamp(cantidad, 1, MaximoRegistros)).ToListAsync(cancellationToken);
+            }
 
             return Ok(registros.Select(a => new
             {

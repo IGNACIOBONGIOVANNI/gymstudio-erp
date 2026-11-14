@@ -54,6 +54,33 @@ public class RutinaTests
     public void Los_renglones_invalidos_son_rechazados(int dia, int series, string reps, int descanso)
         => Assert.Throws<ArgumentException>(() => new RutinaEjercicio(1, dia, series, reps, descanso, null));
 
+    [Theory]
+    [InlineData("12", "12")]
+    [InlineData("8-10", "8-10")]
+    [InlineData(" 10 - 12 ", "10-12")]
+    [InlineData("1", "1")]
+    [InlineData("100-200", "100-200")]
+    public void Las_repeticiones_son_un_numero_o_un_rango(string escrito, string guardado)
+        => Assert.Equal(guardado, new RutinaEjercicio(1, 1, 3, escrito, 60, null).Repeticiones);
+
+    [Theory]
+    [InlineData("30 seg")]        // texto: el tiempo va en las indicaciones
+    [InlineData("10 por pierna")]
+    [InlineData("doce")]
+    [InlineData("0")]             // cero repeticiones
+    [InlineData("10-")]           // rango incompleto
+    [InlineData("-10")]
+    [InlineData("12-8")]          // rango al revés
+    [InlineData("10-10")]
+    [InlineData("8-10-12")]
+    [InlineData("1000")]          // más de 3 cifras
+    [InlineData("10.5")]
+    public void Las_repeticiones_que_no_son_un_numero_o_un_rango_se_rechazan(string reps)
+    {
+        var error = Assert.Throws<ArgumentException>(() => new RutinaEjercicio(1, 1, 3, reps, 60, null));
+        Assert.Contains("número", error.Message);
+    }
+
     [Fact]
     public void Un_ejercicio_acepta_solo_los_grupos_musculares_conocidos()
     {

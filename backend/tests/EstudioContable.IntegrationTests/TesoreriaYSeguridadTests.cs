@@ -149,7 +149,7 @@ public class SeguridadTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var email = $"temporal.{Guid.NewGuid():N}"[..20] + "@gym.com";
-        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Temporal", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
+        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Temporal", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva, confirmacionPassword = ApiFixture.ClaveNueva });
         Assert.Equal(HttpStatusCode.Created, alta.StatusCode);
         var id = (long)(await alta.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
 
@@ -177,7 +177,7 @@ public class SeguridadTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var email = $"baja.{Guid.NewGuid():N}"[..18] + "@gym.com";
-        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Con token", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
+        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Con token", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva, confirmacionPassword = ApiFixture.ClaveNueva });
         var id = (long)(await alta.Content.ReadFromJsonAsync<JsonObject>())!["id"]!;
         var sesion = await api.ClienteComo(email, ApiFixture.ClaveNueva);
         Assert.Equal(HttpStatusCode.OK, (await sesion.GetAsync("/api/facturas")).StatusCode);
@@ -201,7 +201,7 @@ public class SeguridadTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var email = $"debil.{Guid.NewGuid():N}"[..18] + "@gym.com";
-        var respuesta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Débil", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = clave });
+        var respuesta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Débil", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = clave, confirmacionPassword = clave });
         Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
     }
 
@@ -210,7 +210,7 @@ public class SeguridadTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var email = $"bloq.{Guid.NewGuid():N}"[..18] + "@gym.com";
-        await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Bloqueable", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
+        await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Bloqueable", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva, confirmacionPassword = ApiFixture.ClaveNueva });
         var anonimo = api.ClienteAnonimo();
         for (var i = 0; i < 5; i++)
             Assert.Equal(HttpStatusCode.Unauthorized, (await anonimo.PostAsJsonAsync("/api/auth/login", new { email, password = "incorrecta" + i })).StatusCode);

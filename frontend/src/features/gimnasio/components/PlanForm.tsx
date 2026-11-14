@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 import toast from 'react-hot-toast';
 import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
+import { numeroDecimal, soloDigitos } from '../../../utils/entradaNumerica';
 
 export interface PlanEditable {
   id: string | number;
@@ -101,13 +102,13 @@ export function PlanForm({ onClose, planAEditar }: PlanFormProps) {
           <div>
             <label className="block text-sm font-medium text-slate-700">Duración (Meses)</label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
               required
-              min="1"
-              step="1"
               placeholder="Ej: 1"
               value={duracionMeses}
-              onChange={(e) => setDuracionMeses(e.target.value)}
+              onChange={(e) => setDuracionMeses(soloDigitos(e.target.value, 3))}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </div>
@@ -119,13 +120,13 @@ export function PlanForm({ onClose, planAEditar }: PlanFormProps) {
                 <span className="text-slate-500 sm:text-sm">$</span>
               </div>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 required
-                min="0"
-                step="0.01"
                 placeholder="0.00"
                 value={precioMensual}
-                onChange={(e) => setPrecioMensual(e.target.value)}
+                onChange={(e) => setPrecioMensual(numeroDecimal(e.target.value))}
                 className="block w-full rounded-md border border-slate-300 pl-7 pr-12 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
               />
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">

@@ -54,7 +54,7 @@ public class AuditoriaDeEquipoTests(ApiFixture api)
     {
         var jefe = await api.Jefe();
         var email = $"acc.{Guid.NewGuid():N}"[..18] + "@gym.com";
-        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Acceso de prueba", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva });
+        var alta = await jefe.PostAsJsonAsync("/api/usuarios", new { nombre = "Acceso de prueba", email, rol = "Recepcion", telefono = (string?)null, activo = true, password = ApiFixture.ClaveNueva, confirmacionPassword = ApiFixture.ClaveNueva });
         Assert.True(alta.IsSuccessStatusCode, await alta.Detalle());
         return email;
     }

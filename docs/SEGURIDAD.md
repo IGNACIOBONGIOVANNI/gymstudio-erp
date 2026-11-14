@@ -284,6 +284,21 @@ rechazaron todo; `npm audit` y `dotnet list package --vulnerable` no informan vu
   la auditoría se puede falsear. Hoy ese puerto solo escucha en la propia PC.
 - Recepción puede leer Balance, Diario, Mayor, Caja y Banco aunque el Resumen le oculte los importes, y puede eliminar socios sin historial.
 
+## Novena revisión (cambio de contraseña, campos numéricos y auditoría por páginas)
+
+- **Cambiar mi contraseña** (`PUT /api/auth/mi-clave`): cualquier usuario cambia la suya dando la **actual** y la nueva **dos veces**.
+  Comparte el límite de intentos del login (para que no sirva para adivinar la actual), exige la política de contraseñas y que la nueva
+  sea distinta de la actual. Queda en la auditoría como `CAMBIO_CLAVE` o, si la actual estaba mal, `CLAVE_RECHAZADA` (además del
+  `UPDATE` de `Usuario` con el campo «Contraseña», sin el hash). Pruebas en `CambioDeClaveTests`.
+- **Usuarios**: el Administrador puede ponerle una contraseña nueva a otro usuario **sin saber la actual** (para restablecer una
+  olvidada), pero tiene que escribirla dos veces: el servidor rechaza el alta o la edición si `confirmacionPassword` no coincide.
+- **Campos numéricos**: los importes, precios, cantidades, series, descansos, días, DNI, CUIT y puntos de venta solo dejan escribir lo
+  que admiten (`frontend/src/utils/entradaNumerica.ts`, con pruebas). Las **repeticiones** de las rutinas son un número o un rango de
+  menor a mayor (`12`, `8-10`); lo exige también el dominio (`RutinaEjercicio.NormalizarRepeticiones`). Las rutinas ya guardadas con
+  texto («30 seg») se siguen mostrando, marcadas en rojo hasta que se corrijan.
+- **Auditoría por páginas** (`GET /api/auditoria?pagina=&tamano=`, total en `X-Total-Count`, hasta 100 por página): la pantalla ya no
+  trae 200 registros de una vez. Pruebas en `AuditoriaPaginadaTests`.
+
 ## Pendiente antes de usarlo con datos reales
 
 - Cambiar la contraseña del administrador inicial (`jefe@gym.com`, clave de desarrollo). La clave de las sesiones ya no está en el

@@ -7,6 +7,7 @@ import { obtenerConfiguracion } from "../../configuracion/configuracionStorage";
 import { hoyLocal } from "../../../utils/formatters";
 import { precioSugerido, preciosAlCambiarOperacion } from "../../../utils/precios";
 import { VistaPreviaAsiento } from "./VistaPreviaAsiento";
+import { bloquearNoNumericas } from '../../../utils/entradaNumerica';
 
 interface FacturaItem {
   id: string;
@@ -393,8 +394,10 @@ export function Facturacion() {
                     aria-label="Cantidad"
                     min="1"
                     step="1"
+                    inputMode="numeric"
                     value={item.cantidad || ""}
-                    onChange={(e) => handleChangeItem(item.id, "cantidad", parseFloat(e.target.value))}
+                    onKeyDown={bloquearNoNumericas(false)}
+                    onChange={(e) => handleChangeItem(item.id, "cantidad", parseInt(e.target.value, 10))}
                     disabled={enviando}
                     required
                     className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
@@ -448,7 +451,9 @@ export function Facturacion() {
                     aria-label="Precio unitario"
                     min="0"
                     step="0.01"
+                    inputMode="decimal"
                     value={item.precioUnitario || ""}
+                    onKeyDown={bloquearNoNumericas(true)}
                     onChange={(e) => handleChangeItem(item.id, "precioUnitario", parseFloat(e.target.value))}
                     disabled={enviando}
                     required

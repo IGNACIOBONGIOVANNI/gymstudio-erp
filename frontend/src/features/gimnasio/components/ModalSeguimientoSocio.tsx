@@ -6,6 +6,7 @@ import { METRICAS, formatearMedida, marcasDelEje, puntosDe, variacion, type Clav
 import { useAuth } from "../../../context/AuthContext";
 import { formatearFechaLocal, hoyLocal } from "../../../utils/formatters";
 import { generarSeguimientoPDF } from "../../../utils/generarSeguimientoPDF";
+import { numeroDecimal } from '../../../utils/entradaNumerica';
 
 interface Props {
   socio: { id: number | string; nombre: string; apellido: string };
@@ -182,7 +183,7 @@ export function ModalSeguimientoSocio({ socio, onClose }: Props) {
                     <label htmlFor={`me-${m.clave}`} className="mb-1 block text-xs font-medium text-slate-500">
                       {m.etiqueta} ({m.unidad}){m.obligatoria ? "" : " - opcional"}
                     </label>
-                    <input id={`me-${m.clave}`} inputMode="decimal" value={form[m.clave]} onChange={(e) => setForm({ ...form, [m.clave]: e.target.value })} placeholder={m.obligatoria ? "Ej: 80,5" : ""} className={campo} />
+                    <input id={`me-${m.clave}`} inputMode="decimal" value={form[m.clave]} autoComplete="off" onChange={(e) => setForm({ ...form, [m.clave]: numeroDecimal(e.target.value, 1, 6, ",") })} placeholder={m.obligatoria ? "Ej: 80,5" : ""} className={campo} />
                   </div>
                 ))}
                 <div className="sm:col-span-4">

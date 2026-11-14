@@ -3,6 +3,7 @@ import { Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { enviarJson, pedir, type EjercicioDto, type RutinaDetalle } from "../../../api/rutinasApi";
 import { GRUPOS_MUSCULARES } from "./EjercicioForm";
+import { limpiarRepeticiones, repeticionesValidas, soloDigitos } from '../../../utils/entradaNumerica';
 
 const NIVELES = ["Principiante", "Intermedio", "Avanzado"];
 const MAX_DIAS = 7;
@@ -92,7 +93,7 @@ export function RutinaForm({ rutinaId, soloLectura = false, onClose }: Props) {
         const descanso = Number(r.descanso);
         if (!r.ejercicioId) return void toast.error(`Elegí el ejercicio de cada renglón (día ${d + 1})`);
         if (!Number.isInteger(series) || series < 1 || series > 20) return void toast.error(`Las series del día ${d + 1} deben estar entre 1 y 20`);
-        if (!r.repeticiones.trim()) return void toast.error(`Indicá las repeticiones del día ${d + 1}`);
+        if (!repeticionesValidas(r.repeticiones)) return void toast.error(`Las repeticiones del día ${d + 1} tienen que ser un número (12) o un rango de menor a mayor (8-10). Si es un tiempo, aclaralo en las indicaciones.`);
         if (!Number.isInteger(descanso) || descanso < 0 || descanso > 600) return void toast.error(`El descanso del día ${d + 1} debe estar entre 0 y 600 segundos`);
         ejercicios.push({ ejercicioId: Number(r.ejercicioId), dia: d + 1, series, repeticiones: r.repeticiones.trim(), descansoSegundos: descanso, indicaciones: r.indicaciones.trim() });
       }
@@ -177,15 +178,18 @@ export function RutinaForm({ rutinaId, soloLectura = false, onClose }: Props) {
                         </div>
                         <div className="sm:col-span-1">
                           <label className="mb-1 block text-xs font-medium text-slate-500">Series</label>
-                          <input type="number" min={1} max={20} disabled={soloLectura} value={r.series} onChange={(e) => cambiar(d, r.clave, { series: e.target.value })} className={campo} />
+                          <input type="text" inputMode="numeric" autoComplete="off" maxLength={2} disabled={soloLectura} value={r.series} onChange={(e) => cambiar(d, r.clave, { series: soloDigitos(e.target.value, 2) })} className={campo} />
                         </div>
                         <div className="sm:col-span-2">
                           <label className="mb-1 block text-xs font-medium text-slate-500">Repeticiones</label>
-                          <input maxLength={20} disabled={soloLectura} value={r.repeticiones} onChange={(e) => cambiar(d, r.clave, { repeticiones: e.target.value })} placeholder="10-12" className={campo} />
+                          <input inputMode="numeric" autoComplete="off" maxLength={7} disabled={soloLectura} value={r.repeticiones} onChange={(e) => cambiar(d, r.clave, { repeticiones: limpiarRepeticiones(e.target.value) })} placeholder="10-12"
+                            aria-invalid={!soloLectura && r.repeticiones !== "" && !repeticionesValidas(r.repeticiones)}
+                            title="Un número (12) o un rango (8-10). Si es un tiempo, aclaralo en las indicaciones."
+                            className={`${campo} aria-invalid:border-red-400 aria-invalid:bg-red-50`} />
                         </div>
                         <div className="sm:col-span-2">
                           <label className="mb-1 block text-xs font-medium text-slate-500">Descanso (seg)</label>
-                          <input type="number" min={0} max={600} disabled={soloLectura} value={r.descanso} onChange={(e) => cambiar(d, r.clave, { descanso: e.target.value })} className={campo} />
+                          <input type="text" inputMode="numeric" autoComplete="off" maxLength={3} disabled={soloLectura} value={r.descanso} onChange={(e) => cambiar(d, r.clave, { descanso: soloDigitos(e.target.value, 3) })} className={campo} />
                         </div>
                         <div className="col-span-2 sm:col-span-2">
                           <label className="mb-1 block text-xs font-medium text-slate-500">Indicaciones</label>

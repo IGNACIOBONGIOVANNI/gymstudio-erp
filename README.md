@@ -150,7 +150,7 @@ encontraron y corrigieron están en [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
 
 - **Sesión:** JWT firmado que vence a las 8 horas (`Jwt:ExpiracionMinutos`). En cada pedido se verifica en la base que el
   usuario siga activo y con el mismo rol: una baja o un cambio de rol rigen al instante.
-- **Contraseñas:** guardadas con hash PBKDF2; las nuevas exigen mínimo 8 caracteres, una mayúscula, un número, un carácter especial y que no haya números consecutivos como 12 o 98
+- **Contraseñas:** guardadas con hash PBKDF2; las nuevas exigen mínimo 8 caracteres, una mayúscula, un número, un carácter especial y que no haya números consecutivos como 12 o 98; se escriben dos veces. Cada usuario cambia la suya con **Cambiar mi contraseña** (ícono de la llave, al pie del menú) dando la actual; el Administrador puede restablecer la de otro desde Usuarios sin saberla
   (lo valida el servidor, y el formulario de usuarios muestra en vivo qué falta). Los usuarios de ejemplo del README (clave `123456`) no la cumplen: son
   solo para la demostración y hay que cambiarlos antes de usar datos reales.
 - **Fuerza bruta:** límite de intentos de login por IP (`Auth:IntentosLoginPorMinuto`, 10 por defecto) y cuenta bloqueada

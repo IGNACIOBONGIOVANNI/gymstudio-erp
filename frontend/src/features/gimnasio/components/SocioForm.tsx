@@ -5,6 +5,7 @@ import { mensajeDeError, ERROR_DE_CONEXION } from '../../../api/errores';
 import { CampoDeTelefono } from '../../../components/CampoDeTelefono';
 import { errorDeNombreDePersona, limpiarNombreDePersona, soloLetrasDelNombre } from '../../../utils/nombrePersona';
 import { errorDeTelefono, normalizarTelefono } from '../../../utils/telefono';
+import { soloDigitos } from '../../../utils/entradaNumerica';
 
 export interface SocioEditable {
   id: string | number;
@@ -122,8 +123,10 @@ export function SocioForm({ onClose, socioAEditar }: SocioFormProps) {
               type="text"
               required
               placeholder="Ej: 12345678"
+              inputMode="numeric"
+              autoComplete="off"
               value={dni}
-              onChange={(e) => setDni(e.target.value)}
+              onChange={(e) => setDni(soloDigitos(e.target.value, 8))}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </div>

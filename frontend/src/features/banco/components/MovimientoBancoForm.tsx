@@ -6,6 +6,7 @@ import { useCrearMovimientoBanco } from "../hooks/useCrearMovimientoBanco";
 import { useEditarMovimientoBanco } from "../hooks/useEditarMovimientoBanco";
 import { hoyLocal } from "../../../utils/formatters";
 import { SelectorDeTercero } from "../../../components/SelectorDeTercero";
+import { numeroDecimal } from '../../../utils/entradaNumerica';
 
 interface MovimientoBancoFormProps {
   clienteId: string;
@@ -214,12 +215,12 @@ export function MovimientoBancoForm({ clienteId, onClose, movimientoAEditar }: M
                 <span className="text-slate-500 sm:text-sm">$</span>
               </div>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 required
-                min="0.01"
-                step="0.01"
                 value={importe}
-                onChange={(e) => setImporte(e.target.value)}
+                onChange={(e) => setImporte(numeroDecimal(e.target.value))}
                 className="block w-full rounded-md border border-slate-300 pl-7 pr-12 py-2 text-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
                 placeholder="0.00"
               />

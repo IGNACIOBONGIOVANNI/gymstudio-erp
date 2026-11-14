@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback, type ReactNode } fro
 import toast, { Toaster } from 'react-hot-toast'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
-  LogOut, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
+  LogOut, KeyRound, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
   Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins, ListChecks,
   BookOpen, Info, CalendarDays, Contact,
@@ -45,6 +45,7 @@ import { Asistente } from './components/Asistente'
 import { Campanita } from './components/Campanita'
 import { LimiteDeErrores } from './components/LimiteDeErrores'
 import { useCuentas } from './asientos/hooks/useCuentas'
+import { ModalCambiarMiClave } from './features/usuarios/ModalCambiarMiClave'
 
 const queryClient = new QueryClient()
 
@@ -182,6 +183,7 @@ function AppContent() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [mostrarReportes, setMostrarReportes] = useState(false)
   const [mostrarAcerca, setMostrarAcerca] = useState(false)
+  const [mostrarMiClave, setMostrarMiClave] = useState(false)
   // Lo que la pantalla actual tiene sin guardar (null si nada). Al cambiar de pantalla se pregunta antes de perderlo.
   const sinGuardar = useRef<string | null>(null)
   const marcarSinGuardar = useCallback((descripcion: string | null) => { sinGuardar.current = descripcion }, [])
@@ -335,6 +337,14 @@ function AppContent() {
           <p className="text-xs text-slate-400">{ETIQUETA_ROL[user.rol] ?? user.rol}</p>
         </div>
         <button
+          onClick={() => { setMenuAbierto(false); setMostrarMiClave(true) }}
+          className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+          title="Cambiar mi contraseña"
+          aria-label="Cambiar mi contraseña"
+        >
+          <KeyRound className="h-4 w-4" />
+        </button>
+        <button
           onClick={logout}
           className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
           title="Cerrar sesión"
@@ -408,6 +418,7 @@ function AppContent() {
           }}
         />
       )}
+      {mostrarMiClave && <ModalCambiarMiClave onClose={() => setMostrarMiClave(false)} />}
       {mostrarAcerca && (
         <AcercaDe
           usuario={`${user.nombre} (${ETIQUETA_ROL[user.rol] ?? user.rol})`}

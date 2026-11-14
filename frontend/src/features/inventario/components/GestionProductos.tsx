@@ -3,6 +3,7 @@ import { Loader2, Plus, Edit2, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useProductos, useMutacionesProducto } from "../../../hooks/useProductos";
 import type { ProductoDto } from "../../../api/productosApi";
+import { numeroDecimal, soloDigitos } from '../../../utils/entradaNumerica';
 
 const moneda = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
 
@@ -209,16 +210,16 @@ export function GestionProductos() {
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Precio Unitario (Costo) *</label>
-                    <input type="number" step="0.01" min="0" required value={precioUnitario} onChange={e => setPrecioUnitario(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="text" inputMode="decimal" autoComplete="off" required value={precioUnitario} onChange={e => setPrecioUnitario(numeroDecimal(e.target.value))} className="w-full rounded border p-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Precio Venta *</label>
-                    <input type="number" step="0.01" min="0" required value={precioVenta} onChange={e => setPrecioVenta(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="text" inputMode="decimal" autoComplete="off" required value={precioVenta} onChange={e => setPrecioVenta(numeroDecimal(e.target.value))} className="w-full rounded border p-2 text-sm" />
                   </div>
                   {!editingProducto && (
                     <div>
                       <label className="mb-1 block text-xs font-medium text-slate-700">Stock Inicial</label>
-                      <input type="number" min="0" step="1" value={stockInicial} onChange={e => setStockInicial(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                      <input type="text" inputMode="numeric" autoComplete="off" value={stockInicial} onChange={e => setStockInicial(soloDigitos(e.target.value, 9))} className="w-full rounded border p-2 text-sm" />
                     </div>
                   )}
                 </div>
@@ -238,19 +239,19 @@ export function GestionProductos() {
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Calorías (kcal)</label>
-                    <input type="number" step="0.01" value={calorias} onChange={e => setCalorias(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="text" inputMode="decimal" autoComplete="off" value={calorias} onChange={e => setCalorias(numeroDecimal(e.target.value))} className="w-full rounded border p-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Proteínas (g)</label>
-                    <input type="number" step="0.01" value={proteinas} onChange={e => setProteinas(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="text" inputMode="decimal" autoComplete="off" value={proteinas} onChange={e => setProteinas(numeroDecimal(e.target.value))} className="w-full rounded border p-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Carbohidratos (g)</label>
-                    <input type="number" step="0.01" value={carbohidratos} onChange={e => setCarbohidratos(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="text" inputMode="decimal" autoComplete="off" value={carbohidratos} onChange={e => setCarbohidratos(numeroDecimal(e.target.value))} className="w-full rounded border p-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700">Grasas (g)</label>
-                    <input type="number" step="0.01" value={grasas} onChange={e => setGrasas(e.target.value)} className="w-full rounded border p-2 text-sm" />
+                    <input type="text" inputMode="decimal" autoComplete="off" value={grasas} onChange={e => setGrasas(numeroDecimal(e.target.value))} className="w-full rounded border p-2 text-sm" />
                   </div>
                 </div>
               </div>

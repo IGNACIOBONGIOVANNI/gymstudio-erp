@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.API.Auth;
 using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -151,6 +152,48 @@ namespace EstudioContable.API.Controllers
         /// </summary>
         private Task RegistrarAccesoAsync(string operacion, string email, CancellationToken cancellationToken)
             => _eventos.RegistrarAsync("acceso", operacion, email, cancellationToken);
+
+        public class CambiarMiClaveRequest
+        {
+            public string ClaveActual { get; set; } = string.Empty;
+            public string ClaveNueva { get; set; } = string.Empty;
+            public string ConfirmacionClave { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Cada usuario cambia su propia contraseña: tiene que dar la actual (así una sesión olvidada abierta no alcanza para
+        /// quedarse con la cuenta) y escribir la nueva dos veces. El Administrador puede restablecer la de otro desde Usuarios sin
+        /// saber la actual. Comparte el límite de intentos del login, para que no sirva para adivinar la contraseña actual.
+        /// </summary>
+        [HttpPut("mi-clave")]
+        [EnableRateLimiting(PoliticaLimiteLogin)]
+        public async Task<IActionResult> CambiarMiClave([FromBody] CambiarMiClaveRequest request, CancellationToken cancellationToken)
+        {
+            var id = TokenService.ObtenerUsuarioId(User);
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+            if (usuario == null || !usuario.Activo)
+                return Unauthorized(new { detail = "La sesión ya no es válida." });
+
+            var actual = request.ClaveActual ?? string.Empty;
+            var nueva = request.ClaveNueva ?? string.Empty;
+            if (actual.Length == 0 || actual.Length > LargoMaximoPassword
+                || _hasher.VerifyHashedPassword(usuario, usuario.PasswordHash, actual) == PasswordVerificationResult.Failed)
+            {
+                await RegistrarAccesoAsync("CLAVE_RECHAZADA", usuario.Email, cancellationToken);
+                throw new ArgumentException("La contraseña actual no es correcta.");
+            }
+
+            ReglasDeClave.Validar(nueva);
+            if (!string.Equals(nueva, request.ConfirmacionClave, StringComparison.Ordinal))
+                throw new ArgumentException("Las dos contraseñas nuevas no coinciden. Escribí la misma en los dos campos.");
+            if (string.Equals(nueva, actual, StringComparison.Ordinal))
+                throw new ArgumentException("La contraseña nueva tiene que ser distinta de la actual.");
+
+            usuario.CambiarPassword(_hasher.HashPassword(usuario, nueva));
+            await _context.SaveChangesAsync(cancellationToken);
+            await RegistrarAccesoAsync("CAMBIO_CLAVE", usuario.Email, cancellationToken);
+            return NoContent();
+        }
 
         /// <summary>Datos del usuario dueño del token (sirve para validar la sesión).</summary>
         [HttpGet("me")]

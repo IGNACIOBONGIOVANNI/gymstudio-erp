@@ -17,6 +17,7 @@ import { CopiasAutomaticas } from './CopiasAutomaticas';
 import { compararCopia, descargarCopia, guardarArchivo } from '../../api/copiasApi';
 import { nombreDeArchivoDeCopia, type ComparacionDeCopia } from './copiasUtil';
 import { abrirManual } from '../../acercaDe';
+import { caracteresDeTelefono, soloCuit, soloDigitos } from '../../utils/entradaNumerica';
 
 // Lo que se muestra antes de cargar un archivo de configuración: qué cambiaría, sin haber cambiado nada todavía.
 interface VistaPrevia extends Comparacion {
@@ -359,7 +360,7 @@ export default function ModuloConfiguracion() {
                   type="text"
                   required
                   value={config.cuit}
-                  onChange={(e) => handleChange('cuit', e.target.value)}
+                  onChange={(e) => handleChange('cuit', soloCuit(e.target.value))}
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                   placeholder="30-71234567-9"
                 />
@@ -388,7 +389,7 @@ export default function ModuloConfiguracion() {
                   type="text"
                   maxLength={5}
                   value={config.puntoVenta}
-                  onChange={(e) => handleChange('puntoVenta', e.target.value)}
+                  onChange={(e) => handleChange('puntoVenta', soloDigitos(e.target.value, 5))}
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                   placeholder="0001"
                 />
@@ -430,7 +431,7 @@ export default function ModuloConfiguracion() {
                 <input
                   type="text"
                   value={config.telefono}
-                  onChange={(e) => handleChange('telefono', e.target.value)}
+                  onChange={(e) => handleChange('telefono', caracteresDeTelefono(e.target.value))}
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                   placeholder="+54 11 4567-8900"
                 />

@@ -17,7 +17,7 @@ public class NombreYTelefonoDePersonasTests(ApiFixture api)
         => new { nombre, apellido, dni = dni ?? Dni(), telefono };
 
     private static object Usuario(string nombre, string? telefono, string? email = null)
-        => new { nombre, email = email ?? $"{Nombres.Aleatorio(12)}@gym.com", rol = "Recepcion", telefono, activo = true, password = ApiFixture.ClaveNueva };
+        => new { nombre, email = email ?? $"{Nombres.Aleatorio(12)}@gym.com", rol = "Recepcion", telefono, activo = true, password = ApiFixture.ClaveNueva, confirmacionPassword = ApiFixture.ClaveNueva };
 
     // ---------- socios ----------
 

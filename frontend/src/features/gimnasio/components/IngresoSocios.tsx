@@ -8,6 +8,7 @@ import {
 import { textoDescanso } from "../../../api/rutinasApi";
 import { useAuth } from "../../../context/AuthContext";
 import { formatearFechaLocal } from "../../../utils/formatters";
+import { soloDigitos } from '../../../utils/entradaNumerica';
 
 interface SocioParaCobrar { id: string; nombre: string; apellido: string; dni: string }
 
@@ -131,8 +132,8 @@ export function IngresoSocios({ onCobrar, refrescar, onIngreso }: Props) {
         <form onSubmit={enviar} className="mt-3 flex flex-col gap-2 sm:flex-row">
           <label htmlFor="ingreso-dni" className="sr-only">DNI del socio</label>
           <input
-            id="ingreso-dni" ref={entrada} value={dni} onChange={(ev) => setDni(ev.target.value)}
-            inputMode="numeric" autoComplete="off" autoFocus maxLength={12} placeholder="DNI, con o sin puntos"
+            id="ingreso-dni" ref={entrada} value={dni} onChange={(ev) => setDni(soloDigitos(ev.target.value, 8))}
+            inputMode="numeric" autoComplete="off" autoFocus maxLength={8} placeholder="DNI (solo números)"
             className="min-w-0 flex-1 rounded-lg border-2 border-slate-200 px-4 py-3 text-lg tabular-nums focus:border-marca-600 focus:outline-none"
           />
           <button type="submit" disabled={!dni.trim() || enviando}
