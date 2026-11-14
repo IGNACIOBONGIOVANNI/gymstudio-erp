@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Domain.Enums;
 using EstudioContable.Domain.Exceptions;
@@ -16,9 +17,11 @@ namespace EstudioContable.Application.Gimnasio.Commands
     {
         private readonly IAppDbContext _context;
         private readonly IFacturacionService _facturacionService;
+        private readonly TimeProvider _reloj;
 
-        public CobrarMembresiaCommandHandler(IAppDbContext context, IFacturacionService facturacionService)
+        public CobrarMembresiaCommandHandler(IAppDbContext context, IFacturacionService facturacionService, TimeProvider reloj)
         {
+            _reloj = reloj;
             _context = context;
             _facturacionService = facturacionService;
         }
@@ -35,7 +38,9 @@ namespace EstudioContable.Application.Gimnasio.Commands
                     .Where(m => m.Id == request.MembresiaId).Select(m => (long?)m.SocioId).FirstOrDefaultAsync(cancellationToken);
                 if (socioId == null)
                     throw new NotFoundException("Membresía", request.MembresiaId);
-                await CobroDeCuotas.TomarTurnoAsync(_context, socioId.Value, cancellationToken);
+                // La factura lleva la hora de Argentina, como las cargadas a mano: de noche no pasa al día siguiente.
+                var momento = HoraArgentina.ParaComprobante(_reloj.GetUtcNow());
+                await CobroDeCuotas.TomarTurnoAsync(_context, socioId.Value, momento, cancellationToken);
 
                 var membresia = await _context.Membresias
                     .Include(m => m.Plan)
@@ -58,7 +63,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
                 // 2. Lógica contable: factura genérica, igual que el módulo de facturación
                 var factura = new Factura
                 {
-                    Fecha = DateTime.UtcNow,
+                    Fecha = momento,
                     TipoOperacion = "Venta",
                     CondicionPago = condicionPagoString,
                     TipoComprobante = "B", // Comprobante a Consumidor Final

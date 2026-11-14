@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace EstudioContable.Application.Gimnasio.Commands
@@ -20,11 +21,13 @@ namespace EstudioContable.Application.Gimnasio.Commands
         /// socio esperan hasta que esta transacción termine y recién ahí leen sus datos, ya actualizados) y rechaza el cobro si ya se le
         /// facturó una cuota hace instantes.
         /// </summary>
-        public static async Task TomarTurnoAsync(IAppDbContext context, long socioId, CancellationToken cancellationToken)
+        /// <param name="momentoDelComprobante">La fecha que va a llevar la factura del cobro (<see cref="HoraArgentina.ParaComprobante"/>):
+        /// las facturas de cuotas anteriores se comparan con ella, en la misma convención.</param>
+        public static async Task TomarTurnoAsync(IAppDbContext context, long socioId, DateTime momentoDelComprobante, CancellationToken cancellationToken)
         {
             await context.BloquearSocioAsync(socioId, cancellationToken);
 
-            var desde = DateTime.UtcNow.AddSeconds(-SegundosEntreCobros);
+            var desde = momentoDelComprobante.AddSeconds(-SegundosEntreCobros);
             var reciente = await context.Facturas.AsNoTracking()
                 .AnyAsync(f => f.SocioId == socioId && !f.Anulada && f.Fecha >= desde, cancellationToken);
             if (reciente)

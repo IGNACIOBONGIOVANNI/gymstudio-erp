@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EstudioContable.Application.Interfaces;
+using EstudioContable.Domain;
 using EstudioContable.Domain.Entities;
 using EstudioContable.Domain.Enums;
 using MediatR;
@@ -14,9 +15,11 @@ namespace EstudioContable.Application.Gimnasio.Commands
     {
         private readonly IAppDbContext _context;
         private readonly IFacturacionService _facturacionService;
+        private readonly TimeProvider _reloj;
 
-        public AsignarYCobrarMembresiaCommandHandler(IAppDbContext context, IFacturacionService facturacionService)
+        public AsignarYCobrarMembresiaCommandHandler(IAppDbContext context, IFacturacionService facturacionService, TimeProvider reloj)
         {
+            _reloj = reloj;
             _context = context;
             _facturacionService = facturacionService;
         }
@@ -30,7 +33,9 @@ namespace EstudioContable.Application.Gimnasio.Commands
             try
             {
                 // De a un cobro por socio: sin esto, varios pedidos a la vez facturaban varias veces y la cuota avanzaba un solo período.
-                await CobroDeCuotas.TomarTurnoAsync(_context, request.SocioId, cancellationToken);
+                // La factura lleva la hora de Argentina, como las cargadas a mano: de noche no pasa al día siguiente.
+                var momento = HoraArgentina.ParaComprobante(_reloj.GetUtcNow());
+                await CobroDeCuotas.TomarTurnoAsync(_context, request.SocioId, momento, cancellationToken);
 
                 var socio = await _context.Socios.FirstOrDefaultAsync(s => s.Id == request.SocioId, cancellationToken);
                 if (socio == null) throw new NotFoundException("Socio", request.SocioId);
@@ -58,7 +63,7 @@ namespace EstudioContable.Application.Gimnasio.Commands
 
                 var factura = new Factura
                 {
-                    Fecha = DateTime.UtcNow,
+                    Fecha = momento,
                     TipoOperacion = "Venta",
                     CondicionPago = condicionPagoString,
                     TipoComprobante = "B",
