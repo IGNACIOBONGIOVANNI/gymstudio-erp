@@ -65,6 +65,8 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
           ['Deshacer un ingreso cargado por error', SI, SI, NO],
           ['Registrar y corregir mediciones de peso y medidas', SI, SI, SI],
           ['Crear, confirmar o anular asientos manuales; crear cuentas', SI, SI, NO],
+          ['Ver el Tablero de Gestión (indicadores, análisis, decisiones y exportación)', SI, SI, NO],
+          ['Fijar las metas de los indicadores del tablero', SI, NO, NO],
           ['Administrar usuarios y consultar la auditoría', SI, NO, NO],
           ['Descargar, comparar y restaurar copias de seguridad', SI, NO, NO],
         ]}
@@ -90,6 +92,61 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
       <p>
         Los totales salen de las mismas tablas que los libros, así que coinciden con el Diario, la Caja y el Banco. Las facturas
         anuladas no suman. El botón <B>Imprimir resumen</B> lo saca en PDF.
+      </p>
+    </>
+  ),
+
+  tablero: (
+    <>
+      <Quien quien="gestion" extra="las metas las fija solo el Administrador" />
+      <p>
+        Convierte los datos de todos los días (facturas, cuotas, ingresos de socios, horas de entrenadores, stock) en información para
+        decidir. No hay que cargar nada nuevo: todo sale de lo que ya registra el sistema, con los mismos totales que el Resumen y los libros.
+        Tiene cuatro pestañas.
+      </p>
+      <Sub>Comando: el tablero de comando</Sub>
+      <p>
+        Elegís el <B>Mes</B> y ves los indicadores agrupados en las cuatro perspectivas del <strong>Balanced Scorecard</strong>:
+      </p>
+      <Tabla
+        columnas={['Perspectiva', 'Qué pregunta responde', 'Indicadores']}
+        filas={[
+          ['Financiera', '¿El gimnasio gana plata?', 'Ingresos, resultado, margen y Caja + Banco'],
+          ['Socios', '¿Los socios llegan y se quedan?', 'Socios activos, altas, bajas, retención y cuotas vencidas'],
+          ['Procesos', '¿El día a día funciona?', 'Asistencias, asistencias por socio y horario pico, productos sin stock o con poco'],
+          ['Personas', '¿El equipo rinde lo que cuesta?', 'Horas de entrenadores, su costo y el costo sobre lo cobrado en cuotas'],
+        ]}
+      />
+      <p>Cada indicador muestra el valor del mes, la flecha contra el mes anterior y un semáforo contra su meta. Así se ve el <strong>ciclo de control</strong>:</p>
+      <Pasos>
+        <li><B>Planificar:</B> el Administrador toca el lápiz de un indicador y escribe la meta (vacío la borra).</li>
+        <li><B>Medir:</B> el sistema calcula el valor real del mes; en el mes en curso, hasta hoy.</li>
+        <li><B>Comparar:</B> verde = cumple la meta; amarillo = se desvía hasta un 10 %; rojo = se desvía más. Sin meta queda gris.</li>
+        <li><B>Corregir:</B> en Decisiones ves a quién contactar y qué pasaría si cambiás los precios.</li>
+      </Pasos>
+      <Nota>
+        Algunos indicadores conviene que bajen (bajas, cuotas vencidas, productos sin stock, costo sobre cuotas): ahí la meta es un máximo y
+        una flecha hacia abajo se muestra en verde. Caja + Banco, cuotas vencidas y stock son una foto de hoy: no se comparan con el mes anterior.
+      </Nota>
+      <Sub>Análisis: cruzar los datos</Sub>
+      <Lista>
+        <li><strong>Segmentadores:</strong> período (desde y hasta, hasta 24 meses) y plan.</li>
+        <li><strong>Evolución:</strong> ventas, compras, cuotas y resultado mes a mes. Tocá una barra y baja a ese mes día por día.</li>
+        <li><strong>Ingresos por plan:</strong> lo cobrado en cuotas de cada plan. Tocá un plan y filtra el resto del análisis.</li>
+        <li><strong>Mapa de asistencia:</strong> cuánta gente entra cada día y a cada hora (más oscuro, más gente). Sirve para decidir turnos y clases.</li>
+        <li><strong>Productos más vendidos</strong> y <strong>compras por proveedor</strong> (en qué se gasta).</li>
+      </Lista>
+      <p>Los filtros activos se ven arriba de los gráficos y se quitan con la cruz.</p>
+      <Sub>Decisiones</Sub>
+      <Lista>
+        <li><strong>A quién contactar hoy:</strong> socios con la cuota paga que no vienen hace 14 días o más, y socios a los que la cuota les vence en los próximos 7 días, con la acción sugerida y el botón de WhatsApp con el mensaje ya escrito.</li>
+        <li><strong>¿Qué pasaría si…?:</strong> escribís un aumento por plan y cuántos socios estimás perder, y ves la recaudación mensual de hoy, la proyectada y la diferencia. No cambia ningún precio.</li>
+      </Lista>
+      <Sub>Exportar</Sub>
+      <p>
+        <B>Descargar PDF</B> saca el tablero de comando del mes, en blanco y negro. <B>Descargar Excel</B> baja seis hojas (indicadores,
+        evolución de 12 meses, ingresos por plan, asistencia, productos y compras por proveedor). Ese Excel también se abre en Power BI
+        con <em>Obtener datos → Libro de Excel</em>.
       </p>
     </>
   ),
@@ -747,6 +804,33 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         Límites que conviene conocer: el sistema no tiene doble factor de autenticación y las copias no están cifradas. Por eso la
         custodia de las contraseñas y de los archivos de copia depende de las personas. El texto completo de la política está en
         el archivo <strong>docs/POLITICA_DE_SEGURIDAD.md</strong> del proyecto.
+      </Nota>
+    </>
+  ),
+
+  'sistema-de-informacion': (
+    <>
+      <p>
+        Un sistema de información toma <strong>datos</strong> (lo que pasa: una factura, un ingreso, una hora trabajada), los convierte en
+        <strong> información</strong> (totales, comparaciones, tendencias) y ayuda a <strong>decidir y controlar</strong>. En una organización
+        cada nivel necesita algo distinto, y GymStudio cubre los tres:
+      </p>
+      <Tabla
+        columnas={['Nivel', 'Quién decide', 'Tipo de sistema', 'Qué parte de GymStudio']}
+        filas={[
+          ['Estratégico', 'Dueño / dirección', 'Para la dirección (tablero de comando)', 'Tablero de Gestión › Comando: indicadores con meta, semáforo y comparación'],
+          ['Táctico', 'Administración y contador', 'De apoyo a las decisiones', 'Tablero › Decisiones (a quién contactar, qué pasaría si) y Control de integridad'],
+          ['Táctico', 'Administración y contador', 'De información gerencial', 'Resumen, Tablero › Análisis, libros, Balance, reportes en PDF y Excel'],
+          ['Operativo', 'Recepción y personal', 'Transaccional (registra operaciones)', 'Recepción, Facturar, Caja y Banco, stock, calendario y horas'],
+        ]}
+      />
+      <p>
+        El recorrido es siempre el mismo: lo que se registra abajo (operativo) se resume para gestionar (táctico) y se mide contra metas
+        arriba (estratégico). Por eso no hay que cargar nada dos veces: el tablero y los libros leen las mismas tablas.
+      </p>
+      <Nota>
+        La información es confiable porque el sistema se controla solo: partida doble en cada asiento, Control de integridad con 16
+        verificaciones, auditoría de cada cambio y copias de seguridad firmadas.
       </Nota>
     </>
   ),

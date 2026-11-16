@@ -5,6 +5,7 @@ export const SECCIONES = [
   { id: 'empezar', titulo: 'Antes de empezar' },
   { id: 'roles', titulo: 'Qué puede hacer cada usuario' },
   { id: 'resumen', titulo: 'Resumen de inicio' },
+  { id: 'tablero', titulo: 'Tablero de Gestión: indicadores, análisis y decisiones' },
   { id: 'recepcion', titulo: 'Recepción: ingreso de socios y cobro de cuotas' },
   { id: 'socios', titulo: 'Socios, planes y rutinas' },
   { id: 'calendario', titulo: 'Calendario' },
@@ -21,6 +22,7 @@ export const SECCIONES = [
   { id: 'ayudas', titulo: 'Asistente y campanita de avisos' },
   { id: 'respaldo', titulo: 'Copias de seguridad' },
   { id: 'politica', titulo: 'Política de seguridad' },
+  { id: 'sistema-de-informacion', titulo: 'GymStudio como sistema de información' },
   { id: 'glosario', titulo: 'Glosario' },
   { id: 'problemas', titulo: 'Si algo no sale' },
 ] as const

@@ -94,6 +94,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 | `Entrenadores` | `CK_Entrenadores_Nombre` / `CK_Entrenadores_Email` / `CK_Entrenadores_ValorHora` | Nombre no vacío; el email, si está, tiene forma de email (`algo@dominio.ext`, sin espacios); el valor de la hora, si está, va de 0 a 999 999 999 999 |
 | `FotosDeEntrenador` | `CK_FotosDeEntrenador_Tamano` | La foto pesa de 100 a 150 000 bytes |
 | `HorasDeEntrenador` | `CK_HorasDeEntrenador_Horas` / `CK_HorasDeEntrenador_ValorHora` | Horas de 0 a 24 y de a cuarto de hora (`Horas * 4` entero; 0 = faltó); valor de la hora de 0 a 999 999 999 999 |
+| `MetasDeIndicadores` | `CK_MetasDeIndicadores_Valor` | La meta de un indicador del Tablero de Gestión no puede ser negativa (la clave y el tope de los porcentajes los valida además la aplicación contra el catálogo de indicadores) |
 | `ConfiguracionDeCopias` | `CK_ConfiguracionDeCopias_Unica` / `_Hora` / `_Minuto` / `_Conservar` / `_DiaSemana` / `_DiaMes` / `_Frecuencia` | Una sola fila (`Id = 1`), hora 0 a 23, minuto 0 a 59, copias a conservar 1 a 60, día de la semana 1 a 7, día del mes 1 a 28 y una de las cinco frecuencias |
 
 ### Únicas y claves foráneas
@@ -142,7 +143,7 @@ se puedan saltear con un `INSERT` o `UPDATE` directo.
 |---|---|---|---|
 | `trg_validar_balance_lineas` / `trg_validar_balance_asiento` | `lineas_asiento`, `asientos_contables` | `AFTER`, **diferido** al `COMMIT` | Un asiento Confirmado debe cumplir la partida doble: Debe = Haber, más de 0 y al menos 2 líneas |
 | `trg_proteger_lineas_asiento` / `trg_proteger_asiento` | `lineas_asiento`, `asientos_contables` | `BEFORE UPDATE OR DELETE` | Un asiento Confirmado o Anulado es inmutable: no se borra, no vuelve a Borrador y sus líneas no cambian |
-| `trg_auditar_*` (15 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de entrenadores, entrenadores, horas de los entrenadores, programación de copias automáticas | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
+| `trg_auditar_*` (16 tablas) | Facturas, asientos, cuentas, usuarios, planes, socios, productos, ejercicios, rutinas, asignaciones de rutina, mediciones, turnos del calendario de entrenadores, entrenadores, horas de los entrenadores, programación de copias automáticas, metas del Tablero de Gestión | `AFTER INSERT OR UPDATE OR DELETE` | Registra el cambio en `contabilidad.auditoria` |
 | `trg_auditoria_solo_lectura` / `trg_auditoria_sin_truncate` | `auditoria` | `BEFORE UPDATE OR DELETE` / `BEFORE TRUNCATE` | La auditoría no se puede alterar |
 
 **¿Por qué el trigger de balance es diferido?** Al confirmar una factura se inserta

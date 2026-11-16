@@ -20,3 +20,10 @@ test('el manual se abre desde una ruta propia y la versión tiene formato x.y.z'
   assert.ok(RUTA_MANUAL.startsWith('/') && !RUTA_MANUAL.includes('#'));
   assert.match(VERSION, /^\d+\.\d+\.\d+$/);
 });
+
+test('el manual explica el Tablero de Gestión y el sistema como sistema de información', () => {
+  const ids: string[] = SECCIONES.map((s) => s.id);
+  assert.ok(ids.includes('tablero'), 'falta la sección del Tablero de Gestión');
+  assert.ok(ids.includes('sistema-de-informacion'), 'falta la sección «GymStudio como sistema de información»');
+  assert.ok(ids.indexOf('tablero') === ids.indexOf('resumen') + 1, 'el tablero va después del Resumen, como en el menú');
+});

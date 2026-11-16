@@ -299,6 +299,25 @@ menos). El botón **Imprimir resumen** lo saca en PDF.
 - Los importes los calcula y los entrega el servidor solo a Administrador y Contador; Recepción
   recibe únicamente lo del gimnasio.
 
+## Tablero de Gestión (inteligencia de negocios)
+
+Solo para Administrador y Contador. Convierte los datos que el sistema ya registra en información para decidir,
+sin cargar nada nuevo y con los mismos totales que el Resumen y los libros:
+
+- **Comando:** 15 indicadores en las cuatro perspectivas del Balanced Scorecard (financiera, socios, procesos y
+  personas), cada uno con su valor del mes, la variación contra el mes anterior, la meta y un semáforo (verde: cumple;
+  amarillo: se desvía hasta 10 %; rojo: más). Las metas las fija el Administrador y quedan en la tabla
+  `MetasDeIndicadores`, auditada como las demás. Es el ciclo de control: planificar, medir, comparar y corregir.
+- **Análisis:** segmentadores (período de hasta 24 meses y plan), evolución mes a mes con bajada al detalle por día,
+  ingresos por plan (clic = filtro cruzado), mapa de asistencia por día y hora, productos más vendidos y compras por proveedor.
+- **Decisiones:** socios para contactar (pagan y no vienen hace 14 días, o les vence la cuota en 7) con la acción
+  sugerida y WhatsApp, y un simulador «¿qué pasaría si…?» de precios por plan.
+- **Exportar:** el tablero en PDF y seis hojas de Excel, que también se abren en Power BI.
+
+Endpoints: `GET /api/tablero/indicadores`, `GET /api/tablero/analisis`, `GET /api/tablero/decisiones`,
+`GET /api/tablero/metas` y `PUT /api/tablero/metas/{clave}` (solo Administrador). El Manual tiene además la sección
+«GymStudio como sistema de información», con qué parte del sistema cubre cada nivel de la organización.
+
 ## Rutinas de gimnasio
 
 Menú **Rutinas** (y el botón de la pesa en **Socios**):
