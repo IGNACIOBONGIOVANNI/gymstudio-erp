@@ -46,6 +46,18 @@ namespace EstudioContable.API.Controllers
             return Ok(await _tablero.IndicadoresAsync(primerDia, dia, cancellationToken));
         }
 
+        /// <summary>Análisis de un período (meses «aaaa-mm», hasta 24); con un solo mes, la evolución va por día.</summary>
+        [HttpGet("analisis")]
+        public async Task<IActionResult> Analisis([FromQuery] string? desde, [FromQuery] string? hasta, [FromQuery] long? planId,
+            CancellationToken cancellationToken)
+        {
+            var dia = Hoy(null);
+            var mesActual = new DateOnly(dia.Year, dia.Month, 1);
+            var hastaMes = Mes(hasta, "mes «hasta»") ?? mesActual;
+            var desdeMes = Mes(desde, "mes «desde»") ?? hastaMes.AddMonths(-5);
+            return Ok(await _tablero.AnalisisAsync(desdeMes, hastaMes, planId, cancellationToken));
+        }
+
         private DateOnly Hoy(DateOnly? hoy)
         {
             var dia = hoy ?? DateOnly.FromDateTime(_reloj.GetUtcNow().UtcDateTime.AddHours(-3));

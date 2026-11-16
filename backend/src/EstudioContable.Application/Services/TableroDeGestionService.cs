@@ -18,9 +18,22 @@ namespace EstudioContable.Application.Services
 
     public record IndicadoresDelMes(string Mes, string MesAnterior, DateOnly Cierre, IReadOnlyList<Indicador> Indicadores);
 
+    public record PuntoDeEvolucion(string Periodo, decimal Ventas, decimal Compras, decimal Cuotas, decimal Resultado);
+    public record IngresoPorPlan(string Plan, decimal Neto, int Cobros);
+    public record ProductoVendido(string Producto, decimal Cantidad, decimal Total);
+    public record CompraPorProveedor(string Proveedor, decimal Neto);
+
+    /// <summary>
+    /// Análisis de un período: evolución (por mes, o por día si es un solo mes), ingresos por plan, mapa de asistencia
+    /// (lunes a domingo × franjas de 06 a 22 h), productos más vendidos y en qué se gasta.
+    /// </summary>
+    public record Analisis(string Granularidad, IReadOnlyList<PuntoDeEvolucion> Evolucion, IReadOnlyList<IngresoPorPlan> IngresosPorPlan,
+        int[][] Asistencia, IReadOnlyList<ProductoVendido> TopProductos, IReadOnlyList<CompraPorProveedor> ComprasPorProveedor);
+
     public interface ITableroDeGestionService
     {
         Task<IndicadoresDelMes> IndicadoresAsync(DateOnly primerDia, DateOnly hoy, CancellationToken cancellationToken);
+        Task<Analisis> AnalisisAsync(DateOnly desde, DateOnly hasta, long? planId, CancellationToken cancellationToken);
     }
 
     /// <summary>
@@ -31,6 +44,11 @@ namespace EstudioContable.Application.Services
     {
         /// <summary>Un producto con este stock o menos es «poco stock» (el mismo umbral del Resumen).</summary>
         public const int StockBajo = 5;
+        public const int MesesMaximosDeAnalisis = 24;
+        public const int PrimeraHora = 6;
+        public const int UltimaHora = 22;
+        /// <summary>Así empieza el ítem de la factura de una cuota; lo que sigue es el nombre del plan cuando se cobró.</summary>
+        public const string PrefijoDeCuota = "Cuota Membresía - ";
         private static readonly TimeSpan Desfase = TimeSpan.FromHours(3);   // Argentina = UTC - 3
 
         private readonly IAppDbContext _context;
@@ -172,6 +190,106 @@ namespace EstudioContable.Application.Services
                 ["cuotas-vencidas"] = Porcentaje(vencidos, totalActivos),
                 ["stock-critico"] = stockCritico,
             });
+        }
+    
+        public async Task<Analisis> AnalisisAsync(DateOnly desde, DateOnly hasta, long? planId, CancellationToken ct)
+        {
+            if (hasta < desde)
+                throw new ArgumentException("El mes «desde» no puede ser posterior al mes «hasta».");
+            var meses = (hasta.Year - desde.Year) * 12 + hasta.Month - desde.Month + 1;
+            if (meses > MesesMaximosDeAnalisis)
+                throw new ArgumentException($"El período de análisis puede abarcar hasta {MesesMaximosDeAnalisis} meses.");
+            string? nombreDelPlan = null;
+            if (planId is not null)
+            {
+                nombreDelPlan = await _context.Planes.AsNoTracking().Where(p => p.Id == planId).Select(p => p.Nombre).FirstOrDefaultAsync(ct)
+                    ?? throw new ArgumentException("El plan elegido no existe.");
+            }
+
+            var porDia = meses == 1;
+            var ultimoDia = hasta.AddMonths(1).AddDays(-1);
+            var inicio = Utc(desde);
+            var fin = Utc(hasta.AddMonths(1));
+            var facturas = _context.Facturas.AsNoTracking().Where(f => !f.Anulada && f.Fecha >= inicio && f.Fecha < fin);
+
+            // Ventas y compras por día (después se suman por mes si hace falta).
+            var diarias = await facturas
+                .GroupBy(f => new { f.Fecha.Year, f.Fecha.Month, f.Fecha.Day, f.TipoOperacion, EsCuota = f.SocioId != null })
+                .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Day, g.Key.TipoOperacion, g.Key.EsCuota, Neto = g.Sum(f => f.Subtotal) })
+                .ToListAsync(ct);
+
+            // Ítems de cuotas: dan el plan de cada cobro (el nombre que tenía al cobrarse).
+            var cuotas = await (from i in _context.FacturaItems.AsNoTracking()
+                                join f in facturas on i.FacturaId equals f.Id
+                                where f.TipoOperacion == "Venta" && f.SocioId != null && i.Descripcion.StartsWith(PrefijoDeCuota)
+                                group i by new { i.Descripcion, f.Fecha.Year, f.Fecha.Month, f.Fecha.Day } into g
+                                select new { g.Key.Descripcion, g.Key.Year, g.Key.Month, g.Key.Day, Neto = g.Sum(x => x.Subtotal), Cobros = g.Count() })
+                .ToListAsync(ct);
+            var cuotasDelPlan = cuotas
+                .Select(c => new { Plan = c.Descripcion.Substring(PrefijoDeCuota.Length).Trim(), c.Year, c.Month, c.Day, c.Neto, c.Cobros })
+                .Where(c => nombreDelPlan is null || c.Plan == nombreDelPlan)
+                .ToList();
+
+            string Clave(int y, int m, int d) => porDia
+                ? new DateOnly(y, m, d).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                : new DateOnly(y, m, 1).ToString("yyyy-MM", CultureInfo.InvariantCulture);
+            var periodos = porDia
+                ? Enumerable.Range(0, ultimoDia.Day).Select(d => desde.AddDays(d).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ToList()
+                : Enumerable.Range(0, meses).Select(m => desde.AddMonths(m).ToString("yyyy-MM", CultureInfo.InvariantCulture)).ToList();
+            var evolucion = periodos.Select(p =>
+            {
+                var delPeriodo = diarias.Where(x => Clave(x.Year, x.Month, x.Day) == p).ToList();
+                var ventas = delPeriodo.Where(x => x.TipoOperacion == "Venta").Sum(x => x.Neto);
+                var compras = delPeriodo.Where(x => x.TipoOperacion == "Compra").Sum(x => x.Neto);
+                var deCuotas = nombreDelPlan is null
+                    ? delPeriodo.Where(x => x.TipoOperacion == "Venta" && x.EsCuota).Sum(x => x.Neto)
+                    : cuotasDelPlan.Where(x => Clave(x.Year, x.Month, x.Day) == p).Sum(x => x.Neto);
+                return new PuntoDeEvolucion(p, ventas, compras, deCuotas, ventas - compras);
+            }).ToList();
+
+            var ingresosPorPlan = cuotasDelPlan.GroupBy(c => c.Plan)
+                .Select(g => new IngresoPorPlan(g.Key, g.Sum(x => x.Neto), g.Sum(x => x.Cobros)))
+                .OrderByDescending(x => x.Neto).ThenBy(x => x.Plan)
+                .ToList();
+
+            // Mapa de asistencia: día de la semana (de la fecha del ingreso) × hora de Argentina de cuando se registró.
+            var asistencias = _context.AsistenciasSocio.AsNoTracking().Where(a => a.Fecha >= desde && a.Fecha <= ultimoDia);
+            if (planId is not null)
+                asistencias = asistencias.Where(a => _context.Socios.Any(s => s.Id == a.SocioId && s.PlanActualId == planId));
+            var porHora = await asistencias.GroupBy(a => new { a.Fecha, Hora = a.RegistradaEn.Hour })
+                .Select(g => new { g.Key.Fecha, g.Key.Hora, Cantidad = g.Count() })
+                .ToListAsync(ct);
+            var franjas = UltimaHora - PrimeraHora + 1;
+            var mapa = Enumerable.Range(0, 7).Select(_ => new int[franjas]).ToArray();
+            foreach (var x in porHora)
+            {
+                var hora = (x.Hora + 21) % 24;
+                if (hora < PrimeraHora || hora > UltimaHora) continue;
+                var dia = ((int)x.Fecha.DayOfWeek + 6) % 7;   // lunes = 0
+                mapa[dia][hora - PrimeraHora] += x.Cantidad;
+            }
+
+            var top = await (from i in _context.FacturaItems.AsNoTracking()
+                             join f in facturas on i.FacturaId equals f.Id
+                             where f.TipoOperacion == "Venta" && i.ProductoId != null
+                             group i by i.ProductoId into g
+                             select new { ProductoId = g.Key!.Value, Cantidad = g.Sum(x => x.Cantidad), Total = g.Sum(x => x.Subtotal) })
+                .OrderByDescending(x => x.Total).ThenBy(x => x.ProductoId)
+                .Take(5)
+                .ToListAsync(ct);
+            var ids = top.Select(x => x.ProductoId).ToList();
+            var nombres = await _context.Productos.AsNoTracking().Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id, p => p.Nombre, ct);
+            var topProductos = top.Select(x => new ProductoVendido(nombres.GetValueOrDefault(x.ProductoId) ?? "(producto eliminado)", x.Cantidad, x.Total)).ToList();
+
+            var porProveedor = await facturas.Where(f => f.TipoOperacion == "Compra")
+                .GroupBy(f => f.Cliente)
+                .Select(g => new { Proveedor = g.Key, Neto = g.Sum(f => f.Subtotal) })
+                .OrderByDescending(x => x.Neto).ThenBy(x => x.Proveedor)
+                .Take(8)
+                .ToListAsync(ct);
+
+            return new Analisis(porDia ? "dia" : "mes", evolucion, ingresosPorPlan, mapa, topProductos,
+                porProveedor.Select(x => new CompraPorProveedor(x.Proveedor, x.Neto)).ToList());
         }
     }
 }
