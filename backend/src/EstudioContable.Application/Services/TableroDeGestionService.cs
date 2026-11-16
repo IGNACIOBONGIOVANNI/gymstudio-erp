@@ -30,8 +30,17 @@ namespace EstudioContable.Application.Services
     public record Analisis(string Granularidad, IReadOnlyList<PuntoDeEvolucion> Evolucion, IReadOnlyList<IngresoPorPlan> IngresosPorPlan,
         int[][] Asistencia, IReadOnlyList<ProductoVendido> TopProductos, IReadOnlyList<CompraPorProveedor> ComprasPorProveedor);
 
+    /// <summary>Un socio para contactar: «no-viene» (paga y no viene) o «por-vencer» (su cuota vence pronto), con la acción sugerida.</summary>
+    public record SocioParaAccionar(long Id, string Nombre, string Apellido, string Telefono, string? Plan, string Motivo, int Dias, string Accion);
+
+    /// <summary>Base del simulador: socios vigentes de cada plan y lo que recauda por mes (precio / duración × socios).</summary>
+    public record PlanParaSimular(long Id, string Nombre, decimal PrecioMensual, int DuracionMeses, int SociosVigentes, decimal RecaudacionMensual);
+
+    public record Decisiones(IReadOnlyList<SocioParaAccionar> Socios, IReadOnlyList<PlanParaSimular> Planes);
+
     public interface ITableroDeGestionService
     {
+        Task<Decisiones> DecisionesAsync(DateOnly hoy, CancellationToken cancellationToken);
         Task<IndicadoresDelMes> IndicadoresAsync(DateOnly primerDia, DateOnly hoy, CancellationToken cancellationToken);
         Task<Analisis> AnalisisAsync(DateOnly desde, DateOnly hasta, long? planId, CancellationToken cancellationToken);
     }
@@ -51,9 +60,17 @@ namespace EstudioContable.Application.Services
         public const string PrefijoDeCuota = "Cuota Membresía - ";
         private static readonly TimeSpan Desfase = TimeSpan.FromHours(3);   // Argentina = UTC - 3
 
-        private readonly IAppDbContext _context;
+        /// <summary>Días hacia adelante para avisar que vence la cuota (los mismos del Resumen).</summary>
+        public const int DiasPorVencer = 7;
 
-        public TableroDeGestionService(IAppDbContext context) => _context = context;
+        private readonly IAppDbContext _context;
+        private readonly IAsistenciasService _asistencias;
+
+        public TableroDeGestionService(IAppDbContext context, IAsistenciasService asistencias)
+        {
+            _context = context;
+            _asistencias = asistencias;
+        }
 
         /// <summary>Medianoche del día en la convención de las facturas (hora de Argentina guardada como UTC).</summary>
         private static DateTime Utc(DateOnly d) => new(d.Year, d.Month, d.Day, 0, 0, 0, DateTimeKind.Utc);
@@ -290,6 +307,51 @@ namespace EstudioContable.Application.Services
 
             return new Analisis(porDia ? "dia" : "mes", evolucion, ingresosPorPlan, mapa, topProductos,
                 porProveedor.Select(x => new CompraPorProveedor(x.Proveedor, x.Neto)).ToList());
+        }
+    
+        public async Task<Decisiones> DecisionesAsync(DateOnly hoy, CancellationToken ct)
+        {
+            var inicioHoy = Utc(hoy);
+            // Primero los que pagan y no vienen (la regla de Recepción); después a quienes les vence la cuota, si no están ya.
+            var enRiesgo = await _asistencias.SociosEnRiesgoAsync(hoy, ReglasDeAsistencia.DiasSinVenirPorDefecto, ct);
+            var limite = Utc(hoy.AddDays(DiasPorVencer + 1));
+            var porVencer = await _context.Socios.AsNoTracking()
+                .Where(s => s.Activo && s.FechaVencimiento != null && s.FechaVencimiento >= inicioHoy && s.FechaVencimiento < limite)
+                .Select(s => new { s.Id, s.Nombre, s.Apellido, s.Telefono, s.FechaVencimiento })
+                .ToListAsync(ct);
+            var ids = enRiesgo.Select(s => s.Id).Concat(porVencer.Select(s => s.Id)).Distinct().ToList();
+            var planes = await _context.Socios.AsNoTracking().Where(s => ids.Contains(s.Id))
+                .Select(s => new { s.Id, Plan = s.PlanActualObj != null ? s.PlanActualObj.Nombre : null })
+                .ToDictionaryAsync(s => s.Id, s => s.Plan, ct);
+
+            var socios = enRiesgo
+                .Select(s => new SocioParaAccionar(s.Id, s.Nombre, s.Apellido, s.Telefono, planes.GetValueOrDefault(s.Id), "no-viene", s.DiasSinVenir,
+                    $"Escribile para saber cómo está e invitarlo a volver: no viene hace {s.DiasSinVenir} días y tiene la cuota paga."))
+                .Concat(porVencer.Where(s => enRiesgo.All(r => r.Id != s.Id))
+                    .Select(s =>
+                    {
+                        var dias = DateOnly.FromDateTime(s.FechaVencimiento!.Value).DayNumber - hoy.DayNumber;
+                        return new SocioParaAccionar(s.Id, s.Nombre, s.Apellido, s.Telefono, planes.GetValueOrDefault(s.Id), "por-vencer", dias,
+                            dias == 0 ? "Recordale que su cuota vence hoy y ofrecele renovarla." : $"Recordale que su cuota vence en {dias} días y ofrecele renovarla.");
+                    })
+                    .OrderBy(s => s.Dias).ThenBy(s => s.Apellido))
+                .ToList();
+
+            var vigentesPorPlan = await _context.Socios.AsNoTracking()
+                .Where(s => s.Activo && s.PlanActualId != null && s.FechaVencimiento != null && s.FechaVencimiento >= inicioHoy)
+                .GroupBy(s => s.PlanActualId!.Value)
+                .Select(g => new { PlanId = g.Key, Cantidad = g.Count() })
+                .ToDictionaryAsync(x => x.PlanId, x => x.Cantidad, ct);
+            var simulables = (await _context.Planes.AsNoTracking().Where(p => p.Activo).OrderBy(p => p.Nombre).ToListAsync(ct))
+                .Select(p =>
+                {
+                    var vigentes = vigentesPorPlan.GetValueOrDefault(p.Id);
+                    var meses = Math.Max(1, p.DuracionMeses);
+                    return new PlanParaSimular(p.Id, p.Nombre, p.PrecioMensual, meses, vigentes, Math.Round(p.PrecioMensual / meses * vigentes, 2));
+                })
+                .ToList();
+
+            return new Decisiones(socios, simulables);
         }
     }
 }

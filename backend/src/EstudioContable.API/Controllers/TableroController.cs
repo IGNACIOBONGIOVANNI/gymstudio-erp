@@ -58,6 +58,11 @@ namespace EstudioContable.API.Controllers
             return Ok(await _tablero.AnalisisAsync(desdeMes, hastaMes, planId, cancellationToken));
         }
 
+        /// <summary>Socios para contactar y la base del simulador «¿qué pasaría si…?». Sin DNI: solo lo necesario para escribirles.</summary>
+        [HttpGet("decisiones")]
+        public async Task<IActionResult> Decisiones([FromQuery] DateOnly? hoy, CancellationToken cancellationToken)
+            => Ok(await _tablero.DecisionesAsync(Hoy(hoy), cancellationToken));
+
         private DateOnly Hoy(DateOnly? hoy)
         {
             var dia = hoy ?? DateOnly.FromDateTime(_reloj.GetUtcNow().UtcDateTime.AddHours(-3));
