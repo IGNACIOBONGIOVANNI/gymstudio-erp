@@ -38,6 +38,22 @@ export const CONTENIDO: Record<IdSeccion, ReactNode> = {
         <li>Al pie del menú, <B>Manual</B> abre esta guía en otra ventana y <B>Acerca de</B> muestra los datos del sistema.</li>
         <li>En el celular o la tablet, el menú se abre con el botón de las tres rayas, arriba a la izquierda.</li>
       </Lista>
+      <Sub>El cursor del gimnasio</Sub>
+      <p>El cursor cambia según lo que podés hacer en cada lugar de la pantalla:</p>
+      <Tabla
+        columnas={['Lo que ves', 'Qué quiere decir']}
+        filas={[
+          ['Una flecha verde con una mancuerna', 'El cursor de siempre: ahí no hay nada para tocar.'],
+          ['Un brazo haciendo curl con una mancuerna', 'Podés hacer una acción: un botón, una pestaña, un enlace o un gráfico que responde al clic. El clic cae en el codo del brazo.'],
+          ['Un disco de pesas girando', 'El sistema está trabajando (por ejemplo, guardando o calculando). Esperá a que termine.'],
+          ['La barrita de siempre', 'Un campo para escribir.'],
+          ['El cartel de prohibido', 'Ese botón todavía no se puede usar (falta completar algo o no te corresponde).'],
+        ]}
+      />
+      <Nota>
+        Si en tu computadora activaste la opción de reducir animaciones, el brazo y el disco aparecen quietos. En el celular o la tablet,
+        donde no hay mouse, no aparecen.
+      </Nota>
       <p>Los importes están en pesos argentinos (por ejemplo, $ 1.234,50) y las fechas se escriben día, mes y año.</p>
     </>
   ),
