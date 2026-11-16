@@ -7,6 +7,17 @@ Mayor, Balance), facturación, caja, banco, stock, socios, planes y membresías.
 - **Frontend:** React 19 · TypeScript · Vite · Tailwind · TanStack Query/Table
 - **Autenticación:** JWT + contraseñas hasheadas (PBKDF2, `PasswordHasher` de ASP.NET Identity)
 
+## Qué incluye
+
+- **Contabilidad por partida doble:** cada venta, compra y anulación genera su asiento. Libro Diario, Mayor, Balance, Caja, Banco, IVA y Stock.
+- **Control de integridad:** el sistema se audita solo, en vivo, con 16 controles de solo lectura (Debe = Haber, Activo = Pasivo + Patrimonio, etc.).
+- **Gestión del gimnasio:** socios, planes y membresías, rutinas, entrenadores y calendario, ingreso de socios y riesgo de abandono.
+- **Tablero de Gestión:** 15 indicadores en las cuatro perspectivas del Balanced Scorecard, análisis, simulador y exportación a PDF y Excel.
+- **Asistente por reglas:** contesta preguntas con los datos del sistema, sin internet ni IA externa.
+- **Seguridad:** JWT, roles (Administrador, Contador, Recepción) validados en el servidor, contraseñas con PBKDF2, límite de intentos y auditoría.
+- **Copias de seguridad:** completas y firmadas, manuales o automáticas, con vista previa y restauración.
+- **Calidad:** más de 500 tests automatizados en el backend (dominio e integración contra PostgreSQL real con Testcontainers) y CI en GitHub Actions.
+
 ## Cómo levantarlo
 
 ### Con Docker (recomendado, es como se instala en otra PC)
@@ -27,7 +38,7 @@ Requisitos: Docker Desktop abierto y conexión a internet **la primera vez**
    http://localhost:5173. Ingresar con alguno de los usuarios iniciales (ver abajo).
 
 - API + Swagger: http://localhost:5122/swagger
-- PostgreSQL (para pgAdmin o psql): `localhost:5433`, usuario `postgres`, contraseña `password`
+- PostgreSQL (para pgAdmin o psql): `localhost:5433`, usuario `postgres`, contraseña `password` (valores de desarrollo)
 
 Los tres puertos (5173, 5122 y 5433) solo escuchan en esta PC (`127.0.0.1`): otra computadora de la red no puede
 conectarse al sistema ni a la base. Para abrirlo a la red a propósito, sacar `127.0.0.1:` de `docker-compose.yml`.
@@ -100,6 +111,8 @@ usuarios está vacía, crea los usuarios iniciales.
 | `jefe@gym.com`             | `123456`   | Administrador (principal) |
 | `contador@gymstudio.com`   | `123456`   | Contador      |
 | `recepcion@gymstudio.com`  | `123456`   | Recepción     |
+
+> Usuarios y claves **solo para demostración y desarrollo**: hay que cambiarlos antes de usar datos reales.
 
 La contraseña inicial sale de `UsuariosIniciales:Password` en
 `appsettings.Development.json`. Sólo se usa la primera vez (tabla vacía): después

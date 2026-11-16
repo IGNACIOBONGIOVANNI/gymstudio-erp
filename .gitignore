@@ -39,3 +39,6 @@ backups/*
 
 # Clave de las sesiones: la genera cada instalación al arrancar (no se sube)
 .secretos/
+
+# Resultado de pruebas de fuzzing sobre la API (se regenera, pesa 2 MB)
+fuzz_swagger_resultado.json

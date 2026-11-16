@@ -1,6 +1,6 @@
 # ERP Contable — Arquitectura Inicial
 
-Stack: **.NET 8 Web API + PostgreSQL/EF Core** (backend) — **React + TypeScript + Tailwind** (frontend)
+Stack: **.NET 10 Web API + PostgreSQL/EF Core** (backend) — **React + TypeScript + Tailwind** (frontend)
 
 ---
 
