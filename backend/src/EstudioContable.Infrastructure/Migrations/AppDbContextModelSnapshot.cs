@@ -1088,6 +1088,32 @@ namespace EstudioContable.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("EstudioContable.Domain.Entities.MetaDeIndicador", b =>
+                {
+                    b.Property<string>("Clave")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ActualizadoPor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Clave");
+
+                    b.ToTable("MetasDeIndicadores", "contabilidad", t =>
+                        {
+                            t.HasCheckConstraint("CK_MetasDeIndicadores_Valor", "\"Valor\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("EstudioContable.Domain.Entities.MovimientoBanco", b =>
                 {
                     b.Property<long>("Id")

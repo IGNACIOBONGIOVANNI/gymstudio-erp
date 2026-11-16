@@ -50,6 +50,7 @@ namespace EstudioContable.Infrastructure.Persistence
         public DbSet<FotoDeEntrenador> FotosDeEntrenador => Set<FotoDeEntrenador>();
         public DbSet<HoraDeEntrenador> HorasDeEntrenador => Set<HoraDeEntrenador>();
         public DbSet<ConfiguracionDeCopias> ConfiguracionesDeCopias => Set<ConfiguracionDeCopias>();
+        public DbSet<MetaDeIndicador> MetasDeIndicadores => Set<MetaDeIndicador>();
 
         public IQueryable<SaldoCuentaMayor> LibroMayor => Set<SaldoCuentaMayor>().AsNoTracking();
 
@@ -255,6 +256,16 @@ namespace EstudioContable.Infrastructure.Persistence
 
             // Programación de las copias de seguridad automáticas: una sola fila (Id = 1). La base repite las reglas del dominio
             // (ConfiguracionDeCopias y ReglasDeCopiasAutomaticas) para que valgan aunque alguien escriba directo en ella.
+            // Metas del Tablero de Gestión: una fila por indicador, con quién y cuándo la cambió (además del trigger de auditoría).
+            modelBuilder.Entity<MetaDeIndicador>(e =>
+            {
+                e.HasKey(x => x.Clave);
+                e.Property(x => x.Clave).HasMaxLength(MetaDeIndicador.LargoMaximoDeLaClave);
+                e.Property(x => x.Valor).HasPrecision(18, 2);
+                e.Property(x => x.ActualizadoPor).HasMaxLength(MetaDeIndicador.LargoMaximoDelUsuario);
+                e.ToTable("MetasDeIndicadores", t => t.HasCheckConstraint("CK_MetasDeIndicadores_Valor", "\"Valor\" >= 0"));
+            });
+
             modelBuilder.Entity<ConfiguracionDeCopias>(e =>
             {
                 e.HasKey(x => x.Id);

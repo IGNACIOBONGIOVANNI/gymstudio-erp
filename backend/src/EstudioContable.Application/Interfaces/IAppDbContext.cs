@@ -40,6 +40,7 @@ namespace EstudioContable.Application.Interfaces
         DbSet<FotoDeEntrenador> FotosDeEntrenador { get; }
         DbSet<HoraDeEntrenador> HorasDeEntrenador { get; }
         DbSet<ConfiguracionDeCopias> ConfiguracionesDeCopias { get; }
+        DbSet<MetaDeIndicador> MetasDeIndicadores { get; }
 
         /// <summary>Vista contabilidad.v_libro_mayor: saldos por cuenta de los asientos confirmados.</summary>
         IQueryable<SaldoCuentaMayor> LibroMayor { get; }
