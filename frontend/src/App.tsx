@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   LogOut, KeyRound, Menu, X, FileText, DoorOpen, Users, CalendarRange, Receipt, BookOpenText,
   ShoppingCart, Building2, Truck, Wallet, Landmark, Package, History, BookText,
-  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, HandCoins, ListChecks,
+  Scale, BarChart3, FilePlus2, UserCog, Settings, ShieldCheck, Dumbbell, LayoutDashboard, Gauge, HandCoins, ListChecks,
   BookOpen, Info, CalendarDays, Contact,
 } from 'lucide-react'
 import { AsientoForm } from './asientos/AsientoForm'
@@ -23,6 +23,7 @@ import { LibroBanco } from './features/banco/components/LibroBanco'
 import { PlanesGym } from './features/gimnasio/components/PlanesGym'
 import { RutinasGym } from './features/gimnasio/components/RutinasGym'
 import { Dashboard } from './features/dashboard/Dashboard'
+import { ModuloTablero } from './features/tablero/ModuloTablero'
 import { CuentasCorrientes } from './features/cuentas/CuentasCorrientes'
 import { ControlIntegridad } from './features/integridad/ControlIntegridad'
 import { SociosGym } from './features/gimnasio/components/SociosGym'
@@ -74,6 +75,7 @@ const MENU: Grupo[] = [
     titulo: 'Inicio',
     vistas: [
       { id: 'inicio', titulo: 'Resumen', icono: <LayoutDashboard className={icono} /> },
+      { id: 'tablero', titulo: 'Tablero de Gestión', icono: <Gauge className={icono} />, roles: GESTION },
     ],
   },
   {
@@ -216,6 +218,7 @@ function AppContent() {
   const contenido = (() => {
     switch (vista.id) {
       case 'inicio': return <Dashboard />
+      case 'tablero': return <ModuloTablero />
       case 'cuentas': return <CuentasCorrientes />
       case 'integridad': return <ControlIntegridad />
       case 'recepcion': return <RecepcionGym />
