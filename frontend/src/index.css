@@ -179,3 +179,74 @@
   .escalonado > :nth-child(8) { animation-delay: 280ms; }
   .escalonado > :nth-child(n + 9) { animation-delay: 320ms; }
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Cursor del gimnasio: flecha verde con una mancuerna; sobre lo que se puede tocar, la flecha sola (al lado aparece el
+   brazo haciendo curl, ver components/CursorDelGimnasio.tsx). Los campos para escribir y lo deshabilitado conservan
+   la barrita y el cartel de prohibido. Si el dibujo no carga, el navegador usa su cursor de siempre.
+   --------------------------------------------------------------------------------------------------------------------- */
+@layer base {
+  html {
+    cursor: url('/cursores/flecha.svg') 3 2, auto;
+  }
+  a[href], button, [role='button'], [role='tab'], [role='menuitem'], [role='switch'], [role='option'], select, summary,
+  label[for], input[type='checkbox'], input[type='radio'], input[type='file'], input[type='submit'], input[type='button'],
+  input[type='month'], input[type='date'], input[type='time'], [cursor='pointer'] {
+    cursor: url('/cursores/flecha-accion.svg') 3 2, pointer;
+  }
+  textarea, [contenteditable='true'], input:not([type]), input[type='text'], input[type='email'], input[type='password'],
+  input[type='number'], input[type='search'], input[type='tel'], input[type='url'] {
+    cursor: text;
+  }
+  :disabled, [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  .cursor-pointer {
+    cursor: url('/cursores/flecha-accion.svg') 3 2, pointer;
+  }
+}
+
+.cursor-gimnasio {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(-200px, -200px, 0);
+}
+.cursor-gimnasio .curl-antebrazo {
+  transform-box: view-box;
+  transform-origin: 8px 25px;
+  animation: curl-del-cursor 1.6s ease-in-out infinite;
+}
+.cursor-gimnasio .curl-biceps {
+  transform-box: view-box;
+  transform-origin: 19px 29px;
+  animation: biceps-del-cursor 1.6s ease-in-out infinite;
+}
+.cursor-gimnasio .disco-girando {
+  animation: disco-del-cursor 0.8s linear infinite;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+@keyframes curl-del-cursor {
+  0%, 8% { transform: rotate(-78deg); }
+  46%, 58% { transform: rotate(0deg); }
+  100% { transform: rotate(-78deg); }
+}
+@keyframes biceps-del-cursor {
+  0%, 8% { transform: scaleY(0.8); }
+  46%, 58% { transform: scaleY(1.06); }
+  100% { transform: scaleY(0.8); }
+}
+@keyframes disco-del-cursor {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-gimnasio .curl-antebrazo, .cursor-gimnasio .curl-biceps, .cursor-gimnasio .disco-girando {
+    animation: none;
+  }
+}

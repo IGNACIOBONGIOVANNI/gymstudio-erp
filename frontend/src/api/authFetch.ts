@@ -6,6 +6,8 @@
 // - si la API responde 401 (token vencido o inválido), avisa con el evento
 //   SESION_EXPIRADA para que AuthContext cierre la sesión.
 
+import { pedidosALaApi } from '../utils/cursorDelGimnasio';
+
 export const STORAGE_KEY_SESION = 'user';
 export const SESION_EXPIRADA = 'sesion-expirada';
 
@@ -32,6 +34,17 @@ export function instalarInterceptorAuth(): void {
 
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    if (!url.includes('/api/')) return fetchOriginal(input, init);
+    // Mientras haya pedidos a la API en curso, el cursor muestra el disco girando.
+    pedidosALaApi.empezar();
+    try {
+      return await pedirALaApi(url, input, init);
+    } finally {
+      pedidosALaApi.terminar();
+    }
+  };
+
+  const pedirALaApi = async (url: string, input: RequestInfo | URL, init?: RequestInit) => {
     if (!esLlamadaALaApi(url)) {
       return fetchOriginal(input, init);
     }
