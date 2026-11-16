@@ -251,7 +251,7 @@ html[data-cursor-gimnasio='carga'], html[data-cursor-gimnasio='carga'] * {
   cursor: none !important;
 }
 .cursor-gimnasio[data-modo='accion'] svg {
-  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.3));
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
 }
 @media (prefers-reduced-motion: reduce) {
   .cursor-gimnasio .curl-antebrazo, .cursor-gimnasio .curl-biceps, .cursor-gimnasio .disco-girando {

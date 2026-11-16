@@ -73,22 +73,23 @@ export function CursorDelGimnasio() {
 }
 
 function BrazoHaciendoCurl() {
+  // Verde claro con borde oscuro (y un halo blanco desde index.css): se distingue sobre fondo blanco, el menú oscuro y los botones verdes.
   return (
     <svg width="44" height="31" viewBox="-14 -2 47 33">
       <g className="curl-biceps">
         <path d="M4.6 29 C3 26 3.6 22.4 7.2 21.8 C10.4 15.6 20.6 13 24.8 17.6 C26.6 19.4 28.6 20 31.6 20.2 L31.6 29.2 Z"
-          fill="#1f6f54" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
-        <path d="M14.4 21.4 C16.8 17.8 20.8 17.4 22.8 19.8" fill="none" stroke="#7dc1a0" strokeWidth="1.1" strokeLinecap="round" />
+          fill="#47a27c" stroke="#0a231b" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M14.4 21.4 C16.8 17.8 20.8 17.4 22.8 19.8" fill="none" stroke="#d6ede0" strokeWidth="1.1" strokeLinecap="round" />
       </g>
       <g className="curl-antebrazo">
         <path d="M4.9 25 L5.7 11.6 C5.3 10.6 5.4 9.4 5.6 8.4 C5.6 4.6 12.6 4.6 12.6 8.4 L11.9 11.2 L11.2 25 Z"
-          fill="#1f6f54" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
-        <path d="M7.4 9.6 L11.2 9.4" stroke="#123a2e" strokeWidth="0.9" strokeLinecap="round" />
-        <rect x="1.2" y="5" width="16" height="1.8" rx="0.9" fill="#aedac2" stroke="#123a2e" strokeWidth="0.7" />
-        <rect x="0.7" y="2.3" width="2.6" height="7.2" rx="0.8" fill="#123a2e" stroke="#fff" strokeWidth="0.8" />
-        <rect x="15.1" y="2.3" width="2.6" height="7.2" rx="0.8" fill="#123a2e" stroke="#fff" strokeWidth="0.8" />
+          fill="#47a27c" stroke="#0a231b" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M7.4 9.6 L11.2 9.4" stroke="#0a231b" strokeWidth="0.9" strokeLinecap="round" />
+        <rect x="1.2" y="5" width="16" height="1.8" rx="0.9" fill="#d6ede0" stroke="#0a231b" strokeWidth="0.8" />
+        <rect x="0.7" y="2.3" width="2.6" height="7.2" rx="0.8" fill="#0a231b" stroke="#fff" strokeWidth="0.8" />
+        <rect x="15.1" y="2.3" width="2.6" height="7.2" rx="0.8" fill="#0a231b" stroke="#fff" strokeWidth="0.8" />
       </g>
-      <circle cx="8" cy="25" r="3.3" fill="#1f6f54" />
+      <circle cx="8" cy="25" r="3" fill="#47a27c" />
     </svg>
   );
 }
