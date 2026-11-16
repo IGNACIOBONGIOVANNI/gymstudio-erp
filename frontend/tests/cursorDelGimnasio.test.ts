@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  RETRASO_DE_CARGA_MS, SELECTOR_DE_ACCION, SELECTOR_DE_TEXTO, SELECTOR_DESHABILITADO, crearContadorDePedidos, esAccionable, modoDelCursor,
+  PUNTO_DEL_BRAZO, PUNTO_DEL_DISCO, RETRASO_DE_CARGA_MS, SELECTOR_DE_ACCION, ocultaLaFlecha, posicionDelDibujo, SELECTOR_DE_TEXTO, SELECTOR_DESHABILITADO, crearContadorDePedidos, esAccionable, modoDelCursor,
   type ElementoParecido,
 } from '../src/utils/cursorDelGimnasio.ts';
 
@@ -65,4 +65,18 @@ test('los selectores cubren botones, enlaces, pestañas y los gráficos que se p
   }
   for (const s of [':disabled', '[aria-disabled="true"]']) assert.ok(SELECTOR_DESHABILITADO.includes(s), `falta ${s}`);
   assert.ok(SELECTOR_DE_TEXTO.includes('textarea'));
+});
+
+test('el brazo y el disco reemplazan a la flecha; en lo normal queda la flecha', () => {
+  assert.equal(ocultaLaFlecha('accion'), true);
+  assert.equal(ocultaLaFlecha('carga'), true);
+  assert.equal(ocultaLaFlecha('normal'), false);
+});
+
+test('el dibujo se ubica para que el codo del brazo (o el centro del disco) quede justo donde apunta el mouse', () => {
+  assert.deepEqual(posicionDelDibujo('accion', 300, 200), { x: 300 - PUNTO_DEL_BRAZO.x, y: 200 - PUNTO_DEL_BRAZO.y });
+  assert.deepEqual(posicionDelDibujo('carga', 300, 200), { x: 300 - PUNTO_DEL_DISCO.x, y: 200 - PUNTO_DEL_DISCO.y });
+  // El codo está abajo a la izquierda del brazo; el centro del disco, en el medio del dibujo de 40 x 40.
+  assert.ok(PUNTO_DEL_BRAZO.x > 15 && PUNTO_DEL_BRAZO.x < 25 && PUNTO_DEL_BRAZO.y > 20 && PUNTO_DEL_BRAZO.y < 30);
+  assert.deepEqual(PUNTO_DEL_DISCO, { x: 20, y: 20 });
 });

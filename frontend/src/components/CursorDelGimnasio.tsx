@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { esAccionable, modoDelCursor, pedidosALaApi, type ModoDelCursor } from '../utils/cursorDelGimnasio';
-
-/** Cuánto se corre el acompañante desde la punta de la flecha, para no taparla. */
-const CORRIMIENTO = { x: 14, y: 16 };
+import { esAccionable, modoDelCursor, ocultaLaFlecha, pedidosALaApi, posicionDelDibujo, type ModoDelCursor } from '../utils/cursorDelGimnasio';
 
 /**
- * El acompañante del cursor: los navegadores no animan los cursores, así que al lado de la flecha (que sigue marcando el
- * clic) se dibuja un brazo haciendo curl cuando se puede hacer una acción, o un disco de pesas girando mientras el sistema
- * carga. Solo con mouse; con «reducir movimiento» queda quieto (ver index.css).
+ * El cursor animado del gimnasio: los navegadores no animan los cursores, así que cuando se puede hacer una acción la flecha
+ * se oculta y el cursor pasa a ser un brazo haciendo curl (el clic cae en el codo, que no se mueve), y mientras el sistema
+ * carga, un disco de pesas girando (el clic cae en su centro). En lo demás queda la flecha verde. Solo con mouse; con
+ * «reducir movimiento» queda quieto (ver index.css).
  */
 export function CursorDelGimnasio() {
   const capa = useRef<HTMLDivElement>(null);
@@ -17,15 +15,23 @@ export function CursorDelGimnasio() {
   useEffect(() => {
     if (!conMouse) return;
     let x = -100, y = -100, accionable = false, dentro = false, cuadro = 0;
+    let modoActual: ModoDelCursor = 'normal';
     let temporizador: number | undefined;
 
-    const actualizarModo = () => {
-      const nuevo = dentro ? modoDelCursor({ accionable, cargandoDesde: pedidosALaApi.desde(), ahora: Date.now() }) : 'normal';
-      setModo((previo) => (previo === nuevo ? previo : nuevo));
-    };
     const dibujar = () => {
       cuadro = 0;
-      if (capa.current) capa.current.style.transform = `translate3d(${x + CORRIMIENTO.x}px, ${y + CORRIMIENTO.y}px, 0)`;
+      const p = posicionDelDibujo(modoActual, x, y);
+      if (capa.current) capa.current.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+    };
+    const actualizarModo = () => {
+      const nuevo = dentro ? modoDelCursor({ accionable, cargandoDesde: pedidosALaApi.desde(), ahora: Date.now() }) : 'normal';
+      if (nuevo === modoActual) return;
+      modoActual = nuevo;
+      // La flecha nativa se oculta mientras el brazo o el disco hacen de cursor.
+      if (ocultaLaFlecha(nuevo)) document.documentElement.dataset.cursorGimnasio = nuevo;
+      else delete document.documentElement.dataset.cursorGimnasio;
+      dibujar();
+      setModo(nuevo);
     };
     const alMover = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse') return;
@@ -52,6 +58,7 @@ export function CursorDelGimnasio() {
       window.removeEventListener('blur', alPerderFoco);
       dejarDeEscuchar();
       window.clearTimeout(temporizador);
+      delete document.documentElement.dataset.cursorGimnasio;
       if (cuadro) cancelAnimationFrame(cuadro);
     };
   }, [conMouse]);

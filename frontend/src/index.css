@@ -181,8 +181,8 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
-   Cursor del gimnasio: flecha verde con una mancuerna; sobre lo que se puede tocar, la flecha sola (al lado aparece el
-   brazo haciendo curl, ver components/CursorDelGimnasio.tsx). Los campos para escribir y lo deshabilitado conservan
+   Cursor del gimnasio: flecha verde con una mancuerna; sobre lo que se puede tocar el cursor pasa a ser el brazo haciendo
+   curl y mientras carga, el disco girando (ver components/CursorDelGimnasio.tsx; si no corre, queda la flecha sola). Los campos para escribir y lo deshabilitado conservan
    la barrita y el cartel de prohibido. Si el dibujo no carga, el navegador usa su cursor de siempre.
    --------------------------------------------------------------------------------------------------------------------- */
 @layer base {
@@ -244,6 +244,14 @@
 }
 @keyframes disco-del-cursor {
   to { transform: rotate(360deg); }
+}
+/* Mientras el brazo o el disco hacen de cursor, la flecha nativa no se muestra (lo pone CursorDelGimnasio). */
+html[data-cursor-gimnasio='accion'], html[data-cursor-gimnasio='accion'] *,
+html[data-cursor-gimnasio='carga'], html[data-cursor-gimnasio='carga'] * {
+  cursor: none !important;
+}
+.cursor-gimnasio[data-modo='accion'] svg {
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.3));
 }
 @media (prefers-reduced-motion: reduce) {
   .cursor-gimnasio .curl-antebrazo, .cursor-gimnasio .curl-biceps, .cursor-gimnasio .disco-girando {

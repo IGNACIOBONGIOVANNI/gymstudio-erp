@@ -81,3 +81,19 @@ export function crearContadorDePedidos(reloj: () => number = () => Date.now()): 
 
 /** El contador de toda la aplicación: lo alimenta el interceptor de fetch y lo lee el cursor. */
 export const pedidosALaApi = crearContadorDePedidos();
+
+/** Dónde está el codo dentro del dibujo del brazo (44 × 31 px, viewBox -14 -2 47 33): no se mueve durante el curl. */
+export const PUNTO_DEL_BRAZO = { x: 20.6, y: 25.4 };
+/** El centro del disco (dibujo de 40 × 40 px). */
+export const PUNTO_DEL_DISCO = { x: 20, y: 20 };
+
+/** Con el brazo o el disco a la vista, la flecha se oculta: el dibujo es el cursor. */
+export function ocultaLaFlecha(modo: ModoDelCursor): boolean {
+  return modo !== 'normal';
+}
+
+/** Esquina donde se dibuja el brazo o el disco para que su punto de clic caiga justo donde apunta el mouse. */
+export function posicionDelDibujo(modo: ModoDelCursor, x: number, y: number): { x: number; y: number } {
+  const punto = modo === 'carga' ? PUNTO_DEL_DISCO : PUNTO_DEL_BRAZO;
+  return { x: x - punto.x, y: y - punto.y };
+}
