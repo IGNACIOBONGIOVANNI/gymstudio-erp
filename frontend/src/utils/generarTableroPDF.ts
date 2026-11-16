@@ -39,7 +39,8 @@ export function generarTableroPDF(datos: IndicadoresDelMes) {
         TEXTO_DEL_SEMAFORO[i.semaforo],
       ]),
       styles: { ...estiloTabla().styles, fontSize: 8.5, cellPadding: 1.6 },
-      columnStyles: { 0: { cellWidth: 62 } },
+      // Mismos anchos en las cuatro tablas, para que las columnas queden alineadas en la hoja.
+      columnStyles: { 0: { cellWidth: 56 }, 1: { cellWidth: 24 }, 2: { cellWidth: 24 }, 3: { cellWidth: 20 }, 4: { cellWidth: 24 } },
     });
     y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 3;
   }
