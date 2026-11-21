@@ -43,7 +43,7 @@ cruzado, drill-down, sistema de apoyo a las decisiones, pirámide de los sistema
 
 | Enfoque | A favor | En contra | Decisión |
 |---|---|---|---|
-| **A. El servidor calcula los indicadores y agregados** (endpoints nuevos con su permiso); la pantalla dibuja con Recharts, que ya usa el Resumen | Datos personales no salen del servidor; cada consulta con permiso y pruebas de integración; mismo origen de datos que el Resumen | El filtro cruzado pide de nuevo al servidor (respuesta chica, rápida) | **Elegido** (decisión de Claude; el usuario delegó el cómo) |
+| **A. El servidor calcula los indicadores y agregados** (endpoints nuevos con su permiso); la pantalla dibuja con Recharts, que ya usa el Resumen | Datos personales no salen del servidor; cada consulta con permiso y pruebas de integración; mismo origen de datos que el Resumen | El filtro cruzado pide de nuevo al servidor (respuesta chica, rápida) | **Elegido** |
 | B. Mandar todos los datos crudos y agregar en el navegador (como el modelo en memoria de Power BI) | Filtros instantáneos | Expone datos de socios; difícil de probar; crece con los datos | Descartado |
 | C. Insertar Power BI (publicar en la web / embebido) | Es Power BI de verdad | Cuenta, licencia e internet; la defensa es sin conexión | Descartado |
 
@@ -61,7 +61,7 @@ anuladas no cuentan nunca. Importes netos de IVA, igual que el Resumen.
 **Socios**
 - *Socios activos*: socios activos con una membresía pagada vigente al cierre del período (último día del mes, o hoy si
   el mes es el actual). Se usan las membresías (historia) y no el vencimiento actual del socio, para que un mes pasado
-  dé lo que dio en su momento. Más es mejor. Con meta. *(decisión de Claude)*
+  dé lo que dio en su momento. Más es mejor. Con meta.
 - *Altas*: socios con `FechaAlta` dentro del mes.
 - *Bajas*: socios que tenían membresía vigente al inicio del mes y no tienen ninguna vigente al cierre: no renovaron.
 - *Retención*: 1 − bajas / socios con cuota vigente al inicio del mes, en %. Sin socios al inicio → «sin datos».

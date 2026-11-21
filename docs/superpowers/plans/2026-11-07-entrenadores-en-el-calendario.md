@@ -20,7 +20,6 @@
 - En pantalla, «encargado» pasa a «entrenador a cargo»; los nombres internos del código (`encargado`, `Grilla`, `TurnoEncargado`) no se renombran.
 - Pruebas de integración necesitan Docker (Testcontainers). `npm test` se corre desde PowerShell: falla en Git Bash.
 - **Docker del usuario:** `./backend` está montado en su contenedor con `dotnet watch`, que aplica migraciones al arrancar. Antes de empezar: `docker compose stop backend frontend` (la base queda arriba). Al final de la Parte 1: `scripts\backup.ps1` y recién entonces `docker compose up -d`. Tras compilar en Windows, el watch queda roto: reiniciar el backend.
-- Commits con el trailer `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
 - Desvío menor del spec: activar/desactivar es `PUT /api/entrenadores/{id}/estado` con `{ "activo": bool }`, igual que `UsuariosController`, en lugar de dos `POST`.
 
 ## Review Focus

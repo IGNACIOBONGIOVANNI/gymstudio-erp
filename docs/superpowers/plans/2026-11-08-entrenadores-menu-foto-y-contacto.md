@@ -19,7 +19,7 @@
 - `GET api/entrenadores/{id}/foto`: `image/jpeg`, `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-cache`, `ETag` derivado de `Actualizada`.
 - Frontend: sin errores de lint nuevos (usar la forma «pedir dentro del efecto con `.then` y bandera de cancelación», no una función que cambie estado llamada desde el efecto); no abrir `<form>` dentro de otro. Pruebas del frontend con `node --experimental-strip-types --test tests/*.test.ts` desde `frontend/` (el `npm test` falla en Git Bash).
 - Trampas del entorno: en heredocs de Python por la herramienta Bash, `\\` llega como `\`, `\u00A0` se vuelve un carácter real y `\00` un NUL: armar las barras con `chr(92)` o escribir con Edit/Write. Probar la API con Python, no con `curl` (acentos).
-- Cada tarea termina con la suite completa en verde (`dotnet test backend/EstudioContable.slnx` y las del frontend). Commits con el trailer `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- Cada tarea termina con la suite completa en verde (`dotnet test backend/EstudioContable.slnx` y las del frontend).
 
 ## Review Focus
 

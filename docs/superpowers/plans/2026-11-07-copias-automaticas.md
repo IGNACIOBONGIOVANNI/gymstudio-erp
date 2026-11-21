@@ -22,7 +22,6 @@
 - Auditoría (tabla `copia`): `AUTOMATICA` y `FALLIDA` con usuario «sistema», `GUARDADA` (copia hecha «ahora») y `PROGRAMACION` con el email de quien actuó.
 - Textos en castellano rioplatense (voseo), sin emojis; errores de validación junto a cada campo. Pruebas de integración necesitan Docker; `npm test` se corre desde PowerShell (falla en Git Bash).
 - **Docker del usuario:** igual que en la Parte 1 (`docker compose stop backend frontend` antes de empezar; `scripts\backup.ps1` y `docker compose up -d` al final). El cambio de `docker-compose.yml` exige recrear el contenedor.
-- Commits con el trailer `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
 - Desvío menor del spec: la referencia para calcular la próxima copia es `max(UltimaCopia, ActivaDesde)`, así reprogramar no dispara una copia atrasada de inmediato.
 
 ## Review Focus

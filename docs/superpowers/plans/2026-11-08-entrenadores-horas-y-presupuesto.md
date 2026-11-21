@@ -19,7 +19,7 @@
 - Período: `desde <= hasta`, de hasta **62 días** (contando los dos extremos). `PUT` de horas: hasta **500** renglones, todo o nada. Monto de un día = `Horas × ValorHora` redondeado a 2 decimales (`MidpointRounding.AwayFromZero`); monto de un entrenador = suma de los montos de sus días; total = suma de los entrenadores. Todo con `decimal`.
 - Frontend: sin errores de lint nuevos (pedir dentro del efecto con `.then` y bandera de cancelación); no abrir un `<form>` dentro de otro; importes en formato argentino (`$ 1.234,56`); el PDF en blanco y negro con `pdfComun`. Pruebas con `node --experimental-strip-types --test tests/*.test.ts` desde `frontend/`.
 - Trampas del entorno: en heredocs de Python por la herramienta Bash, `\\` llega como `\` y `\00` se vuelve un NUL (usar `chr(92)` o Edit/Write); probar la API con Python, no con `curl`; `auditoria.operacion` es `varchar(10)`.
-- Cada tarea termina con la suite completa en verde (`dotnet test backend/EstudioContable.slnx` y las del frontend). Commits con el trailer `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- Cada tarea termina con la suite completa en verde (`dotnet test backend/EstudioContable.slnx` y las del frontend).
 
 ## Review Focus
 

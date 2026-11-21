@@ -27,7 +27,7 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Configuración local de Claude Code
+# Configuración local del entorno de desarrollo (no se sube)
 .claude/settings.local.json
 
 # Paquete para copiar a otra PC (se genera con git archive)
